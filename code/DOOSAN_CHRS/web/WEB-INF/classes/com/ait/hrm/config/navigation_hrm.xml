@@ -1,0 +1,867 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<navigation-mapper>
+
+	<!-- ***************************************common command********************************************* -->
+
+	<operation name="viewEmpList">
+		<command>com.ait.hrm.cmd.common.ViewEmpListCmd</command>
+		<return-url>/hrm/inc/hrm_SearchEmployee.jsp</return-url>
+	</operation>
+
+	<!-- **************************************contract administer***************************************** -->
+
+	<!--      hrm module.contract.add            -->
+
+	<operation name="viewContractByInsert">
+		<command>
+			com.ait.hrm.cmd.contract.ViewContractByInsertCmd
+		</command>
+		<return-url>/hrm/hrm_add_cont.jsp</return-url>
+	</operation>
+
+	<operation name="insertContract">
+		<command>com.ait.hrm.cmd.contract.InsertContractCmd</command>
+		<return-url>/hrm/hrm_add_cont.jsp</return-url>
+	</operation>
+
+
+	<!-- 	  hrm module.contract.expired        -->
+
+	<operation name="viewExpiredContract">
+		<command>
+			com.ait.hrm.cmd.contract.ViewExpiredContractCmd
+		</command>
+		<return-url>/hrm/hrm_view_expired_cont.jsp</return-url>
+	</operation>
+
+	<operation name="insertExpiredContract">
+		<command>
+			com.ait.hrm.cmd.contract.InsertExpiredContractCmd
+		</command>
+		<return-url>/hrm/hrm_view_expired_cont.jsp</return-url>
+	</operation>
+
+	<operation name="makeExpiredContractExcel">
+		<command>
+			com.ait.hrm.cmd.contract.MakeExpiredContractExcelCmd
+		</command>
+		<return-url>/hrm/hrm_expiredcontract_excep.jsp</return-url>
+	</operation>
+
+
+	<!-- 	  hrm module.contract.report 		 -->
+
+	<operation name="viewContractReport">
+		<command>
+			com.ait.hrm.cmd.contract.ViewContractReportCmd
+		</command>
+		<return-url>/hrm/hrm_report_cont.jsp</return-url>
+	</operation>
+
+	<operation name="createContractReport">
+		<command>
+			com.ait.hrm.cmd.contract.CreateContractReportCmd
+		</command>
+		<return-url>/hrm/hrm_contractreport_excel.jsp</return-url>
+	</operation>
+	<!-- 	  hrm module.contract.view 			 -->
+
+	<operation name="viewContract">
+		<command>com.ait.hrm.cmd.contract.ViewContractCmd</command>
+		<return-url>/hrm/hrm_view_cont.jsp</return-url>
+	</operation>
+
+	<!-- **************************************employee information************************************** -->
+
+	<!-- 	  hrm module.empinfo.appendinfo      -->
+
+	<operation name="viewAppendInfo">
+		<command>
+			com.ait.hrm.cmd.empinfo.appendinfo.ViewAppendInfoCmd
+		</command>
+		<return-url>/hrm/hrm_view_append.jsp</return-url>
+	</operation>
+
+	<operation name="retrieveDataForInsertAppendInfo">
+		<command>
+			com.ait.hrm.cmd.empinfo.appendinfo.RetrieveDataForInsertAppendInfoCmd
+		</command>
+		<return-url>/hrm/hrm_add_append.jsp</return-url>
+	</operation>
+
+	<operation name="insertAppendInfo">
+		<command>
+			com.ait.hrm.cmd.empinfo.appendinfo.InsertAppendInfoCmd
+		</command>
+		<return-url>/hrm/hrm_view_append.jsp</return-url>
+	</operation>
+
+	<operation name="retrieveDataForUpdateAppendInfo">
+		<command>
+			com.ait.hrm.cmd.empinfo.appendinfo.RetrieveDataForUpdateAppendInfoCmd
+		</command>
+		<return-url>/hrm/hrm_modify_append.jsp</return-url>
+	</operation>
+
+	<operation name="updateAppendInfo">
+		<command>
+			com.ait.hrm.cmd.empinfo.appendinfo.UpdateAppendInfoCmd
+		</command>
+		<return-url>/hrm/hrm_view_append.jsp</return-url>
+	</operation>
+
+	<operation name="retrieveDataForDeleteAppendInfo">
+		<command>
+			com.ait.hrm.cmd.empinfo.appendinfo.RetrieveDataForDeleteAppendInfoCmd
+		</command>
+		<return-url>/hrm/hrm_delete_append.jsp</return-url>
+	</operation>
+
+	<operation name="deleteAppendInfo">
+		<command>
+			com.ait.hrm.cmd.empinfo.appendinfo.DeleteAppendInfoCmd
+		</command>
+		<return-url>/hrm/hrm_view_append.jsp</return-url>
+	</operation>
+
+
+	<!-- 	  hrm module.empinfo.baseinfo 		 -->
+
+	<operation name="viewBaseInfo">
+		<command>
+			com.ait.hrm.cmd.empinfo.baseinfo.ViewBaseInfoCmd
+		</command>
+		<return-url>/hrm/hrm_view.jsp</return-url>
+	</operation>
+
+	<operation name="retrieveDataForInsertBaseInfo">
+		<command>
+			com.ait.hrm.cmd.empinfo.baseinfo.RetrieveDataForInsertBaseInfoCmd
+		</command>
+		<return-url>/hrm/hrm_add.jsp</return-url>
+	</operation>
+
+	<operation name="insertBaseInfo">
+		<command>
+			com.ait.hrm.cmd.empinfo.baseinfo.InsertBaseInfoCmd
+		</command>
+		<return-url>/hrm/hrm_view.jsp</return-url>
+	</operation>
+
+	<operation name="retrieveDataForUpdateBaseInfo">
+		<command>
+			com.ait.hrm.cmd.empinfo.baseinfo.RetrieveDataForUpdateBaseInfoCmd
+		</command>
+		<return-url>/hrm/hrm_modify.jsp</return-url>
+	</operation>
+
+	<operation name="updateBaseInfo">
+		<command>
+			com.ait.hrm.cmd.empinfo.baseinfo.UpdateBaseInfoCmd
+		</command>
+		<return-url>/hrm/hrm_view.jsp</return-url>
+	</operation>
+
+	<operation name="retrieveDataForDeleteBaseInfo">
+		<command>
+			com.ait.hrm.cmd.empinfo.baseinfo.RetrieveDataForDeleteBaseInfoCmd
+		</command>
+		<return-url>/hrm/hrm_delete.jsp</return-url>
+	</operation>
+
+	<operation name="deleteBaseInfo">
+		<command>
+			com.ait.hrm.cmd.empinfo.baseinfo.DeleteBaseInfoCmd
+		</command>
+		<return-url>/hrm/hrm_view.jsp</return-url>
+	</operation>
+
+
+	<!-- 	  hrm module.empinfo.evaluate 	      -->
+
+	<operation name="viewEvaluate">
+		<command>
+			com.ait.hrm.cmd.empinfo.evaluate.ViewEvaluateCmd
+		</command>
+		<return-url>/hrm/hrm_view_evaluate.jsp</return-url>
+	</operation>
+
+
+	<!-- 	   hrm module.empinfo.health 		  -->
+
+	<operation name="viewHealth">
+		<command>com.ait.hrm.cmd.empinfo.health.ViewHealthCmd</command>
+		<return-url>/hrm/hrm_view_health.jsp</return-url>
+	</operation>
+
+	<operation name="retrieveDataForInsertHealth">
+		<command>
+			com.ait.hrm.cmd.empinfo.health.RetrieveDataForInsertHealthCmd
+		</command>
+		<return-url>/hrm/hrm_add_health.jsp</return-url>
+	</operation>
+
+	<operation name="insertHealth">
+		<command>
+			com.ait.hrm.cmd.empinfo.health.InsertHealthCmd
+		</command>
+		<return-url>/hrm/hrm_view_health.jsp</return-url>
+	</operation>
+
+	<operation name="retrieveDataForUpdateHealth">
+		<command>
+			com.ait.hrm.cmd.empinfo.health.RetrieveDataForUpdateHealthCmd
+		</command>
+		<return-url>/hrm/hrm_modify_health.jsp</return-url>
+	</operation>
+
+	<operation name="updateHealth">
+		<command>
+			com.ait.hrm.cmd.empinfo.health.UpdateHealthCmd
+		</command>
+		<return-url>/hrm/hrm_view_health.jsp</return-url>
+	</operation>
+
+	<operation name="retrieveDataForDeleteHealth">
+		<command>
+			com.ait.hrm.cmd.empinfo.health.RetrieveDataForDeleteHealthCmd
+		</command>
+		<return-url>/hrm/hrm_delete_health.jsp</return-url>
+	</operation>
+
+	<operation name="deleteHealth">
+		<command>
+			com.ait.hrm.cmd.empinfo.health.DeleteHealthCmd
+		</command>
+		<return-url>/hrm/hrm_view_health.jsp</return-url>
+	</operation>
+
+	<!-- 	   hrm module.empinfo.otherinfo 	  -->
+
+	<operation name="viewOtherInfo">
+		<command>
+			com.ait.hrm.cmd.empinfo.otherinfo.ViewOtherInfoCmd
+		</command>
+		<return-url>/hrm/hrm_view_otherinfo.jsp</return-url>
+	</operation>
+
+	<operation name="retrieveDataForInsertOtherInfo">
+		<command>
+			com.ait.hrm.cmd.empinfo.otherinfo.RetrieveDataForInsertOtherInfoCmd
+		</command>
+		<return-url>/hrm/hrm_add_otherinfo.jsp</return-url>
+	</operation>
+
+	<operation name="insertOtherInfo">
+		<command>
+			com.ait.hrm.cmd.empinfo.otherinfo.InsertOtherInfoCmd
+		</command>
+		<return-url>/hrm/hrm_view_otherinfo.jsp</return-url>
+	</operation>
+
+	<operation name="retrieveDataForUpdateOtherInfo">
+		<command>
+			com.ait.hrm.cmd.empinfo.otherinfo.RetrieveDataForUpdateOtherInfoCmd
+		</command>
+		<return-url>/hrm/hrm_modify_otherinfo.jsp</return-url>
+	</operation>
+
+	<operation name="updateOtherInfo">
+		<command>
+			com.ait.hrm.cmd.empinfo.otherinfo.UpdateOtherInfoCmd
+		</command>
+		<return-url>/hrm/hrm_view_otherinfo.jsp</return-url>
+	</operation>
+
+	<operation name="retrieveDataForDeleteOtherInfo">
+		<command>
+			com.ait.hrm.cmd.empinfo.otherinfo.RetrieveDataForDeleteOtherInfoCmd
+		</command>
+		<return-url>/hrm/hrm_delete_otherinfo.jsp</return-url>
+	</operation>
+
+	<operation name="deleteOtherInfo">
+		<command>
+			com.ait.hrm.cmd.empinfo.otherinfo.DeleteOtherInfoCmd
+		</command>
+		<return-url>/hrm/hrm_view_otherinfo.jsp</return-url>
+	</operation>
+
+	<!-- 	   hrm module.empinfo.promote 		  -->
+
+	<operation name="viewPromote">
+		<command>
+			com.ait.hrm.cmd.empinfo.promote.ViewPromoteCmd
+		</command>
+		<return-url>/hrm/hrm_view_promote.jsp</return-url>
+	</operation>
+
+
+	<!-- 	   hrm module.empinfo.relation 		  -->
+
+	<operation name="viewRelation">
+		<command>
+			com.ait.hrm.cmd.empinfo.relation.ViewRelationCmd
+		</command>
+		<return-url>/hrm/hrm_view_relation.jsp</return-url>
+	</operation>
+
+	<operation name="retrieveDataForInsertRelation">
+		<command>
+			com.ait.hrm.cmd.empinfo.relation.RetrieveDataForInsertRelationCmd
+		</command>
+		<return-url>/hrm/hrm_add_relation.jsp</return-url>
+	</operation>
+
+	<operation name="insertRelation">
+		<command>
+			com.ait.hrm.cmd.empinfo.relation.InsertRelationCmd
+		</command>
+		<return-url>/hrm/hrm_view_relation.jsp</return-url>
+	</operation>
+
+	<operation name="retrieveDataForUpdateRelation">
+		<command>
+			com.ait.hrm.cmd.empinfo.relation.RetrieveDataForUpdateRelationCmd
+		</command>
+		<return-url>/hrm/hrm_modify_relation.jsp</return-url>
+	</operation>
+
+	<operation name="updateRelation">
+		<command>
+			com.ait.hrm.cmd.empinfo.relation.UpdateRelationCmd
+		</command>
+		<return-url>/hrm/hrm_view_relation.jsp</return-url>
+	</operation>
+
+	<operation name="retrieveDataForDeleteRelation">
+		<command>
+			com.ait.hrm.cmd.empinfo.relation.RetrieveDataForDeleteRelationCmd
+		</command>
+		<return-url>/hrm/hrm_delete_relation.jsp</return-url>
+	</operation>
+
+	<operation name="deleteRelation">
+		<command>
+			com.ait.hrm.cmd.empinfo.relation.DeleteRelationCmd
+		</command>
+		<return-url>/hrm/hrm_view_relation.jsp</return-url>
+	</operation>
+
+
+	<!-- 		hrm module.empinfo.reward 		  -->
+
+	<operation name="viewReward">
+		<command>com.ait.hrm.cmd.empinfo.reward.ViewRewardCmd</command>
+		<return-url>/hrm/hrm_view_reward.jsp</return-url>
+	</operation>
+
+	<operation name="retrieveDataForInsertReward">
+		<command>
+			com.ait.hrm.cmd.empinfo.reward.RetrieveDataForInsertRewardCmd
+		</command>
+		<return-url>/hrm/hrm_add_reward.jsp</return-url>
+	</operation>
+
+	<operation name="insertReward">
+		<command>
+			com.ait.hrm.cmd.empinfo.reward.InsertRewardCmd
+		</command>
+		<return-url>/hrm/hrm_view_reward.jsp</return-url>
+	</operation>
+
+	<operation name="retrieveDataForUpdateReward">
+		<command>
+			com.ait.hrm.cmd.empinfo.reward.RetrieveDataForUpdateRewardCmd
+		</command>
+		<return-url>/hrm/hrm_modify_reward.jsp</return-url>
+	</operation>
+
+	<operation name="updateReward">
+		<command>
+			com.ait.hrm.cmd.empinfo.reward.UpdateRewardCmd
+		</command>
+		<return-url>/hrm/hrm_view_reward.jsp</return-url>
+	</operation>
+
+	<operation name="retrieveDataForDeleteReward">
+		<command>
+			com.ait.hrm.cmd.empinfo.reward.RetrieveDataForDeleteRewardCmd
+		</command>
+		<return-url>/hrm/hrm_delete_reward.jsp</return-url>
+	</operation>
+
+	<operation name="deleteReward">
+		<command>
+			com.ait.hrm.cmd.empinfo.reward.DeleteRewardCmd
+		</command>
+		<return-url>/hrm/hrm_view_reward.jsp</return-url>
+	</operation>
+
+	<!-- 		hrm module.empinfo.training 	  -->
+
+	<operation name="viewTraining">
+		<command>
+			com.ait.hrm.cmd.empinfo.training.ViewTrainingCmd
+		</command>
+		<return-url>/hrm/hrm_view_training.jsp</return-url>
+	</operation>
+
+	<operation name="retrieveDataForInsertTraining">
+		<command>
+			com.ait.hrm.cmd.empinfo.training.RetrieveDataForInsertTrainingCmd
+		</command>
+		<return-url>/hrm/hrm_add_training.jsp</return-url>
+	</operation>
+
+	<operation name="insertTraining">
+		<command>
+			com.ait.hrm.cmd.empinfo.training.InsertTrainingCmd
+		</command>
+		<return-url>/hrm/hrm_view_training.jsp</return-url>
+	</operation>
+
+	<operation name="retrieveDataForUpdateTraining">
+		<command>
+			com.ait.hrm.cmd.empinfo.training.RetrieveDataForUpdateTrainingCmd
+		</command>
+		<return-url>/hrm/hrm_modify_training.jsp</return-url>
+	</operation>
+
+	<operation name="updateTraining">
+		<command>
+			com.ait.hrm.cmd.empinfo.training.UpdateTrainingCmd
+		</command>
+		<return-url>/hrm/hrm_view_training.jsp</return-url>
+	</operation>
+
+	<operation name="retrieveDataForDeleteTraining">
+		<command>
+			com.ait.hrm.cmd.empinfo.training.RetrieveDataForDeleteTrainingCmd
+		</command>
+		<return-url>/hrm/hrm_delete_training.jsp</return-url>
+	</operation>
+
+	<operation name="deleteTraining">
+		<command>
+			com.ait.hrm.cmd.empinfo.training.DeleteTrainingCmd
+		</command>
+		<return-url>/hrm/hrm_view_training.jsp</return-url>
+	</operation>
+
+
+	<!-- 		hrm module.empinfo.accounts 	   -->
+
+	<operation name="viewAccountsInfo">
+		<command>
+			com.ait.hrm.cmd.empinfo.accounts.ViewAccountsInfoCmd
+		</command>
+		<return-url>/hrm/hrm_view_accounts.jsp</return-url>
+	</operation>
+
+	<operation name="retrieveDataForInsertAccountsInfo">
+		<command>
+			com.ait.hrm.cmd.empinfo.accounts.RetrieveDataForInsertAccountsInfoCmd
+		</command>
+		<return-url>/hrm/hrm_add_accounts.jsp</return-url>
+	</operation>
+
+	<operation name="insertAccountsInfo">
+		<command>
+			com.ait.hrm.cmd.empinfo.accounts.InsertAccountsInfoCmd
+		</command>
+		<return-url>/hrm/hrm_view_accounts.jsp</return-url>
+	</operation>
+
+	<operation name="retrieveDataForUpdateAccountsInfo">
+		<command>
+			com.ait.hrm.cmd.empinfo.accounts.RetrieveDataForUpdateAccountsInfoCmd
+		</command>
+		<return-url>/hrm/hrm_modify_accounts.jsp</return-url>
+	</operation>
+
+	<operation name="updateAccountsInfo">
+		<command>
+			com.ait.hrm.cmd.empinfo.accounts.UpdateAccountsInfoCmd
+		</command>
+		<return-url>/hrm/hrm_view_accounts.jsp</return-url>
+	</operation>
+
+
+	<!-- 		hrm module.empinfo.translate 	   -->
+
+	<operation name="viewTranslate">
+		<command>
+			com.ait.hrm.cmd.empinfo.translate.ViewTranslateCmd
+		</command>
+		<return-url>/hrm/hrm_view_translate.jsp</return-url>
+	</operation>
+
+	<!-- **************************************hr command administer************************************** -->
+
+	<!-- 		hrm module.hrcommand.dept 			-->
+
+	<operation name="viewDeptVary">
+		<command>com.ait.hrm.cmd.hrcommand.ViewDeptVaryCmd</command>
+		<return-url>/hrm/hrm_dl_dept.jsp</return-url>
+	</operation>
+
+	<operation name="insertDeptVary">
+		<command>com.ait.hrm.cmd.hrcommand.InsertDeptVaryCmd</command>
+		<return-url>/hrm/hrm_dl_dept.jsp</return-url>
+	</operation>
+
+
+	<!-- 		hrm module.hrcommand.dispatch 		-->
+
+	<operation name="viewDispatch">
+		<command>com.ait.hrm.cmd.hrcommand.ViewDispatchCmd</command>
+		<return-url>/hrm/hrm_dl_dispatch.jsp</return-url>
+	</operation>
+
+	<operation name="insertDispatch">
+		<command>com.ait.hrm.cmd.hrcommand.InsertDispatchCmd</command>
+		<return-url>/hrm/hrm_dl_dispatch.jsp</return-url>
+	</operation>
+
+	<operation name="searchDispatch">
+		<command>com.ait.hrm.cmd.hrcommand.SearchDispatchCmd</command>
+		<return-url>/hrm/hrm_dl_search_dispatch.jsp</return-url>
+	</operation>
+
+	<operation name="delDispatch">
+		<command>com.ait.hrm.cmd.hrcommand.DelDispatchComCmd</command>
+		<return-url>/hrm/hrm_dl_search_dispatch.jsp</return-url>
+	</operation>
+
+	<!-- 		hrm module.hrcommand.hire 			-->
+
+	<operation name="executeExperience">
+		<command>com.ait.hrm.cmd.hrcommand.ExecuteExperience</command>
+		<return-url>/hrm/hrm_dl_addemp.jsp</return-url>
+	</operation>
+
+	<operation name="checkEmpId">
+		<command>com.ait.hrm.cmd.hrcommand.CheckEmpCommand</command>
+		<return-url>/hrm/hrm_dl_addemp.jsp</return-url>
+	</operation>
+
+	<operation name="viewHire">
+		<command>com.ait.hrm.cmd.hrcommand.ViewHireCmd</command>
+		<return-url>/hrm/hrm_dl_addemp.jsp</return-url>
+	</operation>
+
+	<operation name="insertHire">
+		<command>com.ait.hrm.cmd.hrcommand.InsertHireCmd</command>
+		<return-url>/hrm/hrm_dl_addemp.jsp</return-url>
+	</operation>
+
+
+	<!-- 		hrm module.hrcommand.plurality 		-->
+
+	<operation name="viewPlurality">
+		<command>com.ait.hrm.cmd.hrcommand.ViewPluralityCmd</command>
+		<return-url>/hrm/hrm_dl_plurality.jsp</return-url>
+	</operation>
+
+	<operation name="insertPlurality">
+		<command>com.ait.hrm.cmd.hrcommand.InsertPluralityCmd</command>
+		<return-url>/hrm/hrm_dl_plurality.jsp</return-url>
+	</operation>
+
+	<operation name="searchPlurality">
+		<command>com.ait.hrm.cmd.hrcommand.SearchPluralityCmd</command>
+		<return-url>/hrm/hrm_dl_search_plurality.jsp</return-url>
+	</operation>
+
+	<operation name="delPlurality">
+		<command>com.ait.hrm.cmd.hrcommand.DelPluralityComCmd</command>
+		<return-url>/hrm/hrm_dl_search_plurality.jsp</return-url>
+	</operation>
+
+	<!-- 		hrm module.hrcommand.resign 		-->
+
+	<operation name="viewResign">
+		<command>com.ait.hrm.cmd.hrcommand.ViewResignCmd</command>
+		<return-url>/hrm/hrm_dl_resign.jsp</return-url>
+	</operation>
+
+	<operation name="insertResign">
+		<command>com.ait.hrm.cmd.hrcommand.InsertResignCmd</command>
+		<return-url>/hrm/hrm_dl_resign.jsp</return-url>
+	</operation>
+
+	<operation name="searchResign">
+		<command>com.ait.hrm.cmd.hrcommand.SearchResignCmd</command>
+		<return-url>/hrm/hrm_dl_search_resign.jsp</return-url>
+	</operation>
+
+	<operation name="delResign">
+		<command>com.ait.hrm.cmd.hrcommand.DelResignComCmd</command>
+		<return-url>/hrm/hrm_dl_search_resign.jsp</return-url>
+	</operation>
+
+   <operation name="exportInfo">
+		<command>com.ait.hrm.cmd.hrcommand.ExportInfo</command>
+		<return-url></return-url>
+	</operation>
+	<!-- 		hrm module.hrcommand.suspend 		-->
+
+	<operation name="viewSuspend">
+		<command>com.ait.hrm.cmd.hrcommand.ViewSuspendCmd</command>
+		<return-url>/hrm/hrm_dl_suspend.jsp</return-url>
+	</operation>
+
+	<operation name="insertSuspend">
+		<command>com.ait.hrm.cmd.hrcommand.InsertSuspendCmd</command>
+		<return-url>/hrm/hrm_dl_suspend.jsp</return-url>
+	</operation>
+
+	<operation name="searchSuspend">
+		<command>com.ait.hrm.cmd.hrcommand.SearchSuspendCmd</command>
+		<return-url>/hrm/hrm_dl_search_suspend.jsp</return-url>
+	</operation>
+
+	<operation name="delSuspend">
+		<command>com.ait.hrm.cmd.hrcommand.DelSuspendComCmd</command>
+		<return-url>/hrm/hrm_dl_search_suspend.jsp</return-url>
+	</operation>
+
+
+	<!-- 		hrm module.hrcommand.training 		-->
+
+	<operation name="viewTrainingCommand">
+		<command>
+			com.ait.hrm.cmd.hrcommand.ViewTrainingCommandCmd
+		</command>
+		<return-url>/hrm/hrm_dl_training.jsp</return-url>
+	</operation>
+
+	<operation name="insertTrainingCommand">
+		<command>
+			com.ait.hrm.cmd.hrcommand.InsertTrainingCommandCmd
+		</command>
+		<return-url>/hrm/hrm_dl_training.jsp</return-url>
+	</operation>
+
+	<operation name="searchTraining">
+		<command>com.ait.hrm.cmd.hrcommand.SearchTrainingCmd</command>
+		<return-url>/hrm/hrm_dl_search_training.jsp</return-url>
+	</operation>
+
+	<operation name="delTraining">
+		<command>com.ait.hrm.cmd.hrcommand.DelTrainingComCmd</command>
+		<return-url>/hrm/hrm_dl_search_training.jsp</return-url>
+	</operation>
+
+
+	<!-- 		hrm module.hrcommand.upgrade 		-->
+
+	<operation name="viewUpgrade">
+		<command>com.ait.hrm.cmd.hrcommand.ViewUpgradeCmd</command>
+		<return-url>/hrm/hrm_dl_upgrade.jsp</return-url>
+	</operation>
+
+	<operation name="insertUpgrade">
+		<command>com.ait.hrm.cmd.hrcommand.InsertUpgradeCmd</command>
+		<return-url>/hrm/hrm_dl_upgrade.jsp</return-url>
+	</operation>
+
+	<operation name="searchUpgrade">
+		<command>com.ait.hrm.cmd.hrcommand.SearchUpgradeCmd</command>
+		<return-url>/hrm/hrm_dl_search_upgrade.jsp</return-url>
+	</operation>
+
+	<operation name="delUpgrade">
+		<command>com.ait.hrm.cmd.hrcommand.DelUpgradeComCmd</command>
+		<return-url>/hrm/hrm_dl_search_upgrade.jsp</return-url>
+	</operation>
+
+	<!-- 		hrm module.hrcommand.punishment 		-->
+
+	<operation name="viewPunishMent">
+		<command>com.ait.hrm.cmd.hrcommand.ViewPunishCmd</command>
+		<return-url>/hrm/hrm_dl_punishment.jsp</return-url>
+	</operation>
+
+	<operation name="insertPunishMent">
+		<command>com.ait.hrm.cmd.hrcommand.InsertPunishCmd</command>
+		<return-url>/hrm/hrm_dl_punishment.jsp</return-url>
+	</operation>
+
+	<operation name="searchPunishMent">
+		<command>com.ait.hrm.cmd.hrcommand.SearchPunishCmd</command>
+		<return-url>/hrm/hrm_dl_search_punishment.jsp</return-url>
+	</operation>
+
+	<operation name="delPunishMent">
+		<command>com.ait.hrm.cmd.hrcommand.DelPunishComCmd</command>
+		<return-url>/hrm/hrm_dl_search_punishment.jsp</return-url>
+	</operation>
+
+
+	<!--          hrm module.hrcommand.hortation          -->
+
+	<operation name="viewHortation">
+		<command>com.ait.hrm.cmd.hrcommand.ViewHortationCmd</command>
+		<return-url>/hrm/hrm_dl_hortation.jsp</return-url>
+	</operation>
+
+	<operation name="insertHortation">
+		<command>com.ait.hrm.cmd.hrcommand.InsertHortationCmd</command>
+		<return-url>/hrm/hrm_dl_hortation.jsp</return-url>
+	</operation>
+
+	<operation name="searchHortation">
+		<command>com.ait.hrm.cmd.hrcommand.SearchHortationCmd</command>
+		<return-url>/hrm/hrm_dl_search_hortation.jsp</return-url>
+	</operation>
+	
+	<operation name="searchemphistorycmd">  
+		<command>com.ait.hrm.cmd.hrcommand.SearchEmpHistoryCmd</command>  
+		<return-url></return-url>
+	</operation>
+
+	<operation name="delHortation">
+		<command>com.ait.hrm.cmd.hrcommand.DelHortationCmd</command>
+		<return-url>/hrm/hrm_dl_search_hortation.jsp</return-url>
+	</operation>
+
+
+	<!-- 		hrm module.hrcommand.view 			-->
+
+	<operation name="viewHRCommand">
+		<command>com.ait.hrm.cmd.hrcommand.ViewHRCommandCmd</command>
+		<return-url>/hrm/hrm_dl_view.jsp</return-url>
+	</operation>
+
+	<operation name="updateHRCommand">
+		<command>com.ait.hrm.cmd.hrcommand.UpdateHRCommandCmd</command>
+		<return-url>/hrm/hrm_dl_view.jsp</return-url>
+	</operation>
+
+	<!-- **************************************hr report administer************************************** -->
+
+	<!-- 		hrm module.report 					-->
+
+	<operation name="viewReport">
+		<command>com.ait.hrm.cmd.report.ViewReportCmd</command>
+		<return-url>/hrm/hrm_report.jsp</return-url>
+	</operation>
+	<!-- **************************************hr commons  ************************************** -->
+
+	<!-- 		hrm 					-->
+
+	<operation name="codeChange">
+		<command>com.ait.hrm.cmd.CodeChangeCmd</command>
+		<return-url></return-url>
+	</operation>
+	<!-- **************************************hr report  ************************************** -->
+
+	<!-- 		hrm position prove report			-->
+
+	<operation name="positionProveReportCmd">
+		<command>com.ait.hrm.cmd.report.PositionProveReportCmd</command>
+		<return-url>/hrm/inc/SearchEmployeeForAllType.jsp</return-url>
+	</operation>
+	<!-- 		hrm human resource documentary report			-->
+
+	<operation name="hrDocumentaryReportCmd">
+		<command>com.ait.hrm.cmd.report.HrDocumentaryReportCmd</command>
+		<return-url>/hrm/inc/SearchEmployeeForAllType.jsp</return-url>
+	</operation>
+	<!-- 		hrm human work experience provement report			-->
+
+	<operation name="workExpProveReportCmd">
+		<command>com.ait.hrm.cmd.report.WorkExpProveReportCmd</command>
+		<return-url>/hrm/inc/SearchEmployeeForAllType.jsp</return-url>
+	</operation>
+	<!-- 		common 	direction command		-->
+
+	<operation name="destinationCmd">
+		<command>com.ait.hrm.cmd.common.DestinationCmd</command>
+		<return-url>/hrm/.jsp</return-url>
+	</operation>
+
+	<operation name="searchEmpByDept">
+		<command>com.ait.hrm.cmd.common.ViewEmpByDeptCmd</command>
+		<return-url>/hrm/inc/hrm_SearchEmpByDept.jsp</return-url>
+	</operation>
+
+	<operation name="searchArEmpByDept">
+		<command>com.ait.hrm.cmd.common.ViewArEmpByDeptCmd</command>
+		<return-url>/pa/inc/ar_SearchEmpByDept.jsp</return-url>
+	</operation>
+	
+	<operation name="searchPaEmpByDept">
+		<command>com.ait.hrm.cmd.common.ViewPaEmpByDeptCmd</command>
+		<return-url>/pa/inc/pa_SearchEmpByDept.jsp</return-url>
+	</operation>
+	
+	
+	<operation name="viewexpiredprobationcmd">
+		<command>com.ait.hrm.cmd.tipmessagesearch.ViewExpiredProbationCmd</command>
+		<return-url></return-url>
+	</operation>
+	   
+	<operation name="viewhealthinfocmd">
+		<command>com.ait.hrm.cmd.tipmessagesearch.ViewHealthInfoCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="viewtipinfocmd">
+		<command>com.ait.hrm.cmd.tipmessagesearch.ViewTipInfoCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="viewupgradeinfofieldcmd">
+		<command>com.ait.hrm.cmd.tipmessagesearch.ViewUpgradeInfoFieldCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	
+	<operation name="tipmessagereportcmd">
+		<command>com.ait.hrm.cmd.tipmessagesearch.TipMessageReportCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="deleteevaluatecmd">
+		<command>com.ait.hrm.cmd.empinfo.evaluate.DeleteEvaluateCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	
+	<operation name="insertevaluatecmd">
+		<command>com.ait.hrm.cmd.empinfo.evaluate.InsertEvaluateCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="retrieveevaluatefordeletecmd">
+		<command>com.ait.hrm.cmd.empinfo.evaluate.RetrieveEvaluateForDeleteCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="retrieveevaluateforinsertcmd">
+		<command>com.ait.hrm.cmd.empinfo.evaluate.RetrieveEvaluateForInsertCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="retrieveevaluateforupdatecmd">
+		<command>com.ait.hrm.cmd.empinfo.evaluate.RetrieveEvaluateForUpdateCmd</command>
+		<return-url></return-url>
+	</operation>
+	  
+	<operation name="updateevaluatecmd">
+		<command>com.ait.hrm.cmd.empinfo.evaluate.UpdateEvaluateCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	
+	<!-- ************************************** template ************************************** -->
+	<operation name="template">
+		<command>
+			com.ait.sqlmap.template.command.TemplateCommand
+		</command>
+		<return-url>template.jsp</return-url>
+	</operation>
+</navigation-mapper>

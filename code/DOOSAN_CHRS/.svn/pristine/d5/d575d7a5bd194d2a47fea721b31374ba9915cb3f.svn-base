@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/activation.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/ad.auth.module.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/commons-beanutils.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/commons-dbutils-1.1.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/commons-fileupload-1.2.1.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/commons-io-1.4.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/commons-lang-2.4.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/commons-logging.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/commons-net-1.4.1.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/concurrent.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/CrystalCharting.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/CrystalCommon.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/CrystalContentModels.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/CrystalExporters.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/CrystalExportingBase.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/CrystalFormulas.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/CrystalQueryEngine.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/CrystalReportEngine.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/CrystalReportingCommon.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/dom4j-1.6.1.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/ibatis-common-2.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/ibatis-sqlmap-2.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/icu4j_3_4_4.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/jakarta-regexp-1.4.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/jasperreports-1.1.0.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/jaxen-1.1-beta-9.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/jdom.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/jrcerom.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/json.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/jstl-1.1.2.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/jxl.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/keycodeDecoder.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/log4j-1.2.13.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/mail.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/MetafileRenderer.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/msbase.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/mssqlserver.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/msutil.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/poi-3.2-FINAL-20081019.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/poi-contrib-3.2-FINAL-20081019.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/rascore.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/ReportPrinter.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/rpoifs.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/serialization.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/sqljdbc.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/standard-1.1.2.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/u211java.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/URIUtil.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/webreporting-jsf.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/webreporting.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/xalan.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/xercesImpl.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/xpp3-1.1.3.4d_b4_min.jar"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/xstream-1.1.3.jar"/>
+	<classpathentry kind="lib" path="E:/Program Files (x86)/Java/Tomcat-6.0/lib/activation.jar"/>
+	<classpathentry kind="lib" path="E:/Program Files (x86)/Java/Tomcat-6.0/lib/annotations-api.jar"/>
+	<classpathentry kind="lib" path="E:/Program Files (x86)/Java/Tomcat-6.0/lib/catalina.jar"/>
+	<classpathentry kind="lib" path="E:/Program Files (x86)/Java/Tomcat-6.0/lib/catalina-ant.jar"/>
+	<classpathentry kind="lib" path="E:/Program Files (x86)/Java/Tomcat-6.0/lib/catalina-ha.jar"/>
+	<classpathentry kind="lib" path="E:/Program Files (x86)/Java/Tomcat-6.0/lib/catalina-tribes.jar"/>
+	<classpathentry kind="lib" path="E:/Program Files (x86)/Java/Tomcat-6.0/lib/cecore.jar"/>
+	<classpathentry kind="lib" path="E:/Program Files (x86)/Java/Tomcat-6.0/lib/celib.jar"/>
+	<classpathentry kind="lib" path="E:/Program Files (x86)/Java/Tomcat-6.0/lib/classes12.jar"/>
+	<classpathentry kind="lib" path="E:/Program Files (x86)/Java/Tomcat-6.0/lib/el-api.jar"/>
+	<classpathentry kind="lib" path="E:/Program Files (x86)/Java/Tomcat-6.0/lib/jasper.jar"/>
+	<classpathentry kind="lib" path="E:/Program Files (x86)/Java/Tomcat-6.0/lib/jasper-el.jar"/>
+	<classpathentry kind="lib" path="E:/Program Files (x86)/Java/Tomcat-6.0/lib/jasper-jdt.jar"/>
+	<classpathentry kind="lib" path="E:/Program Files (x86)/Java/Tomcat-6.0/lib/jsp-api.jar"/>
+	<classpathentry kind="lib" path="E:/Program Files (x86)/Java/Tomcat-6.0/lib/jtds-1.2.jar"/>
+	<classpathentry kind="lib" path="E:/Program Files (x86)/Java/Tomcat-6.0/lib/mysql-connector-java-5.0.7-bin.jar"/>
+	<classpathentry kind="lib" path="E:/Program Files (x86)/Java/Tomcat-6.0/lib/ojdbc14.jar"/>
+	<classpathentry kind="lib" path="E:/Program Files (x86)/Java/Tomcat-6.0/lib/servlet-api.jar"/>
+	<classpathentry kind="lib" path="E:/Program Files (x86)/Java/Tomcat-6.0/lib/sqljdbc4.jar"/>
+	<classpathentry kind="lib" path="E:/Program Files (x86)/Java/Tomcat-6.0/lib/tibero4-jdbc.jar"/>
+	<classpathentry kind="lib" path="E:/Program Files (x86)/Java/Tomcat-6.0/lib/tibero4-jdbc-dbg.jar"/>
+	<classpathentry kind="lib" path="E:/Program Files (x86)/Java/Tomcat-6.0/lib/tomcat-coyote.jar"/>
+	<classpathentry kind="lib" path="E:/Program Files (x86)/Java/Tomcat-6.0/lib/tomcat-dbcp.jar"/>
+	<classpathentry kind="lib" path="E:/Program Files (x86)/Java/Tomcat-6.0/lib/tomcat-i18n-es.jar"/>
+	<classpathentry kind="lib" path="E:/Program Files (x86)/Java/Tomcat-6.0/lib/tomcat-i18n-fr.jar"/>
+	<classpathentry kind="lib" path="E:/Program Files (x86)/Java/Tomcat-6.0/lib/tomcat-i18n-ja.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="web/WEB-INF/lib/gson-2.8.5.jar"/>
+	<classpathentry kind="output" path="web/WEB-INF/classes"/>
+</classpath>

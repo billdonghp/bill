@@ -1,0 +1,587 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="ga.express">
+<insert id="insertExpressApplyDetail" parameterClass="SimpleMap">
+  <![CDATA[
+    INSERT INTO GA_EXPRESS_APPLY
+		  (APPLY_NO,
+		   APPLYOR_ID,
+		   SENDPERSON,
+		   DEPTID,
+		   CITYSENDTO,
+		   POSTADDRESS,
+		   EXPRESSTYPE,
+		   APPLYDATE,
+		   SENDTOPERSON,
+		   ACTIVE,
+		   POSTDESCRIPTION,
+		   COSTS,
+		   CITYARRIVE,
+		   ISOVER_KG,
+		   CITYSENDTO_S,
+		   CITYSENDTO_Q,
+		   CITYSENDTO_D,
+		   CITYARRIVE_S,
+		   CITYARRIVE_Q,
+		   CITYARRIVE_D,
+		   EXP_TYPE,
+		   MOBILE_S,
+		   MOBILE_A,
+		   POST_CODE_S,
+		   POST_CODE_A)
+		VALUES
+		  (#applyno:NUMERIC#,
+		   #applerId:VARCHAR#,
+		   #SENDPERSON1:VARCHAR#,
+		   #deptId:VARCHAR#,
+		   #citySent:VARCHAR#,
+		   #postAddress:VARCHAR#,
+		   #expressType:VARCHAR#,
+		   SYSDATE,
+		   #sendToPerson:VARCHAR#,
+		   '0',
+		   #postDescription:VARCHAR#,
+		   #costs:NUMERIC#,
+		   #cityArrive:VARCHAR#,
+		   #isOver_kg:VARCHAR#,
+		   #citySentS:VARCHAR#,
+		   #citySentQ:VARCHAR#,
+		   #citySentD:VARCHAR#,
+		   #cityArriveS:VARCHAR#,
+		   #cityArriveQ:VARCHAR#,
+		   #cityArriveD:VARCHAR#,
+		   #expType:VARCHAR#,
+		   #mobileS:VARCHAR#,
+		   #mobileA:VARCHAR#,
+		   #postCodeS:VARCHAR#,
+		   #postCodeA:VARCHAR#)
+  ]]>
+</insert>
+
+<insert id="addExpressApply" parameterClass="SimpleMap">
+  <![CDATA[	
+    insert into GA_EXPRESS_APPLY(    
+	  APPLY_NO,
+	  APPLYOR_ID,
+	  SENDPERSON,
+	  DEPTID,
+	  CITYSENDTO,
+	  CITYARRIVE,
+	  POSTADDRESS,
+	  EXPRESSTYPE,
+	  APPLYDATE,
+	  POSTNUMBER,
+	  SENDTOPERSON,
+	  POSTDESCRIPTION, 
+	  NOTE ,
+	  ACTIVE,
+	  costs,
+	  CAUSE  
+   )values(
+   #applyno:NUMERIC#,
+   #applerId:VARCHAR#,
+   #SENDPERSON1:VARCHAR#,
+   #deptId:VARCHAR#,
+   #citySent:VARCHAR#,
+   #cityarrive:VARCHAR#,
+   #postAddress:VARCHAR#,
+   #expressType:VARCHAR#,
+   SYSDATE,
+   #postNumber:VARCHAR#,
+   #sendToPerson:VARCHAR#,
+   #postDescription:VARCHAR#,
+   #Note:VARCHAR#,
+   '0',
+   #costs:NUMERIC#,
+   #CAUSE:varchar# 
+   )   
+   
+  ]]>
+</insert>
+
+<insert id="addExpressAffirm" parameterClass="SimpleMap">
+  <![CDATA[	
+    insert into ga_express_affirm(    
+	  GA_AFFIRM_NO,
+	  APPLY_NO,
+	  AFFIRM_FLAG,
+	  AFFIRM_LEVEL,
+	  AFFIRMOR_ID,
+	  CREATE_DATE,
+	  CREATED_BY,	
+	  ACTIVITY,
+	  APPLY_TYPE
+   )values(
+   ga_express_affirm_SEQ.NEXTVAL,
+   #applyno:NUMERIC#,
+   #affirmFlag:NUMERIC#,
+   #AffirmorLevel:NUMERIC#,
+   #AffirmorId:VARCHAR#,
+   SYSDATE,
+   #applerId:VARCHAR#,
+   '1', 
+   'ExpressApply'
+   )   
+   
+  ]]>
+</insert>
+<select id="expressAffirmListNumber" parameterClass="SimpleMap" resultClass="int">
+<![CDATA[	
+	 select count(a.apply_no)  from ga_express_apply a ,hr_employee hr,
+	(SELECT 
+			 GA_EXPRESS_AFFIRM.*,
+			 UP_AFFIRM.AFFIRMOR_ID UP_AFFIRMOR_ID,
+			 NVL(UP_AFFIRM.AFFIRM_FLAG,1) UP_AFFIRM_FLAG,
+			 CASE 
+			 WHEN GA_EXPRESS_AFFIRM.AFFIRM_LEVEL=MAX_AFFIRM.MAX_LEVEL
+			 THEN 1
+			 ELSE 0
+			 END AS MAX_LEVEL_FLAG
+			 FROM 
+			 (SELECT GA_EXPRESS_AFFIRM.*,
+			       GA_EXPRESS_AFFIRM.AFFIRM_LEVEL - 1 UP_LEVEL,
+			       GA_EXPRESS_AFFIRM.AFFIRM_LEVEL + 1 NEXT_LEVEL
+			  FROM GA_EXPRESS_AFFIRM) GA_EXPRESS_AFFIRM,
+			  (SELECT  GA_EXPRESS_AFFIRM.APPLY_NO,GA_EXPRESS_AFFIRM.AFFIRM_LEVEL,GA_EXPRESS_AFFIRM.AFFIRMOR_ID,GA_EXPRESS_AFFIRM.AFFIRM_FLAG
+			  FROM GA_EXPRESS_AFFIRM 
+			  ) UP_AFFIRM,
+			  (SELECT  GA_EXPRESS_AFFIRM.APPLY_NO,MAX(GA_EXPRESS_AFFIRM.AFFIRM_LEVEL) MAX_LEVEL
+			  FROM GA_EXPRESS_AFFIRM 
+			   GROUP BY GA_EXPRESS_AFFIRM.APPLY_NO ) MAX_AFFIRM
+			   WHERE GA_EXPRESS_AFFIRM.APPLY_NO=UP_AFFIRM.APPLY_NO(+)
+			    AND GA_EXPRESS_AFFIRM.UP_LEVEL=UP_AFFIRM.AFFIRM_LEVEL(+)    
+			    AND GA_EXPRESS_AFFIRM.APPLY_NO=MAX_AFFIRM.APPLY_NO(+)
+			    and GA_EXPRESS_AFFIRM.affirmor_id=#applerId:VARCHAR#) AFFIRM
+	 where AFFIRM.UP_AFFIRM_FLAG=1 and a.apply_no = AFFIRM.APPLY_NO
+	 and a.apply_no in( select distinct t.apply_no from ga_express_affirm t where  t.activity='1'  and  t.affirmor_id=#applerId:VARCHAR#
+   ]]>
+   <isEqual prepend="AND" property="qryType" compareValue="0"> <!--未决裁过的 -->
+		<![CDATA[
+				 t.affirm_flag=0
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+		<![CDATA[
+				 t.affirm_flag =1
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 决裁否决的 -->
+		<![CDATA[
+				 t.affirm_flag =2
+	]]>
+	</isEqual>
+  <![CDATA[	
+   ) and a.sendperson = hr.person_id
+  ]]>
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+		 (a.applyor_id LIKE  '%'||#key:VARCHAR# || '%'  or a.sendperson LIKE  '%'||#key:VARCHAR# || '%'  or hr.chinesename LIKE  '%'||#key:VARCHAR# || '%' or hr.empid LIKE  '%'||#key:VARCHAR# || '%')
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[		   
+		 a.deptid=#deptid:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="startDate">
+		<![CDATA[		   
+		 a.applydate >= TO_DATE(#startDate:VARCHAR#,'YYYY-MM-DD')
+		]]>	
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="endDate">
+		<![CDATA[		   
+		 a.applydate <= TO_DATE(#endDate:VARCHAR#,'YYYY-MM-DD')
+		]]>	
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="cpnyId">
+		<![CDATA[		   
+		 hr.cpny_id=#cpnyId:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+</select>
+<select id="expressAffirmList" parameterClass="SimpleMap" resultClass="SimpleMap">
+<![CDATA[	
+select a.*,     
+       code.code_name,
+       hr.chinesename as sendpersonname,
+       v.deptname as deptname,
+       applyemp.chinesename as applyempname,
+       m.affirmoridea,
+       m.AFFIRM_LEVEL,
+       hr.empid as empid1,
+       applyemp.empid as empid2
+  from ga_express_apply  a,       
+       hr_employee       hr,
+       hr_employee       applyemp,
+       sy_code           code,
+       hr_department     v,
+       GA_EXPRESS_AFFIRM m,
+       (SELECT 
+			 GA_EXPRESS_AFFIRM.*,
+			 UP_AFFIRM.AFFIRMOR_ID UP_AFFIRMOR_ID,
+			 NVL(UP_AFFIRM.AFFIRM_FLAG,1) UP_AFFIRM_FLAG,
+			 CASE 
+			 WHEN GA_EXPRESS_AFFIRM.AFFIRM_LEVEL=MAX_AFFIRM.MAX_LEVEL
+			 THEN 1
+			 ELSE 0
+			 END AS MAX_LEVEL_FLAG
+			 FROM 
+			 (SELECT GA_EXPRESS_AFFIRM.*,
+			       GA_EXPRESS_AFFIRM.AFFIRM_LEVEL - 1 UP_LEVEL,
+			       GA_EXPRESS_AFFIRM.AFFIRM_LEVEL + 1 NEXT_LEVEL
+			  FROM GA_EXPRESS_AFFIRM) GA_EXPRESS_AFFIRM,
+			  (SELECT  GA_EXPRESS_AFFIRM.APPLY_NO,GA_EXPRESS_AFFIRM.AFFIRM_LEVEL,GA_EXPRESS_AFFIRM.AFFIRMOR_ID,GA_EXPRESS_AFFIRM.AFFIRM_FLAG
+			  FROM GA_EXPRESS_AFFIRM 
+			  ) UP_AFFIRM,
+			  (SELECT  GA_EXPRESS_AFFIRM.APPLY_NO,MAX(GA_EXPRESS_AFFIRM.AFFIRM_LEVEL) MAX_LEVEL
+			  FROM GA_EXPRESS_AFFIRM 
+			   GROUP BY GA_EXPRESS_AFFIRM.APPLY_NO ) MAX_AFFIRM
+			   WHERE GA_EXPRESS_AFFIRM.APPLY_NO=UP_AFFIRM.APPLY_NO(+)
+			    AND GA_EXPRESS_AFFIRM.UP_LEVEL=UP_AFFIRM.AFFIRM_LEVEL(+)    
+			    AND GA_EXPRESS_AFFIRM.APPLY_NO=MAX_AFFIRM.APPLY_NO(+)
+			    and GA_EXPRESS_AFFIRM.affirmor_id=#applerId:VARCHAR#) AFFIRM
+ where  a.applyor_id = applyemp.person_id(+)
+and  AFFIRM.UP_AFFIRM_FLAG=1 and a.apply_no = AFFIRM.APPLY_NO
+   and hr.person_id(+) = a.sendperson  
+   and m.affirmor_id = #applerId:VARCHAR#
+ and m.apply_no = a.apply_no
+   and code.code_id(+) = a.expresstype
+   and v.deptid(+) = a.deptid
+   and a.apply_no in( select distinct t.apply_no from ga_express_affirm t where  t.activity='1'  and  t.affirmor_id=#applerId:VARCHAR#
+   ]]>
+   <isEqual prepend="AND" property="qryType" compareValue="0"> <!-- 未决裁过的 -->
+		<![CDATA[
+				 t.affirm_flag=0
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+		<![CDATA[
+				 t.affirm_flag =1
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 决裁否决的 -->
+		<![CDATA[
+				 t.affirm_flag =2
+	]]>
+	</isEqual>
+  <![CDATA[	
+   )
+  ]]>
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+		 (a.applyor_id LIKE  '%'||#key:VARCHAR# || '%'  or a.sendperson LIKE  '%'||#key:VARCHAR# || '%'  or hr.chinesename LIKE  '%'||#key:VARCHAR# || '%'  or hr.empid LIKE  '%'||#key:VARCHAR# || '%')
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[		   
+		 a.deptid=#deptid:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+<isNotEmpty prepend="AND" property="startDate">
+		<![CDATA[		   
+		 a.applydate >= TO_DATE(#startDate:VARCHAR#,'YYYY-MM-DD')
+		]]>	
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="endDate">
+		<![CDATA[		   
+		 a.applydate <= TO_DATE(#endDate:VARCHAR#,'YYYY-MM-DD')+1
+		]]>	
+	</isNotEmpty>	
+  <isNotEmpty prepend="AND" property="cpnyId">
+		<![CDATA[		   
+		 hr.cpny_id=#cpnyId:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+  
+  
+ <![CDATA[	
+ order by a.applydate desc
+  ]]>
+</select>
+
+<select id="expressAffirmorList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[	
+select t.ga_affirm_no,
+       t.affirm_flag,
+       t.affirm_level,
+       t.affirmor_id,
+       hr.chinesename,
+       TO_CHAR(T.UPDATE_DATE,'YYYY-MM-DD HH24:MI') UPDATE_DATE,
+       AFFIRMOR_ID,
+       t.affirmoridea,
+       CASE WHEN 
+       T.AFFIRM_LEVEL=MAX_AFFIRM_TABLE.MAX_AFFIRM_LEVEL
+       THEN 1
+       ELSE 0
+       END MAX_AFFIRM_FLAG
+  from ga_express_affirm t,
+       hr_employee hr,
+(select  max(affirm.affirm_level) MAX_AFFIRM_LEVEL
+          from ga_express_affirm affirm
+         WHERE affirm.apply_no=#applyno:VARCHAR#
+        ) MAX_AFFIRM_TABLE
+    where t.affirmor_id = hr.person_id
+   and t.apply_no = #applyno:VARCHAR#
+ order by t.affirm_level
+
+    ]]>
+</select>
+<update id="confirmAffirm" parameterClass="SimpleMap">
+<![CDATA[
+update ga_express_affirm  set AFFIRM_FLAG=#flag:NUMERIC#,AFFIRMORIDEA=#affirmorIdea:varchar#, UPDATE_DATE = SYSDATE
+where  AFFIRMOR_ID = #affirmorid:VARCHAR#
+and APPLY_NO=#affirmno:NUMERIC#
+  ]]>
+</update>
+<update id="confirmExpressApply" parameterClass="SimpleMap">
+<![CDATA[
+update ga_express_apply  set active=#flag:NUMERIC#
+where APPLY_NO=#affirmno:NUMERIC#
+  ]]>
+</update>
+
+<select id="expressAffirmInfoListNumber" parameterClass="SimpleMap" resultClass="int">
+<![CDATA[	
+	 select count(a.apply_no)  from ga_express_apply a ,hr_employee hr
+	 where 	hr.person_id(+) = a.sendperson
+	  and hr.cpny_id = #cpnyId:VARCHAR#
+	 and a.apply_no in( select distinct t.apply_no from ga_express_affirm t where  t.activity='1'
+   )
+  ]]>
+  
+  <isNotEmpty prepend="AND" property="ADMIN_ID">
+		<![CDATA[
+			EXISTS ( SELECT SAD.ADMIN_DEPTID
+				   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+				  WHERE SAD.ADMIN_NO = SA.ADMINNO
+				    AND SA.ADMINID = #ADMIN_ID:VARCHAR2#
+				    AND SAD.ADMIN_DEPTID = A.DEPTID	
+			   ) 
+		]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="applerId">
+			<![CDATA[		
+			   A.APPLYOR_ID = #applerId:VARCHAR#
+		]]>
+		</isNotEmpty>
+  
+  <isEqual prepend="AND" property="qryType" compareValue="0"> <!-- 未决裁过的 -->
+		<![CDATA[
+				 a.ISCONFIRM =0
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+		<![CDATA[
+				 a.ISCONFIRM =1
+	]]>
+	</isEqual>
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+		 (a.applyor_id LIKE  '%'||#key:VARCHAR# || '%'  or a.sendperson LIKE  '%'||#key:VARCHAR# || '%'  or hr.chinesename LIKE  '%'||#key:VARCHAR# || '%' or hr.empid LIKE '%'||#key:VARCHAR# || '%')
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[		   
+		 a.deptid=#deptid:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="startDate">
+		<![CDATA[		   
+		 to_char(a.applydate,'yyyy-mm-dd') between #startDate:VARCHAR#  and #endDate:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+</select>
+
+<select id="expressAffirmInfoList" parameterClass="SimpleMap" resultClass="SimpleMap">
+<![CDATA[
+select a.*,     
+       code.code_name,
+       hr.chinesename as sendpersonname,
+       v.deptname as deptname,
+       applyemp.chinesename as applyempname,
+       applyemp.EMPID AS EMPID1,
+       HR.EMPID AS EMPID2,
+       hr1.chinesename as CONFIRORANDSENDORNAME,
+       a.issend
+  from ga_express_apply  a,       
+       hr_employee       hr,
+       hr_employee       hr1,
+       hr_employee       applyemp,
+       sy_code           code,
+       hr_department     v
+ where  a.applyor_id = applyemp.person_id(+)
+   and hr.person_id(+) = a.sendperson  
+   and hr1.person_id(+) = a.CONFIRORANDSENDOR  
+   and code.code_id = a.expresstype
+   and v.deptid = a.deptid
+   and hr.cpny_id = #cpnyId:VARCHAR#
+   and a.apply_no in( select distinct t.apply_no from ga_express_affirm t where  t.activity='1' )
+   ]]>
+   
+   <isNotEmpty prepend="AND" property="ADMIN_ID">
+		<![CDATA[
+			EXISTS ( SELECT SAD.ADMIN_DEPTID
+				   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+				  WHERE SAD.ADMIN_NO = SA.ADMINNO
+				    AND SA.ADMINID = #ADMIN_ID:VARCHAR2#
+				    AND SAD.ADMIN_DEPTID = A.DEPTID	
+			   ) 
+		]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="applerId">
+			<![CDATA[		
+			   A.APPLYOR_ID = #applerId:VARCHAR#
+		]]>
+		</isNotEmpty>
+   
+     <isEqual prepend="AND" property="qryType" compareValue="0"> <!-- 未决裁过的 -->
+		<![CDATA[
+				 a.ISCONFIRM =0
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+		<![CDATA[
+				 a.ISCONFIRM =1
+	]]>
+	</isEqual>
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+		 (a.applyor_id LIKE  '%'||#key:VARCHAR# || '%'  or a.sendperson LIKE  '%'||#key:VARCHAR# || '%'  or hr.chinesename LIKE  '%'||#key:VARCHAR# || '%'  or hr.empid LIKE '%'||#key:VARCHAR# || '%')
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[		   
+		 a.deptid=#deptid:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="startDate">
+		<![CDATA[		   
+		 to_char(a.applydate,'yyyy-mm-dd') between #startDate:VARCHAR#  and #endDate:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+  
+ <![CDATA[	
+ order by a.applydate desc
+  ]]>
+</select>
+<select id="ExcelExpressAffirmInfoList" parameterClass="SimpleMap" resultClass="SimpleMap">
+<![CDATA[
+select a.*,     
+       code.code_name,
+       hr.chinesename as sendpersonname,
+       v.deptname as deptname,
+       applyemp.chinesename as applyempname,
+       applyemp.EMPID AS EMPID1,
+       HR.EMPID AS EMPID2,
+       hr1.chinesename as CONFIRORANDSENDORNAME,
+       a.issend
+  from ga_express_apply  a,       
+       hr_employee       hr,
+       hr_employee       hr1,
+       hr_employee       applyemp,
+       sy_code           code,
+       hr_department     v
+ where  a.applyor_id = applyemp.person_id(+)
+   and hr.person_id(+) = a.sendperson  
+   and hr1.person_id(+) = a.CONFIRORANDSENDOR  
+   and code.code_id = a.expresstype
+   and v.deptid = a.deptid
+   and hr.cpny_id = #cpnyId:VARCHAR#
+   and a.apply_no in( select distinct t.apply_no from ga_express_affirm t where  t.activity='1' )
+   ]]>
+   
+   <isNotEmpty prepend="AND" property="ADMIN_ID">
+		<![CDATA[
+			EXISTS ( SELECT SAD.ADMIN_DEPTID
+				   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+				  WHERE SAD.ADMIN_NO = SA.ADMINNO
+				    AND SA.ADMINID = #ADMIN_ID:VARCHAR2#
+				    AND SAD.ADMIN_DEPTID = A.DEPTID	
+			   ) 
+		]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="applerId">
+			<![CDATA[		
+			   A.APPLYOR_ID = #applerId:VARCHAR#
+		]]>
+		</isNotEmpty>
+   
+     <isEqual prepend="AND" property="qryType" compareValue="0"> <!-- 未决裁过的 -->
+		<![CDATA[
+				 a.ISCONFIRM =0
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+		<![CDATA[
+				 a.ISCONFIRM =1
+	]]>
+	</isEqual>
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+		 (a.applyor_id LIKE  '%'||#key:VARCHAR# || '%'  or a.sendperson LIKE  '%'||#key:VARCHAR# || '%'  or hr.chinesename LIKE  '%'||#key:VARCHAR# || '%'  or hr.empid LIKE '%'||#key:VARCHAR# || '%')
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[		   
+		 a.deptid=#deptid:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="startDate">
+		<![CDATA[		   
+		 to_char(a.applydate,'yyyy-mm-dd') between #startDate:VARCHAR#  and #endDate:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+  
+ <![CDATA[	
+ order by a.applydate desc
+  ]]>
+</select>
+
+<update id="deleteApply" parameterClass="SimpleMap">
+<![CDATA[
+ delete from ga_express_apply t where t.apply_no=#applyno:VARCHAR#
+  ]]>
+</update>
+<update id="deleteAffrim" parameterClass="SimpleMap">
+<![CDATA[
+ delete from ga_express_affirm t  where t.apply_no=#applyno:VARCHAR#
+  ]]>
+</update>
+
+<select id="getapplyemail" parameterClass="SimpleMap" resultClass="string">
+  <![CDATA[	
+select email from hr_employee where ACTIVITY = 1 and  person_id=#applerId:VARCHAR#
+    ]]>
+</select>
+
+
+<select id="getupaffrimemail" parameterClass="SimpleMap" resultClass="string">
+  <![CDATA[	
+select h.email
+from ga_express_affirm t,hr_employee h
+where  t.apply_no=#affirmno:VARCHAR# 
+and t.affirmor_id = h.person_id 
+and t.affirm_level = #affrimlevel:NUMERIC# + 1 
+order by t.affirm_level
+    ]]>
+</select>
+<select id="getUpAffrimNumber" parameterClass="SimpleMap" resultClass="int">
+  <![CDATA[	
+select count(*) 
+from ga_express_affirm t
+where  t.apply_no=#applyno:VARCHAR#
+and t.affirm_level = #affrimlevel:VARCHAR# + 1 
+order by t.affirm_level
+    ]]>
+</select>
+<select id="getcarList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[	
+select VOITURE_ID,VOITURE_BRAND
+from GA_VOITURE t
+where  t.cpny_id=#cpny_id:varchar#
+    ]]>
+</select>
+
+
+</sqlMap>

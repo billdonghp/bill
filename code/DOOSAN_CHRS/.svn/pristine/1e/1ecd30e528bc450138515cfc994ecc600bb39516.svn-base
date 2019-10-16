@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="pa.vouchertype">
+
+<select id="getDeptVoucherList" resultClass="SimpleMap" parameterClass="SimpleMap">
+		<![CDATA[
+			    SELECT DEPTID, DEPTNAME, PARENT_DEPT_ID, DEPT_LEVEL,PZ_TYPE
+				  FROM HR_DEPARTMENT WHERE HR_DEPARTMENT.CPNY_ID=#cpny_id:VARCHAR# AND HR_DEPARTMENT.ACTIVITY = 1
+				  
+		 ]]>
+		<isNotEmpty prepend="AND" property="VOUCHER_TYPE">
+		<![CDATA[ 
+				DECODE(HR_DEPARTMENT.PZ_TYPE,'','0000',HR_DEPARTMENT.PZ_TYPE) = #VOUCHER_TYPE:VARCHAR#
+		]]>
+		</isNotEmpty>
+		 <isNotEmpty prepend="" property="DEPTID">
+		<![CDATA[ 
+				START WITH HR_DEPARTMENT.DEPTID = #DEPTID:VARCHAR#
+		]]>
+		</isNotEmpty>
+		<isEmpty prepend="" property="DEPTID">
+		<![CDATA[ 
+				START WITH HR_DEPARTMENT.DEPT_LEVEL = (SELECT MIN(DEPT_LEVEL) FROM HR_DEPARTMENT)
+		]]>
+		</isEmpty>
+		<![CDATA[
+				  
+				 CONNECT BY PRIOR HR_DEPARTMENT.DEPTID = HR_DEPARTMENT.PARENT_DEPT_ID
+		]]>
+	</select>
+	
+	
+	<select id="getDeptVoucherTypeList" resultClass="SimpleMap" parameterClass="SimpleMap">
+		<![CDATA[
+				SELECT DISTINCT HD.PZ_TYPE
+				  FROM HR_DEPARTMENT HD where HD.cpny_id=#cpny_id:VARCHAR# 
+				  AND HD.PZ_TYPE IS NOT NULL
+			  ORDER BY HD.PZ_TYPE ASC
+    ]]>
+	</select>
+	
+	<update id="updateDeptVoucherType" parameterClass="SimpleMap">
+		<![CDATA[  
+			   UPDATE HR_DEPARTMENT HD SET HD.PZ_TYPE = #VOUCHER_TYPE:VARCHAR# WHERE HD.DEPTID = #DEPTID:VARCHAR# 
+			]]>
+	</update>     
+	
+</sqlMap>

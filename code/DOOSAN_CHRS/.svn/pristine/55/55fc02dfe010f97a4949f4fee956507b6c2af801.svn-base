@@ -1,0 +1,1005 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="pu.visiterManagement">
+
+	<select id="SearchAllVisiterManagementInformation" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+
+			   select t.ga_visiter_apply_id,
+				      t.visiter_name,
+	               t.visiter_company,
+	               t.visit_type,
+	               t.visiter_contact_tel,
+	               t.visit_intro_dept,   
+	               t.visit_place,
+	               t.visit_count,
+	               t.visitor_type ,
+	               t.expect_result,
+	               t.reception_lead,
+	               t.reception_act_phone,
+	               t.note,         
+	               t.welcome_scr,
+	               t.reception_office,
+	               t.tea,
+	               t.coffee,
+	               t.advertising_video,
+	               t.defend_facility,
+	               t.interpret_facility,
+	               t.shoot,
+	               t.present,
+	               t.lunch_repast,
+	               t.restaurant,
+	               t.fruit,
+				       t.visiter_objective,
+				       t.visiter_date,
+				       t.visiter_carnum,   
+				       h.deptname,
+				       he1.chinesename as play_applyChinesename,
+              			 t.play_apply,
+				       t.active,
+				       t.apply_date,
+               t.visiter_people_num,
+               t.visiter_out_date,
+               he1.chinesename,
+               t.welcome,
+               t.visiter_people_num,
+              
+               t.visiter_come_time,
+               t.visiter_end_time,
+               t.HUIYISHI_APPLYID,
+               t.MODIFY_FLAG,
+                      t.confirmidea,
+       			hr.chinesename as chinesename1
+                     
+        from ga_visiter_apply t,
+            
+             hr_department         h,
+             hr_department       h2,
+           
+             hr_employee           he1,
+             hr_employee           hr
+       where t.front_dept = h.deptid(+)
+         and  t.active = '1'
+         and he1.person_id(+) = t.front_emp_id
+         and hr.deptid=h2.deptid
+         and t.play_apply = hr.person_id(+)
+         
+        
+        
+		]]>
+		<isEqual prepend="AND" property="falg" compareValue="0">
+			<![CDATA[
+				t.MODIFY_FLAG = '0'
+			]]>
+		</isEqual>
+		<isEqual prepend="AND" property="falg" compareValue="1">
+			<![CDATA[
+				t.MODIFY_FLAG = '1'
+			]]>
+		</isEqual>
+		<isNotEmpty prepend="AND" property="visitDate">
+			<![CDATA[
+				t.visiter_date >= #visitDate:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="startDate">
+			<![CDATA[		   
+		 to_date(t.VISITER_DATE,'yyyy-mm-dd') >= to_date(#startDate:VARCHAR#,'YYYY-MM-DD')
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="endDate">
+			<![CDATA[		   
+		 to_date(t.VISITER_DATE,'yyyy-mm-dd') <= to_date(#endDate:VARCHAR#,'YYYY-MM-DD')
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="country">
+			<![CDATA[
+				 t.visiter_country = #country:varchar#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[		   
+		 t.front_dept=#deptid:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+		<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+		 (t.play_apply LIKE  '%'||#key:VARCHAR# || '%'   or hr.chinesename LIKE  '%'||#key:VARCHAR# || '%')
+		]]>	
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="ADMIN_ID">
+			<![CDATA[		   
+		 EXISTS ( SELECT SAD.ADMIN_DEPTID
+					   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+					  WHERE SAD.ADMIN_NO = SA.ADMINNO
+					    AND SA.ADMINID = #ADMIN_ID:VARCHAR2#
+					    AND SAD.ADMIN_DEPTID = h2.DEPTID	
+				   ) 
+		]]>
+		</isNotEmpty>
+		<![CDATA[
+			order by t.ga_visiter_apply_id desc
+		]]>
+	</select>
+	
+	<select id="allVisiterManagementInformationApply" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+				select distinct
+       				   t.ga_visiter_apply_id,
+				       t.visiter_objective,
+				       t.visiter_date,
+				       
+
+				       h.deptname,
+				       he.chinesename as play_apply
+				       
+				  from ga_visiter_apply        t,				       
+				       hr_department           h,
+				       hr_employee             he
+				       			      
+				 where t.front_dept = h.deptid(+)
+				   and t.ga_visiter_apply_id in (select distinct  g.apply_no
+                             from ga_visiter_apply_affirm g
+                            where g.affirm_flag = '1')
+				   and he.person_id(+) = t.play_apply
+				   
+				  		   
+				   and t.ga_visiter_apply_id = #ga_visiter_id:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="SearchAllVisiterManagementInformationCount" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+				select count(*)
+				   from ga_visiter_apply t,
+            
+             hr_department         h,
+             hr_department       h2,
+           
+             hr_employee           he1,
+             hr_employee           hr
+       where t.front_dept = h.deptid(+)
+         and  t.active = '1'
+         and he1.person_id(+) = t.front_emp_id
+         and hr.deptid=h2.deptid
+         and t.play_apply = hr.person_id(+)
+		]]>
+		<isEqual prepend="AND" property="falg" compareValue="0">
+			<![CDATA[
+				t.MODIFY_FLAG = '0'
+			]]>
+		</isEqual>
+		<isEqual prepend="AND" property="falg" compareValue="1">
+			<![CDATA[
+				t.MODIFY_FLAG = '1'
+			]]>
+		</isEqual>
+		<isNotEmpty prepend="AND" property="visitDate">
+			<![CDATA[
+				t.visiter_date >= #visitDate:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="startDate">
+			<![CDATA[		   
+		 to_date(t.VISITER_DATE,'yyyy-mm-dd') >= to_date(#startDate:VARCHAR#,'YYYY-MM-DD')
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="endDate">
+			<![CDATA[		   
+		 to_date(t.VISITER_DATE,'yyyy-mm-dd') <= to_date(#endDate:VARCHAR#,'YYYY-MM-DD')
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="country">
+			<![CDATA[
+				 t.visiter_country = #country:varchar#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[		   
+		 t.front_dept=#deptid:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+		<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+		 (t.play_apply LIKE  '%'||#key:VARCHAR# || '%'   or he.chinesename LIKE  '%'||#key:VARCHAR# || '%')
+		]]>	
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="ADMIN_ID">
+			<![CDATA[		   
+		 EXISTS ( SELECT SAD.ADMIN_DEPTID
+					   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+					  WHERE SAD.ADMIN_NO = SA.ADMINNO
+					    AND SA.ADMINID = #ADMIN_ID:VARCHAR2#
+					    AND SAD.ADMIN_DEPTID = h2.DEPTID	
+				   ) 
+		]]>
+		</isNotEmpty>	
+	</select>
+	
+	
+	
+	<select id="allVisiterManagementModifyView" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+				select t.ga_visiter_apply_id,
+
+				       t.visiter_objective,
+				       t.visiter_date,
+				       t.visiter_carnumber,
+					   t.VISITER_CARNUM,
+
+				       t.API_LANGUAGE as api_language,
+				       s1.code_id as api_language_id,
+				       t.front_dept as deptname,
+				       t.play_apply,
+				       he.chinesename as play_apply_name,
+				       t.active,
+				       t.apply_date,
+				       t.visiter_people_num,
+				       t.visiter_out_date,
+				       he1.chinesename,
+				       t.welcome,
+				       s2.code_name as visiter_distiniction,
+		               s2.code_id as visiter_distiniction_id,
+		               t.visiter_come_time,
+		               t.visiter_end_time,
+		               t.HUIYISHI_APPLYID,
+                       t.visiter_people_num,
+                       t.VISITER_TYPE,
+                       t.visiter_country,
+                       t.DEVICE,
+                       t.front_emp_id,
+                       t.visit_item,
+                       t.file1,
+                       t.jiangjie,
+                       
+                       T.VISITER_CAR_MODEL,
+				       T.VISITER_EATRY_FLAG,
+				       T.VISITER_EATRY_DISTINCTION,
+				       s4.code_name as VISITER_EATRY_DISTINCTION_NAME,
+				       T.VISITER_EATRY_NAME,
+				       T.VISITER_EATRY_DATE,
+				       T.VISITER_EATRY_TIME,
+				       T.VISITER_EATRY_TYPE,
+				       s5.code_name as VISITER_EATRY_TYPE_NAME,
+				       T.VISITER_EATRY_NUMBER,
+				       T.VISITER_EATRY_MEMO,
+				       
+				       T.VISITER_VOITURE_FLAG,
+				       T.VISITER_VOITURE_NUMBER,
+				       T.VISITER_VOITURE_IN_DATE,
+				       T.VISITER_VOITURE_IN_TIME,
+				       T.VISITER_VOITURE_OUT_DATE,
+				       T.VISITER_VOITURE_OUT_TIME,
+				       T.VISITER_VOITURE_START_AREA,
+				       T.VISITER_VOITURE_PASS_AREA,
+				       T.VISITER_VOITURE_END_AREA,
+				       T.VISITER_VOITURE_MEMO,
+				       
+				       T.VISITER_CONFERENCE_FLAG,
+				       T.VISITER_CONFERENCE_ROOM,
+				       s6.code_name as VISITER_CONFERENCE_ROOM_NAME,
+				       t.VISITER_CONFERENCE_LANGUAGE,
+				       T.VISITER_CONFERENCE_PEOPLE,
+				       T.VISITER_CONFERENCE_MANAGE,
+				       s7.code_name as VISITER_CONFERENCE_MANAGE_NAME,
+				       T.VISITER_CONFERENCE_DATE,
+				       T.VISITER_CONFERENCE_TIME,
+				       T.VISITER_CONFERENCE_PURPOSE,
+				       
+				       T.VISITER_FACTORY_FLAG,
+				       T.VISITER_FACTORY_NUMBER,
+				       T.VISITER_FACTORY_METHOD,
+				       s8.code_name as VISITER_FACTORY_METHOD_NAME,
+				       T.VISITER_FACTORY_ROUTE,
+				       s9.code_name as VISITER_FACTORY_ROUTE_NAME,
+				       T.VISITER_FACTORY_DEVICE,
+				       T.VISITER_FACTORY_HELMET,
+				       s10.code_name as VISITER_FACTORY_HELMET_NAME,
+				       T.VISITER_FACTORY_HELMET_NUMBER,
+				       T.VISITER_FACTORY_SYSTEM,
+				       s11.code_name as VISITER_FACTORY_SYSTEM_NAME,
+				       T.VISITER_FACTORY_C_NUMBER,
+				       T.VISITER_FACTORY_K_NUMBER,
+				       T.VISITER_FACTORY_E_NUMBER,
+				       T.VISITER_FACTORY_PEOPLE,
+				       T.VISITER_FACTORY_WELCOME_SPEECH,
+				       s12.code_name as VISITER_FACTORY_WELCOME_NAME,
+				       T.VISITER_FACTORY_LANGUAGE,
+				       T.VISITER_FACTORY_MEMO,
+				       
+				       T.VISITER_TOURISM_FLAG,
+				       T.VISITER_TOURISM,
+				       T.VISITER_TOURISM_DATE,
+				       T.VISITER_TOURISM_TIME,
+				       T.VISITER_TOURISM_TYPE,
+				       s13.code_name as VISITER_TOURISM_TYPE_NAME,
+				       T.VISITER_TOURISM_FEE,
+				       T.VISITER_TOURISM_MEMO
+				  from ga_visiter_apply t,
+				       hr_department         h,
+				       sy_code               s,
+				       hr_employee           he,
+				       sy_code               s1,
+				       hr_employee           he1,
+				       sy_code               s2,
+				       sy_code          s4,
+				       sy_code          s5,
+				       sy_code          s6,
+				       sy_code          s7,
+				       sy_code          s8,
+				       sy_code          s9,
+				       sy_code          s10,
+				       sy_code          s11,
+				       sy_code          s12,
+				       sy_code          s13
+				 where t.front_dept = h.deptid(+)				  
+				   and s.code_id(+) = t.visiter_country
+				   and he.person_id(+) = t.play_apply
+				   and he1.person_id(+) = t.front_emp_id
+				   and t.api_language = s1.code_id(+)
+				   and s2.code_id(+) = t.visiter_distiniction
+				   and s4.code_id(+) = t.VISITER_EATRY_DISTINCTION
+				   and s5.code_id(+) = t.VISITER_EATRY_TYPE
+				   and s6.code_id(+) = t.VISITER_CONFERENCE_ROOM
+				   and s7.code_id(+) = t.VISITER_CONFERENCE_MANAGE
+				   and s8.code_id(+) = t.VISITER_FACTORY_METHOD
+				   and s9.code_id(+) = t.VISITER_FACTORY_ROUTE
+				   and s10.code_id(+) = t.VISITER_FACTORY_HELMET
+				   and s11.code_id(+) = T.VISITER_FACTORY_SYSTEM
+				   and s12.code_id(+) = T.VISITER_FACTORY_WELCOME_SPEECH
+				   and s13.code_id(+) = T.VISITER_TOURISM_TYPE
+        		and t.ga_visiter_apply_id = #visiterManagementId:NUMERIC#
+		]]>
+	</select>
+	
+	<select id="visiterType" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+				select * from sy_code s where s.parent_code = 'Visiter_Type'
+		]]>
+	</select>
+	
+	<select id="visiterCountry" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+				select * from sy_code s where s.parent_code = 'Visiter_Country'
+		]]>
+	</select>
+	
+	<select id="allapiLanguage" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+				select * from sy_code s where s.parent_code = 'LanguageTypeCode' 
+		]]>
+	</select>
+	
+	<update id="updateVisiterManagementModify" parameterClass="SimpleMap">
+		<![CDATA[
+				update ga_visiter_apply t
+				   set t.VISITER_DATE = #visiterTime:date#,
+				       t.VISITER_COME_TIME = #hour:VARCHAR#,
+				       t.VISITER_END_TIME = #Outhour:VARCHAR#,
+				       t.VISITER_TYPE = #visiterType:VARCHAR#,
+				       t.VISITER_COUNTRY = #visiterCountry:VARCHAR#,
+				       t.VISITER_PEOPLE_NUM = #peopleNum:NUMERIC#,
+				       t.VISITER_CARNUMBER = #visiterCarNumber:VARCHAR#,
+				       t.VISITER_CARNUM = #visiterCarNum:VARCHAR#,
+				       t.FRONT_EMP_ID = #person_id:VARCHAR#,
+				       t.VISITER_OBJECTIVE =#Objective:VARCHAR#,
+				       
+				       
+				     T.VISITER_CAR_MODEL = #visiterCarModel:VARCHAR#,
+			       
+			         T.VISITER_EATRY_DISTINCTION = #visiterEatryDistinction:VARCHAR#,
+			         T.VISITER_EATRY_NAME = #visiterEatryName:VARCHAR#,
+			         T.VISITER_EATRY_DATE = #visiterEatryDate:VARCHAR#,
+			         T.VISITER_EATRY_TIME = #visiterEatryTime:VARCHAR#,
+			         T.VISITER_EATRY_TYPE = #visiterEatryType:VARCHAR#,
+			         T.VISITER_EATRY_NUMBER = #visiterEatryNumber:NUMERIC#,
+			         T.VISITER_EATRY_MEMO = #visiterEatryMemo:VARCHAR#,
+			         
+			         
+			         T.VISITER_VOITURE_NUMBER = #visiterVoitureNumber:NUMERIC#,
+			         T.VISITER_VOITURE_IN_DATE = #visiterVoitureInDate:VARCHAR#,
+			         T.VISITER_VOITURE_IN_TIME = #visiterVoitureInTime:VARCHAR#,
+			         T.VISITER_VOITURE_OUT_DATE = #visiterVoitureOutDate:VARCHAR#,
+			         T.VISITER_VOITURE_OUT_TIME = #visiterVoitureOutTime:VARCHAR#,
+			         T.VISITER_VOITURE_START_AREA = #visiterVoitureStartArea:VARCHAR#,
+			         T.VISITER_VOITURE_PASS_AREA = #visiterVoiturePassArea:VARCHAR#,
+			         T.VISITER_VOITURE_END_AREA = #visiterVoitureEndArea:VARCHAR#,
+			         T.VISITER_VOITURE_MEMO = #visiterVoitureMemo:VARCHAR#,
+			         
+			        
+			         T.VISITER_CONFERENCE_ROOM = #visiterConferenceRoom:VARCHAR#,
+			         T.VISITER_CONFERENCE_LANGUAGE = #visiter_conference_language:VARCHAR#,
+			         T.VISITER_CONFERENCE_PEOPLE = #visiterConferencePeople:VARCHAR#,
+			         T.VISITER_CONFERENCE_MANAGE = #visiterConferenceManageYesOrNo:VARCHAR#,
+			         T.VISITER_CONFERENCE_DATE = #visiterConferenceDate:VARCHAR#,
+			         T.VISITER_CONFERENCE_TIME = #visiterConferenceTime:VARCHAR#,
+			         T.VISITER_CONFERENCE_PURPOSE = #visiterConferencePurpose:VARCHAR#,
+			         
+			       
+			         T.VISITER_FACTORY_NUMBER = #visiterFactoryNumber:NUMERIC#,
+			         T.VISITER_FACTORY_METHOD = #visiterFactoryMethod:VARCHAR#,
+			         T.VISITER_FACTORY_ROUTE = #visiterFactoryRoute:VARCHAR#,
+			         T.VISITER_FACTORY_DEVICE = #visiter_factory_device:VARCHAR#,
+			         T.VISITER_FACTORY_HELMET = #visiterFactoryHelmetYesOrNo:VARCHAR#,
+			         T.VISITER_FACTORY_HELMET_NUMBER = #visiterFactoryHelmetNumber:NUMERIC#,
+			         T.VISITER_FACTORY_SYSTEM = #visiterFactorySystemYesOrNo:VARCHAR#,
+			         T.VISITER_FACTORY_C_NUMBER = #visiterFactoryCNumber:NUMERIC#,
+			         T.VISITER_FACTORY_K_NUMBER = #visiterFactoryKNumber:NUMERIC#,
+			         T.VISITER_FACTORY_E_NUMBER = #visiterFactoryENumber:NUMERIC#,
+			         T.VISITER_FACTORY_PEOPLE = #visiterFactoryPeople:VARCHAR#,
+			         T.VISITER_FACTORY_WELCOME_SPEECH = #visiterFactoryWelcomeSpeech:VARCHAR#,
+			         T.VISITER_FACTORY_LANGUAGE = #visiter_factory_language:VARCHAR#,
+			         T.VISITER_FACTORY_MEMO = #visiterFactoryMemo:VARCHAR#,
+			         
+			         
+			         T.VISITER_TOURISM = #visiterTourismYesOrNo:VARCHAR#,
+			         T.VISITER_TOURISM_DATE = #visiterTourismDate:VARCHAR#,
+			         T.VISITER_TOURISM_TIME = #visiterTourismTime:VARCHAR#,
+			         T.VISITER_TOURISM_TYPE = #visiterTourismType:VARCHAR#,
+			         T.VISITER_TOURISM_FEE = #visiterTourismFee:VARCHAR#,
+			         T.VISITER_TOURISM_MEMO = #visiterTourismMemo:VARCHAR#   
+				 where t.GA_VISITER_APPLY_ID = #ApplyId:varchar#
+		]]>
+	</update>
+	
+		<insert id="updateVisiterPresentModify" parameterClass="SimpleMap">
+		<![CDATA[
+				insert into GA_VISITER_PRESENT t
+				(t.VIST_NAME,
+				t.CORPORATION,
+				t.DIFFER,
+				t.TELEPHONE,
+				t.PRESENT_APPPLY,
+				t.PRESENT,
+				t.PRESENT_NUM,
+				t.MEMO,
+				t.JOBS,
+				t.GA_VISITER_APPLY_ID,
+				t.ID)
+				values
+				(
+			    #visiterName:VARCHAR#,
+			    #visiterCompany:VARCHAR#,
+			    #Distinction:VARCHAR#,
+			    #ContactTel:VARCHAR#,
+			    #GiftYesOrNo:VARCHAR#,
+			    #GiftName:VARCHAR#,
+			    #GiftNumber:VARCHAR#,
+			    #memo:VARCHAR#,
+			    #visiterDuty:VARCHAR#,
+			    #ApplyId:varchar#,
+			    GA_VISITER_ID_SEQ.NEXTVAL)
+		]]>
+	</insert>
+	
+	
+	<insert id="updateVisiterAccommodationModify" parameterClass="SimpleMap">
+		<![CDATA[
+				insert into GA_VISITER_ACCOMMODATION t
+				(t.ACCOMMODATION_NAME,
+				t.ACCOMMODATION_STANDARD,
+				t.ACCOMMODATION_IN_DATE,
+				t.ACCOMMODATION_IN_TIME,
+				t.ACCOMMODATION_OUT_DATE,
+				t.ACCOMMODATION_OUT_TIME,
+				t.ACCOMMODATION_MEMO,
+				t.GA_VISITER_APPLY_ID,
+				t.ID)
+				values
+				(
+			    #accommodationName:VARCHAR#,
+          		#accommodationStandard:VARCHAR#,
+			    #accommodationInDate:VARCHAR#,
+			    #accommodationInTime:VARCHAR#, 
+			    #accommodationOutDate:VARCHAR#,
+			    #accommodationOutTime:VARCHAR#,
+			    #accommodationMemo:VARCHAR#,
+			    #ApplyId:varchar#,
+			    GA_ACCOMMODATION_SEQ.NEXTVAL)
+		]]>
+	</insert>
+	
+	<insert id="updateVisiterEatryModify" parameterClass="SimpleMap">
+		<![CDATA[
+			  insert into GA_VISITER_EATRY t
+			    (
+			     t.VISITER_EATRY_DISTINCTION,
+          		 t.VISITER_EATRY_NAME,
+			     t.VISITER_EATRY_DATE,
+			     t.VISITER_EATRY_TIME,
+			     t.VISITER_EATRY_TYPE,
+			     t.VISITER_EATRY_NUMBER,
+			     t.VISITER_EATRY_MEMO,
+			     t.GA_VISITER_APPLY_ID,
+			     T.ID)
+			  values
+			    (
+			     #visiterEatryDistinction:VARCHAR#,
+          		 #visiterEatryName:VARCHAR#,
+			     #visiterEatryDate:VARCHAR#,
+			     #visiterEatryTime:VARCHAR#, 
+			     #visiterEatryType:VARCHAR#,
+			     #visiterEatryNumber:NUMERIC#,
+			     #visiterEatryMemo:VARCHAR#,
+			     #ApplyId:varchar#,
+			     GA_EATRY_SEQ.NEXTVAL)
+		]]>
+	</insert>
+	
+		<delete id="updateVisiterPresentDelete" parameterClass="SimpleMap">
+		<![CDATA[
+				delete GA_VISITER_PRESENT where GA_VISITER_APPLY_ID=#ApplyId:varchar#
+		]]>
+	</delete>
+	
+	<delete id="updateVisiterAccommodationDelete" parameterClass="SimpleMap">
+		<![CDATA[
+				delete GA_VISITER_ACCOMMODATION where GA_VISITER_APPLY_ID=#ApplyId:varchar#
+		]]>
+	</delete>
+	
+	<delete id="updateVisiterEatryDelete" parameterClass="SimpleMap">
+		<![CDATA[
+				delete GA_VISITER_EATRY where GA_VISITER_APPLY_ID=#ApplyId:varchar#
+		]]>
+	</delete>
+	
+	<select id="visiterChinese" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+		select nvl(sum(t.visiter_people_num), '0') as 人数 from (
+				select distinct t.ga_visiter_apply_id,t.visiter_people_num
+			  from ga_visiter_apply t,
+			  		hr_department    h2,
+			  	   hr_employee      he
+			 where t.visiter_country = 'China'
+			   and  t.active = '1' and he.deptid=h2.deptid and t.play_apply=he.person_id
+		]]>
+		
+		<isNotEmpty prepend="AND" property="StartDate">
+			<![CDATA[
+		 		(t.apply_date >= to_date(#StartDate:VARCHAR#,'yyyy-MM-dd'))
+			]]>
+		</isNotEmpty>
+		 <isNotEmpty prepend="AND" property="ADMIN_ID">
+			<![CDATA[		   
+		 EXISTS ( SELECT SAD.ADMIN_DEPTID
+					   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+					  WHERE SAD.ADMIN_NO = SA.ADMINNO
+					    AND SA.ADMINID = #ADMIN_ID:VARCHAR2#
+					    AND SAD.ADMIN_DEPTID = h2.DEPTID	
+				   ) 
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EndDate">
+			<![CDATA[
+		 		(t.apply_date <= to_date(#EndDate:VARCHAR#,'yyyy-MM-dd'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="Starttime">
+			<![CDATA[
+		 		(to_char(t.apply_date,'yyyy-MM') >= to_char(to_date(#Starttime:VARCHAR#,'yyyy-MM'),'yyyy-MM'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="Endtime">
+			<![CDATA[
+		 		(to_char(t.apply_date,'yyyy-MM') <= to_char(to_date(#Endtime:VARCHAR#,'yyyy-MM'),'yyyy-MM'))
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+		) t
+		]]>
+	</select>
+	
+	<select id="visiterKorea" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+		select nvl(sum(t.visiter_people_num), '0') as 人数 from (
+				select distinct t.ga_visiter_apply_id,t.visiter_people_num
+			  from ga_visiter_apply t,
+			 		hr_department    h2,
+			  	   hr_employee      he
+			 where t.visiter_country = 'Korea'
+			   and  t.active = '1' and he.deptid=h2.deptid and t.play_apply=he.person_id
+
+		]]>
+		
+		<isNotEmpty prepend="AND" property="StartDate">
+			<![CDATA[
+		 		(t.apply_date >= to_date(#StartDate:VARCHAR#,'yyyy-MM-dd'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="EndDate">
+			<![CDATA[
+		 		(t.apply_date <= to_date(#EndDate:VARCHAR#,'yyyy-MM-dd'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="ADMIN_ID">
+			<![CDATA[		   
+		 EXISTS ( SELECT SAD.ADMIN_DEPTID
+					   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+					  WHERE SAD.ADMIN_NO = SA.ADMINNO
+					    AND SA.ADMINID = #ADMIN_ID:VARCHAR2#
+					    AND SAD.ADMIN_DEPTID = h2.DEPTID	
+				   ) 
+		]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="Starttime">
+			<![CDATA[
+		 		(to_char(t.apply_date,'yyyy-MM') >= to_char(to_date(#Starttime:VARCHAR#,'yyyy-MM'),'yyyy-MM'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="Endtime">
+			<![CDATA[
+		 		(to_char(t.apply_date,'yyyy-MM') <= to_char(to_date(#Endtime:VARCHAR#,'yyyy-MM'),'yyyy-MM'))
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+		) t
+		]]>
+	</select>
+	
+	<select id="visiterAnnather" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+			select nvl(sum(t.visiter_people_num), '0') as 人数 from (
+				select distinct t.ga_visiter_apply_id,t.visiter_people_num
+			  from ga_visiter_apply t,
+			  hr_department    h2,
+			  	   hr_employee      he
+			 where t.visiter_country not in('China','Korea')
+			   and  t.active = '1'	 and he.deptid=h2.deptid and t.play_apply=he.person_id
+		]]>
+		
+		<isNotEmpty prepend="AND" property="StartDate">
+			<![CDATA[
+		 		(t.apply_date >= to_date(#StartDate:VARCHAR#,'yyyy-MM-dd'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="ADMIN_ID">
+			<![CDATA[		   
+		 EXISTS ( SELECT SAD.ADMIN_DEPTID
+					   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+					  WHERE SAD.ADMIN_NO = SA.ADMINNO
+					    AND SA.ADMINID = #ADMIN_ID:VARCHAR2#
+					    AND SAD.ADMIN_DEPTID = h2.DEPTID	
+				   ) 
+		]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="EndDate">
+			<![CDATA[
+		 		(t.apply_date <= to_date(#EndDate:VARCHAR#,'yyyy-MM-dd'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="Starttime">
+			<![CDATA[
+		 		(to_char(t.apply_date,'yyyy-MM') >= to_char(to_date(#Starttime:VARCHAR#,'yyyy-MM'),'yyyy-MM'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="Endtime">
+			<![CDATA[
+		 		(to_char(t.apply_date,'yyyy-MM') <= to_char(to_date(#Endtime:VARCHAR#,'yyyy-MM'),'yyyy-MM'))
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+		) t
+		]]>
+	</select>
+	
+	<select id="visiterChineseNum" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+				
+			select count(*) as 次数 from 
+			(select distinct t.ga_visiter_apply_id , t.apply_date
+				  from ga_visiter_apply t,
+				  hr_department    h2,
+			  	   hr_employee      he
+				 where t.visiter_country = 'China'
+				   and  t.active = '1'  and he.deptid=h2.deptid and t.play_apply=he.person_id and EXISTS ( SELECT SAD.ADMIN_DEPTID
+					   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+					  WHERE SAD.ADMIN_NO = SA.ADMINNO
+					    AND SA.ADMINID = #ADMIN_ID:VARCHAR2#
+					    AND SAD.ADMIN_DEPTID = h2.DEPTID	
+				   ) 
+               ) t
+		]]>
+		<dynamic prepend="WHERE">
+		<isNotEmpty prepend="AND" property="StartDate">
+			<![CDATA[
+		 		(t.apply_date >= to_date(#StartDate:VARCHAR#,'yyyy-MM-dd'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="EndDate">
+			<![CDATA[
+		 		(t.apply_date <= to_date(#EndDate:VARCHAR#,'yyyy-MM-dd'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="Starttime">
+			<![CDATA[
+		 		(to_char(t.apply_date,'yyyy-MM') >= to_char(to_date(#Starttime:VARCHAR#,'yyyy-MM'),'yyyy-MM'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="Endtime">
+			<![CDATA[
+		 		(to_char(t.apply_date,'yyyy-MM') <= to_char(to_date(#Endtime:VARCHAR#,'yyyy-MM'),'yyyy-MM'))
+			]]>
+		</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="visiterKoreaNum" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+		select count(*) as 次数 from 
+			(select distinct t.ga_visiter_apply_id , t.apply_date
+				  from ga_visiter_apply t,
+				  hr_department    h2,
+			  	   hr_employee      he
+				 where t.visiter_country = 'Korea'
+				   and  t.active = '1'  and he.deptid=h2.deptid and t.play_apply=he.person_id and EXISTS ( SELECT SAD.ADMIN_DEPTID
+					   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+					  WHERE SAD.ADMIN_NO = SA.ADMINNO
+					    AND SA.ADMINID = #ADMIN_ID:VARCHAR2#
+					    AND SAD.ADMIN_DEPTID = h2.DEPTID	
+				   ) 
+               ) t
+		]]>
+		<dynamic prepend="WHERE">
+		<isNotEmpty prepend="AND" property="StartDate">
+			<![CDATA[
+		 		(t.apply_date >= to_date(#StartDate:VARCHAR#,'yyyy-MM-dd'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="EndDate">
+			<![CDATA[
+		 		(t.apply_date <= to_date(#EndDate:VARCHAR#,'yyyy-MM-dd'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="Starttime">
+			<![CDATA[
+		 		(to_char(t.apply_date,'yyyy-MM') >= to_char(to_date(#Starttime:VARCHAR#,'yyyy-MM'),'yyyy-MM'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="Endtime">
+			<![CDATA[
+		 		(to_char(t.apply_date,'yyyy-MM') <= to_char(to_date(#Endtime:VARCHAR#,'yyyy-MM'),'yyyy-MM'))
+			]]>
+		</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="visiterAnnatherNum" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+		select count(*) as 次数 from 
+			(select distinct t.ga_visiter_apply_id , t.apply_date
+				  from ga_visiter_apply t,
+				  hr_department    h2,
+			  	   hr_employee      he
+				 where t.visiter_country not in('China','Korea')
+				   and  t.active = '1'  and he.deptid=h2.deptid and t.play_apply=he.person_id and EXISTS ( SELECT SAD.ADMIN_DEPTID
+					   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+					  WHERE SAD.ADMIN_NO = SA.ADMINNO
+					    AND SA.ADMINID = #ADMIN_ID:VARCHAR2#
+					    AND SAD.ADMIN_DEPTID = h2.DEPTID	
+				   ) 
+               ) t
+		]]>
+		<dynamic prepend="WHERE">
+		<isNotEmpty prepend="AND" property="StartDate">
+			<![CDATA[
+		 		(t.apply_date >= to_date(#StartDate:VARCHAR#,'yyyy-MM-dd'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="EndDate">
+			<![CDATA[
+		 		(t.apply_date <= to_date(#EndDate:VARCHAR#,'yyyy-MM-dd'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="Starttime">
+			<![CDATA[
+		 		(to_char(t.apply_date,'yyyy-MM') >= to_char(to_date(#Starttime:VARCHAR#,'yyyy-MM'),'yyyy-MM'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="Endtime">
+			<![CDATA[
+		 		(to_char(t.apply_date,'yyyy-MM') <= to_char(to_date(#Endtime:VARCHAR#,'yyyy-MM'),'yyyy-MM'))
+			]]>
+		</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="allVisiterType" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			select * from sy_code s where s.parent_code = 'Visiter_Type' order by s.code_no
+		]]>
+	</select>
+
+	<select id="allVisiterTypeNum" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			select nvl(sum(num),'0')  num from ( select  distinct t.ga_visiter_apply_id, nvl(t.visiter_people_num,'0') as num
+			  from ga_visiter_apply t,hr_department    h2,
+			  	   hr_employee      he
+			 where  t.active = '1'  and he.deptid=h2.deptid and t.play_apply=he.person_id and EXISTS ( SELECT SAD.ADMIN_DEPTID
+					   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+					  WHERE SAD.ADMIN_NO = SA.ADMINNO
+					    AND SA.ADMINID = #ADMIN_ID:VARCHAR2#
+					    AND SAD.ADMIN_DEPTID = h2.DEPTID
+					 and t.visiter_type = #VisiterTypeId:VARCHAR#
+			         
+		]]>
+		<isNotEmpty prepend="AND" property="StartDate">
+			<![CDATA[
+		 		(t.apply_date >= to_date(#StartDate:VARCHAR#,'yyyy-MM-dd'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="EndDate">
+			<![CDATA[
+		 		(t.apply_date <= to_date(#EndDate:VARCHAR#,'yyyy-MM-dd'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="Starttime">
+			<![CDATA[
+		 		(to_char(t.apply_date,'yyyy-MM') >= to_char(to_date(#Starttime:VARCHAR#,'yyyy-MM'),'yyyy-MM'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="Endtime">
+			<![CDATA[
+		 		(to_char(t.apply_date,'yyyy-MM') <= to_char(to_date(#Endtime:VARCHAR#,'yyyy-MM'),'yyyy-MM'))
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+		))
+			]]>
+	</select>
+	
+	<select id="allVisiterTypeNumSum" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+			select sum(num) num from ( select  distinct t.ga_visiter_apply_id, nvl(t.visiter_people_num,'0') as num
+			  from pu_visiter_management t
+			 where t.ga_visiter_id in (select t.ga_visiter_id from ga_visiter_apply t where t.active = '1')
+		]]>
+		<isNotEmpty prepend="AND" property="StartDate">
+			<![CDATA[
+		 		(t.apply_date >= to_date(#StartDate:VARCHAR#,'yyyy-MM-dd'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="EndDate">
+			<![CDATA[
+		 		(t.apply_date <= to_date(#EndDate:VARCHAR#,'yyyy-MM-dd'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="Starttime">
+			<![CDATA[
+		 		(to_char(t.apply_date,'yyyy-MM') >= to_char(to_date(#Starttime:VARCHAR#,'yyyy-MM'),'yyyy-MM'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="Endtime">
+			<![CDATA[
+		 		(to_char(t.apply_date,'yyyy-MM') <= to_char(to_date(#Endtime:VARCHAR#,'yyyy-MM'),'yyyy-MM'))
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+		)
+			]]>
+	</select>
+	
+	<select id="allVisiterTypeVisiterNum" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			select nvl(count(*),'0') as NUM from
+			(select distinct t.ga_visiter_apply_id , t.apply_date
+			  from ga_visiter_apply t,hr_department    h2,
+			  	   hr_employee      he
+			 where  t.active = '1'  and he.deptid=h2.deptid and t.play_apply=he.person_id and EXISTS ( SELECT SAD.ADMIN_DEPTID
+					   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+					  WHERE SAD.ADMIN_NO = SA.ADMINNO
+					    AND SA.ADMINID = #ADMIN_ID:VARCHAR2#
+					    AND SAD.ADMIN_DEPTID = h2.DEPTID
+			 and t.visiter_type = #VisiterTypeId:VARCHAR#)
+			 ) t
+			         
+		]]>
+		<dynamic prepend="WHERE">
+		<isNotEmpty prepend="AND" property="StartDate">
+			<![CDATA[
+		 		(t.apply_date >= to_date(#StartDate:VARCHAR#,'yyyy-MM-dd'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="EndDate">
+			<![CDATA[
+		 		(t.apply_date <= to_date(#EndDate:VARCHAR#,'yyyy-MM-dd'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="Starttime">
+			<![CDATA[
+		 		(to_char(t.apply_date,'yyyy-MM') >= to_char(to_date(#Starttime:VARCHAR#,'yyyy-MM'),'yyyy-MM'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="Endtime">
+			<![CDATA[
+		 		(to_char(t.apply_date,'yyyy-MM') <= to_char(to_date(#Endtime:VARCHAR#,'yyyy-MM'),'yyyy-MM'))
+			]]>
+		</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="allVisiterTypeVisiterNumSum" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+			select count(g.ga_affirm_no) as num
+			  from pu_visiter_management t
+			 where t.ga_visiter_id in (select t.ga_visiter_id from ga_visiter_apply t where t.active = '1')
+		]]>
+		<isNotEmpty prepend="AND" property="StartDate">
+			<![CDATA[
+		 		(t.apply_date >= to_date(#StartDate:VARCHAR#,'yyyy-MM-dd'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="EndDate">
+			<![CDATA[
+		 		(t.apply_date <= to_date(#EndDate:VARCHAR#,'yyyy-MM-dd'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="Starttime">
+			<![CDATA[
+		 		(to_char(t.apply_date,'yyyy-MM') >= to_char(to_date(#Starttime:VARCHAR#,'yyyy-MM'),'yyyy-MM'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="Endtime">
+			<![CDATA[
+		 		(to_char(t.apply_date,'yyyy-MM') <= to_char(to_date(#Endtime:VARCHAR#,'yyyy-MM'),'yyyy-MM'))
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	<select id="allDistiniction" resultClass="SimpleMap">
+		<![CDATA[
+			select * from sy_code s where s.parent_code = 'Visiter_Distiniction'
+		]]>
+	</select>
+	
+	<update id="UpdateModifyFlag" parameterClass="SimpleMap">
+		<![CDATA[
+			update ga_visiter_apply t set t.MODIFY_FLAG = '1',CONFIRMIDEA = #affirmorIdea:varchar#,CONFIRMORID=#adminId:varchar#
+			where t.GA_VISITER_APPLY_ID = #modifyFlag:NUMERIC#
+		]]>
+	</update>
+	<update id="deleteVisiterManagement" parameterClass="SimpleMap">
+		<![CDATA[
+			delete  from ga_visiter_apply t where t.ga_visiter_apply_id=#visiterManagementId:NUMERIC#
+		]]>
+	</update>
+	
+	<select id="getVisiterApplyEmail" parameterClass="SimpleMap" resultClass="string">
+	  <![CDATA[	
+	       select email from hr_employee where person_id=#empid:VARCHAR#
+	    ]]>
+	</select>
+	
+</sqlMap>

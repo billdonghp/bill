@@ -1,0 +1,476 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="pa.viewDetail">
+	<select id="getF_viewDetailListNumber" parameterClass="SimpleMap" resultClass="int">
+	<![CDATA[	
+		select count(*) from (select * from (select t.EMPID,
+       t.PA_MONTH,
+       t.BONUS_TYPE,
+       t.CHINESENAME,
+       t.BASE_PAY,
+       t.DUTIES_ALLOWANCE,
+       t.RESIDENTIAL_GRANTS RESIDENTIAL_GRANTS,
+       t.SPECIAL_GRANTS SPECIAL_GRANTS,
+       t.TOTAL_BASIC TOTAL_BASIC,
+       t.PERFORMANCE_PAY2 PERFORMANCE_PAY2,
+       t.PERFORMANCE_PAY3 PERFORMANCE_PAY3,
+       t.TO_THE_OTHER TO_THE_OTHER,
+       t.STICKS_TO_THE_WRONG STICKS_TO_THE_WRONG,
+       t.NIGHT_DUTY_SUBSIDY NIGHT_DUTY_SUBSIDY,
+       t.DUTY_SUBSIDIES DUTY_SUBSIDIES,
+       t.NOT_ATTENDANCE_MINUS NOT_ATTENDANCE_MINUS,
+       t.VACATION_MINUS VACATION_MINUS,
+       t.LEVEL_OFF_MINUS LEVEL_OFF_MINUS,
+       t.ABSENTEEISM_MINUS ABSENTEEISM_MINUS,
+       t.OTHER_LESS OTHER_LESS,
+       t.RESIDENTIAL_MINUS RESIDENTIAL_MINUS,
+       t.REDUCE_ERRORS REDUCE_ERRORS,
+       t.HOLIDAY_MINUS HOLIDAY_MINUS,
+       t.THIS_TOTAL_SUPPORT THIS_TOTAL_SUPPORT,
+       t.PERSONAL_PENSION PERSONAL_PENSION,
+       t.PERSONAL_MEDICAL PERSONAL_MEDICAL,
+       t.PERSONAL_UNEMPLOYED PERSONAL_UNEMPLOYED,
+       t.PERSONAL_HOUSING_FUND PERSONAL_HOUSING_FUND,
+       t.TOTAL_DEDUCTIONS TOTAL_DEDUCTIONS,
+       t.THIS_ACTUAL_WAGE THIS_ACTUAL_WAGE,
+       t.THIS_ACTUAL_TAX THIS_ACTUAL_TAX,
+       T.HOLIDAY_MINUS_ALL
+        from pa_history_all_$cpnyId$_v t
+		where t.EMPID=#key:VARCHAR#
+		AND T.CPNY_ID=#cpnyId:VARCHAR#
+		AND t.PA_MONTH between  #startyearMonth:VARCHAR# and  #endyearMonth:VARCHAR#
+		AND T.ATTENDANCE_PERIOD_CODE=#qufen:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="patype">
+		<![CDATA[
+			t.BONUS_TYPE_CODE =#patype:VARCHAR#
+		]]>
+	</isNotEmpty>
+	<![CDATA[
+		order by t.PA_MONTH )t
+		union all
+	   select t.EMPID,        
+	       '合计' PA_MONTH,
+	       '合计' BONUS_TYPE,
+	       MAX(T.CHINESENAME) AS CHINESENAME,
+	       sum(t.BASE_PAY) BASE_PAY,
+	       sum(t.DUTIES_ALLOWANCE) DUTIES_ALLOWANCE,
+	       sum(t.RESIDENTIAL_GRANTS) RESIDENTIAL_GRANTS,
+	       sum(t.SPECIAL_GRANTS) SPECIAL_GRANTS,
+	       sum(t.TOTAL_BASIC) TOTAL_BASIC,
+	       sum(t.PERFORMANCE_PAY2) PERFORMANCE_PAY2,
+	       sum(t.PERFORMANCE_PAY3) PERFORMANCE_PAY3,
+	       sum(t.TO_THE_OTHER) TO_THE_OTHER,
+	       sum(t.STICKS_TO_THE_WRONG) STICKS_TO_THE_WRONG,
+	       sum(t.NIGHT_DUTY_SUBSIDY) NIGHT_DUTY_SUBSIDY,
+	       sum(t.DUTY_SUBSIDIES) DUTY_SUBSIDIES,
+	       sum(t.NOT_ATTENDANCE_MINUS) NOT_ATTENDANCE_MINUS,
+	       sum(t.VACATION_MINUS) VACATION_MINUS,
+	       sum(t.LEVEL_OFF_MINUS) LEVEL_OFF_MINUS,
+	       sum(t.ABSENTEEISM_MINUS) ABSENTEEISM_MINUS,
+	       sum(t.OTHER_LESS) OTHER_LESS,
+	       sum(t.RESIDENTIAL_MINUS) RESIDENTIAL_MINUS,
+	       sum(t.REDUCE_ERRORS) REDUCE_ERRORS,
+	       sum(t.HOLIDAY_MINUS) HOLIDAY_MINUS,
+	       sum(t.THIS_TOTAL_SUPPORT) THIS_TOTAL_SUPPORT,
+	       sum(t.PERSONAL_PENSION) PERSONAL_PENSION,
+	       sum(t.PERSONAL_MEDICAL) PERSONAL_MEDICAL,
+	       sum(t.PERSONAL_UNEMPLOYED) PERSONAL_UNEMPLOYED,
+	       sum(t.PERSONAL_HOUSING_FUND) PERSONAL_HOUSING_FUND,
+	       sum(t.TOTAL_DEDUCTIONS) TOTAL_DEDUCTIONS,
+	       sum(t.THIS_ACTUAL_WAGE) THIS_ACTUAL_WAGE,
+	       sum(t.THIS_ACTUAL_TAX) THIS_ACTUAL_TAX,
+	       SUM(T.HOLIDAY_MINUS_ALL) HOLIDAY_MINUS_ALL
+	 from pa_history_all_$cpnyId$_v t
+	 where t.EMPID=#key:VARCHAR#
+	    AND T.CPNY_ID=#cpnyId:VARCHAR#
+		AND t.PA_MONTH between  #startyearMonth:VARCHAR# and  #endyearMonth:VARCHAR#
+		AND T.ATTENDANCE_PERIOD_CODE=#qufen:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="patype">
+		<![CDATA[
+			t.BONUS_TYPE_CODE =#patype:VARCHAR#
+		]]>
+	</isNotEmpty>
+	<![CDATA[
+		group by EMPID )B
+	]]>	
+	
+	</select>
+	
+	<select id="getF_viewDetailList" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[	
+				select * from (select t.EMPID,
+		       t.PA_MONTH,
+		       t.BONUS_TYPE,
+		       t.CHINESENAME,
+               t.BASE_PAY BASE_PAY,
+		       t.DUTIES_ALLOWANCE DUTIES_ALLOWANCE,
+		       t.RESIDENTIAL_GRANTS RESIDENTIAL_GRANTS,
+		       t.SPECIAL_GRANTS SPECIAL_GRANTS,
+               t.POST_SUBSIDIES POST_SUBSIDIES,
+               t.TECHNIQUE_ALLOWANCE TECHNIQUE_ALLOWANCE,
+               t.OFF_SEA_BOUNS OFF_SEA_BOUNS,
+		       t.TOTAL_BASIC TOTAL_BASIC,
+		       t.PERFORMANCE_PAY2 PERFORMANCE_PAY2,
+		       t.PERFORMANCE_PAY3 PERFORMANCE_PAY3,
+		       t.TO_THE_OTHER TO_THE_OTHER,
+		       t.STICKS_TO_THE_WRONG STICKS_TO_THE_WRONG,
+		       t.NIGHT_DUTY_SUBSIDY NIGHT_DUTY_SUBSIDY,
+		       t.DUTY_SUBSIDIES DUTY_SUBSIDIES,       
+		       t.NOT_ATTENDANCE_MINUS NOT_ATTENDANCE_MINUS,      
+		       t.VACATION_MINUS VACATION_MINUS,
+		       t.LEVEL_OFF_MINUS LEVEL_OFF_MINUS,
+		       t.ABSENTEEISM_MINUS ABSENTEEISM_MINUS,
+		       t.OTHER_LESS OTHER_LESS,
+		       t.RESIDENTIAL_MINUS RESIDENTIAL_MINUS,
+		       t.REDUCE_ERRORS REDUCE_ERRORS,
+		       t.HOLIDAY_MINUS HOLIDAY_MINUS,     
+		       t.THIS_TOTAL_SUPPORT THIS_TOTAL_SUPPORT,
+		       t.PERSONAL_PENSION PERSONAL_PENSION,
+		       t.PERSONAL_MEDICAL PERSONAL_MEDICAL,
+		       t.PERSONAL_UNEMPLOYED PERSONAL_UNEMPLOYED,
+		       t.PERSONAL_HOUSING_FUND PERSONAL_HOUSING_FUND,      
+		       t.TOTAL_DEDUCTIONS TOTAL_DEDUCTIONS,
+		       t.THIS_ACTUAL_WAGE THIS_ACTUAL_WAGE,
+		       t.LATE_EARLY_MINUS LATE_EARLY_MINUS,
+               t.LEAVE_SICK_MINUS LEAVE_SICK_MINUS,
+               t.THIS_ACTUAL_TAX THIS_ACTUAL_TAX,
+               t.TRIAL_MINUS TRIAL_MINUS,
+               t.HANDLING_CHARGE HANDLING_CHARGE,
+               t.PAYMENT_OF_EMPLOYER PAYMENT_OF_E,
+               t.PAYMENT_OF_INDIVIDUAL PAYMENT_OF_INDIVIDUAL,
+               (t.HANDLING_CHARGE + t.PAYMENT_OF_EMPLOYER) xiaoji,
+               (t.HANDLING_CHARGE + t.PAYMENT_OF_EMPLOYER +
+               t.PAYMENT_OF_INDIVIDUAL) GUOQIHEJI,
+               T.OTHER_COMPENSATION OTHER_COMPENSATION,
+               T.REGIONAL_GRANTS REGIONAL_GRANTS,
+               T.HOLIDAY_MINUS_ALL,
+               T.A_POST_RESERVATION_MINUS,
+               T.MEAL_FEE,
+               T.PERFORMANCE_PAY,
+               T.CUSTOMER_SATISFACTION,
+               T.POSITION_ALLOWANCE,
+               T.GIFT_COST,
+               T.MEAL_DUTY  
+        from pa_history_all_$cpnyId$_v t
+		where t.EMPID=#key:VARCHAR#
+		AND T.CPNY_ID=#cpnyId:VARCHAR#
+		AND t.PA_MONTH between  #startyearMonth:VARCHAR# and  #endyearMonth:VARCHAR#
+		AND T.ATTENDANCE_PERIOD_CODE=#qufen:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="patype">
+		<![CDATA[
+			t.BONUS_TYPE_CODE =#patype:VARCHAR#
+		]]>
+	</isNotEmpty>
+	<![CDATA[
+		order by t.PA_MONTH )t
+		union all
+	   select t.EMPID,        
+	       '合计' PA_MONTH,
+	       '合计' BONUS_TYPE,
+	       MAX(T.CHINESENAME) AS CHINESENAME,
+	           sum(t.BASE_PAY) BASE_PAY,
+		       sum(t.DUTIES_ALLOWANCE) DUTIES_ALLOWANCE,
+		       sum(t.RESIDENTIAL_GRANTS) RESIDENTIAL_GRANTS,
+		       sum(t.SPECIAL_GRANTS) SPECIAL_GRANTS,
+               sum(t.POST_SUBSIDIES) POST_SUBSIDIES,
+               sum(t.TECHNIQUE_ALLOWANCE) TECHNIQUE_ALLOWANCE,
+               sum(t.OFF_SEA_BOUNS) OFF_SEA_BOUNS,
+		       sum(t.TOTAL_BASIC) TOTAL_BASIC,
+		       sum(t.PERFORMANCE_PAY2) PERFORMANCE_PAY2,
+		       sum(t.PERFORMANCE_PAY3) PERFORMANCE_PAY3,
+		       sum(t.TO_THE_OTHER) TO_THE_OTHER,
+		       sum(t.STICKS_TO_THE_WRONG) STICKS_TO_THE_WRONG,
+		       sum(t.NIGHT_DUTY_SUBSIDY) NIGHT_DUTY_SUBSIDY,
+		       sum(t.DUTY_SUBSIDIES) DUTY_SUBSIDIES,       
+		       sum(t.NOT_ATTENDANCE_MINUS) NOT_ATTENDANCE_MINUS,      
+		       sum(t.VACATION_MINUS) VACATION_MINUS,
+		       sum(t.LEVEL_OFF_MINUS) LEVEL_OFF_MINUS,
+		       sum(t.ABSENTEEISM_MINUS) ABSENTEEISM_MINUS,
+		       sum(t.OTHER_LESS) OTHER_LESS,
+		       sum(t.RESIDENTIAL_MINUS) RESIDENTIAL_MINUS,
+		       sum(t.REDUCE_ERRORS) REDUCE_ERRORS,
+		       sum(t.HOLIDAY_MINUS) HOLIDAY_MINUS,     
+		       sum(t.THIS_TOTAL_SUPPORT) THIS_TOTAL_SUPPORT,
+		       sum(t.PERSONAL_PENSION) PERSONAL_PENSION,
+		       sum(t.PERSONAL_MEDICAL) PERSONAL_MEDICAL,
+		       sum(t.PERSONAL_UNEMPLOYED) PERSONAL_UNEMPLOYED,
+		       sum(t.PERSONAL_HOUSING_FUND) PERSONAL_HOUSING_FUND,      
+		       sum(t.TOTAL_DEDUCTIONS) TOTAL_DEDUCTIONS,
+		       sum(t.THIS_ACTUAL_WAGE) THIS_ACTUAL_WAGE,
+		       sum(t.LATE_EARLY_MINUS) LATE_EARLY_MINUS,
+               sum(t.LEAVE_SICK_MINUS) LEAVE_SICK_MINUS,
+               sum(t.THIS_ACTUAL_TAX) THIS_ACTUAL_TAX,
+               sum(t.TRIAL_MINUS) TRIAL_MINUS,
+               sum(t.HANDLING_CHARGE) HANDLING_CHARGE,
+		       sum(t.PAYMENT_OF_EMPLOYER) PAYMENT_OF_E,
+		       sum(t.PAYMENT_OF_INDIVIDUAL) PAYMENT_OF_INDIVIDUAL,
+		       (sum(t.HANDLING_CHARGE) + sum(t.PAYMENT_OF_EMPLOYER)) xiaoji,
+		       (sum(t.HANDLING_CHARGE) + sum(t.PAYMENT_OF_EMPLOYER) +
+		       sum(t.PAYMENT_OF_INDIVIDUAL)) GUOQIHEJI,
+		       SUM(T.OTHER_COMPENSATION) OTHER_COMPENSATION,
+               SUM(T.REGIONAL_GRANTS) REGIONAL_GRANTS,
+               SUM(T.HOLIDAY_MINUS_ALL) HOLIDAY_MINUS_ALL,
+               SUM(T.A_POST_RESERVATION_MINUS) A_POST_RESERVATION_MINUS,
+               SUM(T.MEAL_FEE) MEAL_FEE,
+               SUM(T.PERFORMANCE_PAY) PERFORMANCE_PAY,
+       		   SUM(T.CUSTOMER_SATISFACTION) CUSTOMER_SATISFACTION,
+       		   SUM(T.POSITION_ALLOWANCE) POSITION_ALLOWANCE,
+               SUM(T.GIFT_COST) GIFT_COST,
+                SUM(T.MEAL_DUTY ) MEAL_DUTY 
+	 from pa_history_all_$cpnyId$_v t
+	 where t.EMPID=#key:VARCHAR#
+	    AND T.CPNY_ID=#cpnyId:VARCHAR#
+		AND t.PA_MONTH between  #startyearMonth:VARCHAR# and  #endyearMonth:VARCHAR#
+		AND T.ATTENDANCE_PERIOD_CODE=#qufen:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="patype">
+		<![CDATA[
+			t.BONUS_TYPE_CODE =#patype:VARCHAR#
+		]]>
+	</isNotEmpty>
+	<![CDATA[
+		group by EMPID
+		
+		]]>	
+	</select>
+	
+	<select id="basicList" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[	
+			select hr.empid,
+		       hr.chinesename,
+		       pg.code_name post_grade_name,
+		       to_char(hr.date_started,'YYYY/MM/DD') date_started,
+		       de.deptname,
+		       AVGT.AVG_THIS_TOTAL_SUPPORT,
+			   AVGT.AVG_THIS_ACTUAL_WAGE,
+		       HR.POST_COEF,
+		       to_char(hr.Date_Left,'YYYY/MM/DD') Date_Left
+		  from (select TRUNC(SUM(T.THIS_TOTAL_SUPPORT)/(SELECT COUNT(X.PA_MONTH)
+                FROM (select distinct t.PA_MONTH
+                        from pa_history_all_v t
+                       where t.EMPID = #key:VARCHAR#
+                         and t.PA_MONTH between #startyearMonth:VARCHAR# and  #endyearMonth:VARCHAR#
+                         AND T.ATTENDANCE_PERIOD_CODE = #qufen:VARCHAR#
+                         ]]>
+                        <isNotEmpty prepend="AND" property="patype">
+						<![CDATA[
+								t.BONUS_TYPE_CODE =#patype:VARCHAR#
+							]]>
+						</isNotEmpty>
+					   <![CDATA[
+                         AND T.CPNY_ID=#cpnyId:VARCHAR#) X), 2) AVG_THIS_TOTAL_SUPPORT,
+               		   TRUNC(SUM(T.THIS_ACTUAL_WAGE)/(SELECT COUNT(X.PA_MONTH)
+                FROM (select distinct t.PA_MONTH
+                        from pa_history_all_v t
+                       where t.EMPID = #key:VARCHAR#
+                         and t.PA_MONTH between #startyearMonth:VARCHAR# and  #endyearMonth:VARCHAR#
+                         AND T.ATTENDANCE_PERIOD_CODE = #qufen:VARCHAR#
+                         ]]>
+                        <isNotEmpty prepend="AND" property="patype">
+						<![CDATA[
+								t.BONUS_TYPE_CODE =#patype:VARCHAR#
+							]]>
+						</isNotEmpty>
+					   <![CDATA[
+                         AND T.CPNY_ID=#cpnyId:VARCHAR#) X), 2) AVG_THIS_ACTUAL_WAGE,
+		               t.EMPID
+		          from pa_history_all_$cpnyId$_v t
+		         where t.EMPID = #key:VARCHAR#
+		           and t.PA_MONTH between  #startyearMonth:VARCHAR# and  #endyearMonth:VARCHAR#
+		           AND T.ATTENDANCE_PERIOD_CODE=#qufen:VARCHAR#
+		           AND T.CPNY_ID=#cpnyId:VARCHAR#
+		           ]]>
+		<isNotEmpty prepend="AND" property="patype">
+		<![CDATA[
+			t.BONUS_TYPE_CODE =#patype:VARCHAR#
+		]]>
+	   </isNotEmpty>
+	    <![CDATA[
+		         group by t.EMPID) avgt,
+		       hr_employee hr,
+		       hr_department de,
+		       sy_code pg
+		 where hr.empid = avgt.empid
+		   and hr.deptid = de.deptid
+		   AND HR.CPNY_ID=#cpnyId:VARCHAR#
+		   and pg.code_id(+) = hr.post_grade_code
+
+		]]>	
+	</select>
+		<select id="paTypeList" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[	
+			select 'BonusType' code_id, '工资' code_name
+			 from dual
+			union
+			select 'BonusType00' code_id, '工资(补)' code_name
+			  from dual
+			union all
+			select t.code_id, t.code_name
+			  from sy_code t
+			 where t.parent_code = 'BonusType'
+		]]>	
+	</select>
+		<select id="basicListForDep" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[	
+		select t.DEPTID,
+		       t.DEPARTMENT,
+		       trunc(avg(t.THIS_TOTAL_SUPPORT), 2) AVG_THIS_ACTUAL_WAGE,
+		       count(t.EMPID) countEMPID
+		  from pa_history_all_$cpnyId$_v t
+		 where t.DEPTID = #dept:VARCHAR2#
+		   and t.PA_MONTH between  #startyearMonth:VARCHAR# and  #endyearMonth:VARCHAR#
+		 group by t.DEPTID, t.DEPARTMENT	
+	]]>
+	</select>
+	<select id="getB_viewDetailListNumber" parameterClass="SimpleMap" resultClass="int">
+	<![CDATA[	
+		select count(*) from (select t.PA_MONTH,
+		       count(t.EMPID) countEMPID,
+		       sum(t.BASE_PAY) BASE_PAY,
+		       sum(t.DUTIES_ALLOWANCE) DUTIES_ALLOWANCE,
+		       sum(t.RESIDENTIAL_GRANTS) RESIDENTIAL_GRANTS,
+		       sum(t.SPECIAL_GRANTS) SPECIAL_GRANTS,
+		       sum(t.TOTAL_BASIC) TOTAL_BASIC,
+		       sum(t.PERFORMANCE_PAY2) PERFORMANCE_PAY2,
+		       sum(t.PERFORMANCE_PAY3) PERFORMANCE_PAY3,
+		       sum(t.TO_THE_OTHER) TO_THE_OTHER,
+		       sum(t.STICKS_TO_THE_WRONG) STICKS_TO_THE_WRONG,
+		       sum(t.NIGHT_DUTY_SUBSIDY) NIGHT_DUTY_SUBSIDY,
+		       sum(t.DUTY_SUBSIDIES) DUTY_SUBSIDIES,       
+		       sum(t.NOT_ATTENDANCE_MINUS) NOT_ATTENDANCE_MINUS,      
+		       sum(t.VACATION_MINUS) VACATION_MINUS,
+		       sum(t.LEVEL_OFF_MINUS) LEVEL_OFF_MINUS,
+		       sum(t.ABSENTEEISM_MINUS) ABSENTEEISM_MINUS,
+		       sum(t.OTHER_LESS) OTHER_LESS,
+		       sum(t.RESIDENTIAL_MINUS) RESIDENTIAL_MINUS,
+		       sum(t.REDUCE_ERRORS) REDUCE_ERRORS,
+		       sum(t.HOLIDAY_MINUS) HOLIDAY_MINUS,     
+		       sum(t.THIS_TOTAL_SUPPORT) THIS_TOTAL_SUPPORT,
+		       sum(t.PERSONAL_PENSION) PERSONAL_PENSION,
+		       sum(t.PERSONAL_MEDICAL) PERSONAL_MEDICAL,
+		       sum(t.PERSONAL_UNEMPLOYED) PERSONAL_UNEMPLOYED,
+		       sum(t.PERSONAL_HOUSING_FUND) PERSONAL_HOUSING_FUND,      
+		       sum(t.TOTAL_DEDUCTIONS) TOTAL_DEDUCTIONS,
+		       sum(t.THIS_ACTUAL_WAGE) THIS_ACTUAL_WAGE
+		  from pa_history_all_$cpnyId$_v t 
+		 where t.DEPTID = #dept:VARCHAR2#
+		 AND T.CPNY_ID=#cpnyId:VARCHAR#
+		   and t.PA_MONTH between  #startyearMonth:VARCHAR# and  #endyearMonth:VARCHAR#
+		   group by t.PA_MONTH)
+	]]>
+	</select>
+	
+	<select id="getB_viewDetailList" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[	
+			select t.PA_MONTH,
+			    t.BONUS_TYPE,
+		       count(t.EMPID) countEMPID,
+		       sum(t.BASE_PAY) BASE_PAY,
+		       sum(t.DUTIES_ALLOWANCE) DUTIES_ALLOWANCE,
+		       sum(t.RESIDENTIAL_GRANTS) RESIDENTIAL_GRANTS,
+		       sum(t.SPECIAL_GRANTS) SPECIAL_GRANTS,
+		       sum(t.TOTAL_BASIC) TOTAL_BASIC,
+		       sum(t.PERFORMANCE_PAY2) PERFORMANCE_PAY2,
+		       sum(t.PERFORMANCE_PAY3) PERFORMANCE_PAY3,
+		       sum(t.TO_THE_OTHER) TO_THE_OTHER,
+		       sum(t.STICKS_TO_THE_WRONG) STICKS_TO_THE_WRONG,
+		       sum(t.NIGHT_DUTY_SUBSIDY) NIGHT_DUTY_SUBSIDY,
+		       sum(t.DUTY_SUBSIDIES) DUTY_SUBSIDIES,       
+		       sum(t.NOT_ATTENDANCE_MINUS) NOT_ATTENDANCE_MINUS,      
+		       sum(t.VACATION_MINUS) VACATION_MINUS,
+		       sum(t.LEVEL_OFF_MINUS) LEVEL_OFF_MINUS,
+		       sum(t.ABSENTEEISM_MINUS) ABSENTEEISM_MINUS,
+		       sum(t.OTHER_LESS) OTHER_LESS,
+		       sum(t.RESIDENTIAL_MINUS) RESIDENTIAL_MINUS,
+		       sum(t.REDUCE_ERRORS) REDUCE_ERRORS,
+		       sum(t.HOLIDAY_MINUS) HOLIDAY_MINUS,     
+		       sum(t.THIS_TOTAL_SUPPORT) THIS_TOTAL_SUPPORT,
+		       sum(t.PERSONAL_PENSION) PERSONAL_PENSION,
+		       sum(t.PERSONAL_MEDICAL) PERSONAL_MEDICAL,
+		       sum(t.PERSONAL_UNEMPLOYED) PERSONAL_UNEMPLOYED,
+		       sum(t.PERSONAL_HOUSING_FUND) PERSONAL_HOUSING_FUND,      
+		       sum(t.TOTAL_DEDUCTIONS) TOTAL_DEDUCTIONS,
+		       sum(t.THIS_ACTUAL_WAGE) THIS_ACTUAL_WAGE,
+		       sum(t.LATE_EARLY_MINUS) LATE_EARLY_MINUS,
+               sum(t.LEAVE_SICK_MINUS) LEAVE_SICK_MINUS,
+               sum(t.THIS_ACTUAL_TAX) THIS_ACTUAL_TAX,
+               sum(t.TRIAL_MINUS) TRIAL_MINUS,
+               SUM(T.HOLIDAY_MINUS_ALL) HOLIDAY_MINUS_ALL
+		  from pa_history_all_$cpnyId$_v t 
+		 where t.DEPTID = #dept:VARCHAR2#
+		 AND T.CPNY_ID=#cpnyId:VARCHAR#
+		   and t.PA_MONTH between  #startyearMonth:VARCHAR# and  #endyearMonth:VARCHAR#
+		   group by t.PA_MONTH,t.BONUS_TYPE
+	]]>
+	</select>
+	
+<select id="getPaBonusDetailListNumber" parameterClass="SimpleMap" resultClass="int">
+	<![CDATA[	
+	SELECT count(*)
+					  FROM PA_BONUS_HISTORY_$cpnyId$_V t
+					 WHERE t.ATTENDANCE_PERIOD_CODE =#qufen:VARCHAR#
+					   AND t.PA_MONTH between  #startyearMonth:VARCHAR# and  #endyearMonth:VARCHAR#
+					   AND t.BONUS_TYPE_CODE = #bonusTypeCode:VARCHAR2#
+       				   AND t.BONUS_NO = #bonusNo:NUMERIC#
+	]]>
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[
+			( t.EMPID LIKE  '%'||#key:VARCHAR# || '%' OR  t.CHINESENAME LIKE  '%'||#key:VARCHAR# || '%')
+		]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="dept">
+		<![CDATA[
+		 		  EXISTS (
+			              SELECT HD.DEPTID FROM HR_DEPARTMENT HD WHERE HD.DEPTID = t.DEPTID
+			                     START WITH DEPTID = #dept:VARCHAR2#
+			                     CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+			       )      
+	    ]]>
+	</isNotEmpty>	
+		<isNotEmpty prepend="AND" property="distinction">
+		<![CDATA[
+			 t.EMPLOYEE_DISTINCTION  in ($distinction$)
+		]]>
+	</isNotEmpty>
+	<![CDATA[
+	order by t.EMPID,t.PA_MONTH
+	]]>	
+	</select>
+	
+	<select id="getPaBonusDetailList" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[	
+	SELECT t.*
+					  FROM PA_BONUS_HISTORY_$cpnyId$_V t
+					 WHERE t.ATTENDANCE_PERIOD_CODE = #qufen:VARCHAR#
+					   AND t.PA_MONTH between  #startyearMonth:VARCHAR# and  #endyearMonth:VARCHAR#
+					   AND t.BONUS_TYPE_CODE = #bonusTypeCode:VARCHAR2#
+       				   AND t.BONUS_NO = #bonusNo:NUMERIC#
+	]]>
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[
+			( t.EMPID LIKE  '%'||#key:VARCHAR# || '%' OR  t.CHINESENAME LIKE  '%'||#key:VARCHAR# || '%')
+		]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="dept">
+		<![CDATA[
+		 		  EXISTS (
+			              SELECT HD.DEPTID FROM HR_DEPARTMENT HD WHERE HD.DEPTID = t.DEPTID
+			                     START WITH DEPTID = #dept:VARCHAR2#
+			                     CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+			       )      
+	    ]]>
+	</isNotEmpty>	
+		<isNotEmpty prepend="AND" property="distinction">
+		<![CDATA[
+			 t.EMPLOYEE_DISTINCTION  in ($distinction$)
+		]]>
+	</isNotEmpty>
+	<![CDATA[
+	order by t.EMPID,t.PA_MONTH
+	]]>
+	</select>
+</sqlMap>

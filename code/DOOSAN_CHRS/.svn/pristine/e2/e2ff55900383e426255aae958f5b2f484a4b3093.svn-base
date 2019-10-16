@@ -1,0 +1,991 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="kpa.diff"><!--
+	 retrieve retrieveDiff_paramList 
+	<select id="retrieveDiff_paramList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			     SELECT PB.PARAM_NO,
+				        PB.PARAM_NAME,
+                		PB.PARAM_EN_NAME,
+                		PB.PARAM_KOR_NAME,
+				        PB.PARAM_ID,
+				        PB.DISTINCT_FIELD,
+				        PB.DISTINCT_FIELD_2ND,
+				        PB.DATA_TYPE,
+				        PB.DEFAULT_VAL,
+				        PB.DESCR,
+				        PD.FIELD_NAME AS DISTINCT_NAME,
+				        DECODE(PB.DISTINCT_FIELD, 'EMPID', PD3.FIELD_NAME, NVL(PD2.FIELD_NAME, '')) AS DISTINCT_NAME_2ND
+				   FROM KPA_DIFF_PARAM_ITEM PB, KPA_DISTINCT_LIST PD, KPA_DISTINCT_LIST PD2,
+				        (SELECT T.FIELD_NAME FROM KPA_DISTINCT_LIST T WHERE T.DISTINCT_FIELD = 'CHINESENAME') PD3
+				  WHERE PB.DISTINCT_FIELD = PD.DISTINCT_FIELD
+				    AND PB.DISTINCT_FIELD_2ND = PD2.DISTINCT_FIELD(+)
+		]]>
+		
+		<isNotEmpty prepend="AND" property="param_no">
+		<![CDATA[	 
+		 	PB.PARAM_NO = #param_no:NUMERIC#
+	    ]]>
+		</isNotEmpty>
+		
+		<![CDATA[	     
+			   ORDER BY PB.PARAM_NO
+		]]>	
+		
+	</select>
+	
+	--><!-- retrieve validateDiffParamItemId -->
+	<select id="validateDiffParamItemId" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+			     SELECT COUNT(PB.PARAM_NO)
+			       FROM KPA_DIFF_PARAM_ITEM PB
+                  WHERE (PB.PARAM_ID = #param_id:VARCHAR# 
+                     OR PB.PARAM_NAME = #param_name:VARCHAR# 
+                     OR INSTR(PB.PARAM_NAME,#param_name:VARCHAR#) = 1 
+                     OR INSTR(#param_name:VARCHAR#,PB.PARAM_NAME) = 1
+                     ) 
+		]]>	
+		<isNotEmpty prepend="AND" property="param_no">
+			<![CDATA[	 
+			 	PB.PARAM_NO <> #param_no:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		
+	</select>
+	
+	
+		<!-- insert Pa Bonus Param Item -->
+	<insert id="insertDiffParam" parameterClass="SimpleMap">
+		<![CDATA[
+			     INSERT INTO KPA_DIFF_PARAM_ITEM PB 
+			      			   (PARAM_NO, PARAM_NAME, 
+			      			    DISTINCT_FIELD, DISTINCT_FIELD_2ND, 
+			      			    DATA_TYPE, DESCR, DEFAULT_VAL,
+			      			    PARAM_EN_NAME,PARAM_KOR_NAME,PARAM_ID)
+			     		VALUES (KPA_DIFF_PARAM_ITEM_SEQ.NEXTVAL, #param_name:VARCHAR#, 
+			     				#distinct_field:VARCHAR#, #distinct_field_2nd:VARCHAR#, 
+			     				#data_type:VARCHAR#, #descr:VARCHAR#, #default_val:VARCHAR#,
+			     				#param_en_name:VARCHAR#,#param_kor_name:VARCHAR#,#param_id:VARCHAR#)
+		]]>	
+		
+	</insert>
+	
+	<!-- retrieve retrieveDiffParamDataList -->
+	<select id="retrieveDiffParamDataList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			     SELECT PB.PARAM_DATA_NO,
+				        PB.PARAM_NO,
+				        PB.FIELD1_VALUE,
+				        PB.RETURN_VALUE,
+				        PB.FIELD2_VALUE,
+				        PB.START_MONTH,
+				        PB.SD_ED_VALUE,
+				        PB.END_MONTH,
+				        HR.EMPID,
+				        HR.CHINESENAME, 
+				        HR.EMPID, 
+				        HR.CHINESENAME
+				   FROM KPA_DIFF_PARAM_DATA PB, HR_EMPLOYEE HR
+				  WHERE PB.FIELD1_VALUE = HR.EMPID(+)
+				   
+		]]>
+		
+		<isNotEmpty prepend="AND" property="param_no">
+		<![CDATA[	 
+		 	PB.PARAM_NO = #param_no:NUMERIC#
+	    ]]>
+	    </isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[	 
+		 	 EXISTS ( SELECT HD.DEPTID FROM HR_DEPARTMENT HD WHERE HD.DEPTID = HR.DEPTID START WITH DEPTID = #deptid:VARCHAR#
+				                CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+				    )
+	    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="key">
+		<![CDATA[	 
+		 	(
+		          UPPER(HR.EMPID) LIKE '%' || UPPER(#key:VARCHAR#) || '%'
+		       OR HR.CHINESENAME LIKE '%' || #key:VARCHAR# || '%'
+		       OR UPPER(HR.CHINESE_PINYIN) LIKE '%' || UPPER(#key:VARCHAR#) || '%'
+		       
+		    )
+	    ]]>
+		</isNotEmpty>
+
+		<![CDATA[	     
+			   ORDER BY PB.PARAM_NO
+		]]>	
+		
+	</select>
+	
+	<!-- retrieve RetrieveDiff_paramList -->
+	<select id="retrieveDiff_paramList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			     SELECT PB.PARAM_NO,
+				        PB.PARAM_NAME,
+                		PB.PARAM_EN_NAME,
+                		PB.PARAM_KOR_NAME,
+				        PB.PARAM_ID,
+				        PB.DISTINCT_FIELD,
+				        PB.DISTINCT_FIELD_2ND,
+				        PB.DATA_TYPE,
+				        PB.DEFAULT_VAL,
+				        PB.DESCR,
+				        PD.FIELD_NAME AS DISTINCT_NAME,
+				        DECODE(PB.DISTINCT_FIELD, 'EMPID', PD3.FIELD_NAME, NVL(PD2.FIELD_NAME, '')) AS DISTINCT_NAME_2ND
+				   FROM KPA_DIFF_PARAM_ITEM PB, KPA_DISTINCT_LIST PD, KPA_DISTINCT_LIST PD2,
+				        (SELECT T.FIELD_NAME FROM KPA_DISTINCT_LIST T WHERE T.DISTINCT_FIELD = 'CHINESENAME') PD3
+				  WHERE PB.DISTINCT_FIELD = PD.DISTINCT_FIELD
+				    AND PB.DISTINCT_FIELD_2ND = PD2.DISTINCT_FIELD(+)
+		]]>
+		
+		<isNotEmpty prepend="AND" property="param_no">
+		<![CDATA[	 
+		 	PB.PARAM_NO = #param_no:NUMERIC#
+	    ]]>
+		</isNotEmpty>
+		
+		<![CDATA[	     
+			   ORDER BY PB.PARAM_NO
+		]]>	
+		
+	</select>
+	
+		<!-- update Pa Bonus Param Item -->
+	<update id="updateDiffParam" parameterClass="SimpleMap">
+		<![CDATA[
+			     UPDATE KPA_DIFF_PARAM_ITEM PB SET  
+			     		 PARAM_NAME = #param_name:VARCHAR#,
+			     		 PARAM_EN_NAME = #param_en_name:VARCHAR#,
+			     		 PARAM_KOR_NAME = #param_kor_name:VARCHAR#,
+			     		 DISTINCT_FIELD = #distinct_field:VARCHAR#, 
+			     		 DISTINCT_FIELD_2ND = #distinct_field_2nd:VARCHAR#, 
+			     		 DATA_TYPE = #data_type:VARCHAR#, 
+			     		 DEFAULT_VAL = #default_val:VARCHAR#, 
+			     		 DESCR = #descr:VARCHAR#, 
+			     		 PARAM_ID = #param_id:VARCHAR# 
+			       WHERE PARAM_NO = #param_no:NUMERIC# 
+		]]>	
+		
+	</update>
+	<!-- update diff salary year month -->
+	<update id="updateDiffDefaultParam11" parameterClass="SimpleMap">
+		<![CDATA[
+			     UPDATE KPA_DIFF_PARAM_ITEM PB SET
+			     		 DEFAULT_VAL = #yearS1:VARCHAR#
+			       WHERE PARAM_NO = '42' 
+		]]>	
+		
+	</update>
+	
+		<update id="updateDiffDefaultParam12" parameterClass="SimpleMap">
+		<![CDATA[
+			     UPDATE KPA_DIFF_PARAM_ITEM PB SET
+			     		 DEFAULT_VAL = #monthS1:VARCHAR#
+			       WHERE PARAM_NO = '41'
+		]]>	
+		
+	</update>
+	
+	<update id="updateDiffDefaultParam13" parameterClass="SimpleMap">
+		<![CDATA[
+			     UPDATE KPA_DIFF_PARAM_ITEM PB SET
+			     		 DEFAULT_VAL = #yearE1:VARCHAR#
+			       WHERE PARAM_NO = '43' 
+		]]>	
+		
+	</update>
+	
+	<update id="updateDiffDefaultParam14" parameterClass="SimpleMap">
+		<![CDATA[
+			     UPDATE KPA_DIFF_PARAM_ITEM PB SET
+			     		 DEFAULT_VAL = #monthE1:VARCHAR#
+			       WHERE PARAM_NO = '1' 
+		]]>	
+		
+	</update>
+	
+	<!-- update diff tax year month -->
+	<update id="updateDiffDefaultParam21" parameterClass="SimpleMap">
+		<![CDATA[
+			     UPDATE KPA_DIFF_PARAM_ITEM PB SET
+			     		 DEFAULT_VAL = #yearS2:VARCHAR#
+			       WHERE PARAM_NO = '104' 
+		]]>	
+		
+	</update>
+	
+		<update id="updateDiffDefaultParam22" parameterClass="SimpleMap">
+		<![CDATA[
+			     UPDATE KPA_DIFF_PARAM_ITEM PB SET
+			     		 DEFAULT_VAL = #monthS2:VARCHAR#
+			       WHERE PARAM_NO = '102'
+		]]>	
+		
+	</update>
+	
+		<update id="updateDiffDefaultParam23" parameterClass="SimpleMap">
+		<![CDATA[
+			     UPDATE KPA_DIFF_PARAM_ITEM PB SET
+			     		 DEFAULT_VAL = #yearE2:VARCHAR#
+			       WHERE PARAM_NO = '103' 
+		]]>	
+		
+	</update>
+	
+	<update id="updateDiffDefaultParam24" parameterClass="SimpleMap">
+		<![CDATA[
+			     UPDATE KPA_DIFF_PARAM_ITEM PB SET
+			     		 DEFAULT_VAL = #monthE2:VARCHAR#
+			       WHERE PARAM_NO = '101' 
+		]]>	
+		
+	</update>
+	
+	<!-- update diff oversea year month -->
+	
+	<update id="updateDiffDefaultParam31" parameterClass="SimpleMap">
+		<![CDATA[
+			     UPDATE KPA_DIFF_PARAM_ITEM PB SET
+			     		 DEFAULT_VAL = #yearS3:VARCHAR#
+			       WHERE PARAM_NO = '108' 
+		]]>	
+		
+	</update>
+	
+	<update id="updateDiffDefaultParam32" parameterClass="SimpleMap">
+		<![CDATA[
+			     UPDATE KPA_DIFF_PARAM_ITEM PB SET
+			     		 DEFAULT_VAL = #monthS3:VARCHAR#
+			       WHERE PARAM_NO = '106'
+		]]>	
+		
+	</update>
+	
+	<update id="updateDiffDefaultParam33" parameterClass="SimpleMap">
+		<![CDATA[
+			     UPDATE KPA_DIFF_PARAM_ITEM PB SET
+			     		 DEFAULT_VAL = #yearE3:VARCHAR#
+			       WHERE PARAM_NO = '107' 
+		]]>	
+		
+	</update>
+	
+	<update id="updateDiffDefaultParam34" parameterClass="SimpleMap">
+		<![CDATA[
+			     UPDATE KPA_DIFF_PARAM_ITEM PB SET
+			     		 DEFAULT_VAL = #monthE3:VARCHAR#
+			       WHERE PARAM_NO = '105' 
+		]]>	
+		
+	</update>
+	
+	<delete id="deleteDiffSalaryS" parameterClass="SimpleMap" >
+		<![CDATA[
+				   DELETE KPA_DIFF_PARAM_DATA WHERE PARAM_NO = '62' 
+		]]>
+	</delete>
+	
+	<insert id="updateDiffSalaryS" parameterClass="SimpleMap">
+		<![CDATA[
+			INSERT INTO 
+				KPA_DIFF_PARAM_DATA (
+					PARAM_DATA_NO,
+					PARAM_NO,
+					FIELD1_VALUE,
+					RETURN_VALUE,
+					FIELD2_VALUE,
+					START_MONTH,
+					END_MONTH,
+					SD_ED_VALUE
+				) 
+	       select KPA_DIFF_PARAM_DATA_SEQ.NEXTVAL as PARAM_DATA_NO,'62' as PARAM_NO,
+	       t.empid,
+	       rv.yearly_salary_kor as return_value,
+	       t.chinesename,
+	       '',
+	       '',
+	       ''
+		   from hr_employee t,(select empid,yearly_salary_kor from kpa_history$pamonths1$ where pa_month=#pamonths1:VARCHAR#) rv
+		   where t.join_type_code = 'C_12009_1330064' and t.KO_EMP_DIFF_CODE = 'Y'
+		   and t.empid = rv.empid
+		]]>	
+		
+	</insert>
+	
+	<delete id="deleteDiffSalaryS1" parameterClass="SimpleMap" >
+		<![CDATA[
+				   DELETE KPA_DIFF_PARAM_DATA WHERE PARAM_NO = '62' 
+		]]>
+	</delete>
+	
+	<insert id="updateDiffSalaryS1" parameterClass="SimpleMap">
+		<![CDATA[
+			INSERT INTO 
+				KPA_DIFF_PARAM_DATA (
+					PARAM_DATA_NO,
+					PARAM_NO,
+					FIELD1_VALUE,
+					RETURN_VALUE,
+					FIELD2_VALUE,
+					START_MONTH,
+					END_MONTH,
+					SD_ED_VALUE
+				) 
+	       select KPA_DIFF_PARAM_DATA_SEQ.NEXTVAL as PARAM_DATA_NO,'62' as PARAM_NO,
+	       t.empid,
+	       rv.yearly_salary_kor as return_value,
+	       t.chinesename,
+	       '',
+	       '',
+	       ''
+		   from hr_employee t,(select empid,yearly_salary_kor from kpa_history where pa_month=#pamonths1:VARCHAR#) rv
+		   where t.join_type_code = 'C_12009_1330064'  and t.KO_EMP_DIFF_CODE = 'Y' 
+		   and t.empid = rv.empid
+		]]>	
+		
+	</insert>
+	
+	<delete id="deleteDiffTaxS" parameterClass="SimpleMap" >
+		<![CDATA[
+				   DELETE KPA_DIFF_PARAM_DATA WHERE PARAM_NO = '82' 
+		]]>
+	</delete>
+	
+	<insert id="updateDiffTaxS" parameterClass="SimpleMap">
+		<![CDATA[
+			INSERT INTO 
+				KPA_DIFF_PARAM_DATA (
+					PARAM_DATA_NO,
+					PARAM_NO,
+					FIELD1_VALUE,
+					RETURN_VALUE,
+					FIELD2_VALUE,
+					START_MONTH,
+					END_MONTH,
+					SD_ED_VALUE
+				) 
+	       select KPA_DIFF_PARAM_DATA_SEQ.NEXTVAL as PARAM_DATA_NO,'82' as PARAM_NO,
+	       t.empid,
+	       rv.TAX_AMOUNT_ALL as return_value,
+	       t.chinesename,
+	       '',
+	       '',
+	       ''
+		   from hr_employee t,(select empid,TAX_AMOUNT_ALL from KPA_HISTORY$pamonths2$ where pa_month=#pamonths2:VARCHAR#) rv
+		   where t.join_type_code = 'C_12009_1330064'  and t.KO_EMP_DIFF_CODE = 'Y' 
+		   and t.empid = rv.empid
+		]]>	
+		
+	</insert>
+	
+	<delete id="deleteDiffTaxS1" parameterClass="SimpleMap" >
+		<![CDATA[
+				   DELETE KPA_DIFF_PARAM_DATA WHERE PARAM_NO = '82' 
+		]]>
+	</delete>
+	
+	<insert id="updateDiffTaxS1" parameterClass="SimpleMap">
+		<![CDATA[
+			INSERT INTO 
+				KPA_DIFF_PARAM_DATA (
+					PARAM_DATA_NO,
+					PARAM_NO,
+					FIELD1_VALUE,
+					RETURN_VALUE,
+					FIELD2_VALUE,
+					START_MONTH,
+					END_MONTH,
+					SD_ED_VALUE
+				) 
+	       select KPA_DIFF_PARAM_DATA_SEQ.NEXTVAL as PARAM_DATA_NO,'82' as PARAM_NO,
+	       t.empid,
+	       rv.TAX_AMOUNT_ALL as return_value,
+	       t.chinesename,
+	       '',
+	       '',
+	       ''
+		   from hr_employee t,(select empid,TAX_AMOUNT_ALL from KPA_HISTORY where pa_month=#pamonths2:VARCHAR#) rv
+		   where t.join_type_code = 'C_12009_1330064' and t.KO_EMP_DIFF_CODE = 'Y' 
+		   and t.empid = rv.empid
+		]]>	
+		
+	</insert>
+	
+	<delete id="deleteDiffOverseaS" parameterClass="SimpleMap" >
+		<![CDATA[
+				   DELETE KPA_DIFF_PARAM_DATA WHERE PARAM_NO = '110' 
+		]]>
+	</delete>
+	
+	<insert id="updateDiffOverseaS" parameterClass="SimpleMap">
+		<![CDATA[
+			INSERT INTO 
+				KPA_DIFF_PARAM_DATA (
+					PARAM_DATA_NO,
+					PARAM_NO,
+					FIELD1_VALUE,
+					RETURN_VALUE,
+					FIELD2_VALUE,
+					START_MONTH,
+					END_MONTH,
+					SD_ED_VALUE
+				) 
+	       select KPA_DIFF_PARAM_DATA_SEQ.NEXTVAL as PARAM_DATA_NO,'110' as PARAM_NO,
+	       t.empid,
+	       rv.SEA_SUBSIDY as return_value,
+	       t.chinesename,
+	       '',
+	       '',
+	       ''
+		   from hr_employee t,(select empid,SEA_SUBSIDY from kpa_history$pamonths3$ where pa_month=#pamonths3:VARCHAR#) rv
+		   where t.join_type_code = 'C_12009_1330064'  and t.KO_EMP_DIFF_CODE = 'Y' 
+		   and t.empid = rv.empid
+		]]>	
+		
+	</insert>
+	
+	<delete id="deleteDiffOverseaS1" parameterClass="SimpleMap" >
+		<![CDATA[
+				   DELETE KPA_DIFF_PARAM_DATA WHERE PARAM_NO = '110' 
+		]]>
+	</delete>
+	
+	<insert id="updateDiffOverseaS1" parameterClass="SimpleMap">
+		<![CDATA[
+			INSERT INTO 
+				KPA_DIFF_PARAM_DATA (
+					PARAM_DATA_NO,
+					PARAM_NO,
+					FIELD1_VALUE,
+					RETURN_VALUE,
+					FIELD2_VALUE,
+					START_MONTH,
+					END_MONTH,
+					SD_ED_VALUE
+				) 
+	       select KPA_DIFF_PARAM_DATA_SEQ.NEXTVAL as PARAM_DATA_NO,'110' as PARAM_NO,
+	       t.empid,
+	       rv.SEA_SUBSIDY as return_value,
+	       t.chinesename,
+	       '',
+	       '',
+	       ''
+		   from hr_employee t,(select empid,SEA_SUBSIDY from kpa_history where pa_month=#pamonths3:VARCHAR#) rv
+		   where t.join_type_code = 'C_12009_1330064'  and t.KO_EMP_DIFF_CODE = 'Y' 
+		   and t.empid = rv.empid
+		]]>	
+		
+	</insert>
+	
+	<delete id="deleteDiffSalaryE" parameterClass="SimpleMap" >
+		<![CDATA[
+				   DELETE KPA_DIFF_PARAM_DATA WHERE PARAM_NO = '63' 
+		]]>
+	</delete>
+	
+	<insert id="updateDiffSalaryE" parameterClass="SimpleMap">
+		<![CDATA[
+			INSERT INTO 
+				KPA_DIFF_PARAM_DATA (
+					PARAM_DATA_NO,
+					PARAM_NO,
+					FIELD1_VALUE,
+					RETURN_VALUE,
+					FIELD2_VALUE,
+					START_MONTH,
+					END_MONTH,
+					SD_ED_VALUE
+				) 
+	       select KPA_DIFF_PARAM_DATA_SEQ.NEXTVAL as PARAM_DATA_NO,'63' as PARAM_NO,
+	       t.empid,
+	       rv.yearly_salary_kor as return_value,
+	       t.chinesename,
+	       '',
+	       '',
+	       ''
+		   from hr_employee t,(select empid,yearly_salary_kor from kpa_history$pamonthe1$ where pa_month=#pamonthe1:VARCHAR#) rv
+		   where t.join_type_code = 'C_12009_1330064'  and t.KO_EMP_DIFF_CODE = 'Y' 
+		   and t.empid = rv.empid
+		]]>	
+		
+	</insert>
+	
+	<delete id="deleteDiffSalaryE1" parameterClass="SimpleMap" >
+		<![CDATA[
+				   DELETE KPA_DIFF_PARAM_DATA WHERE PARAM_NO = '63' 
+		]]>
+	</delete>
+	
+	<insert id="updateDiffSalaryE1" parameterClass="SimpleMap">
+		<![CDATA[
+			INSERT INTO 
+				KPA_DIFF_PARAM_DATA (
+					PARAM_DATA_NO,
+					PARAM_NO,
+					FIELD1_VALUE,
+					RETURN_VALUE,
+					FIELD2_VALUE,
+					START_MONTH,
+					END_MONTH,
+					SD_ED_VALUE
+				) 
+	       select KPA_DIFF_PARAM_DATA_SEQ.NEXTVAL as PARAM_DATA_NO,'63' as PARAM_NO,
+	       t.empid,
+	       rv.yearly_salary_kor as return_value,
+	       t.chinesename,
+	       '',
+	       '',
+	       ''
+		   from hr_employee t,(select empid,yearly_salary_kor from kpa_history where pa_month=#pamonthe1:VARCHAR#) rv
+		   where t.join_type_code = 'C_12009_1330064'  and t.KO_EMP_DIFF_CODE = 'Y' 
+		   and t.empid = rv.empid
+		]]>	
+		
+	</insert>
+	
+		<delete id="deleteDiffTaxE" parameterClass="SimpleMap" >
+		<![CDATA[
+				   DELETE KPA_DIFF_PARAM_DATA WHERE PARAM_NO = '81' 
+		]]>
+	</delete>
+	
+	<insert id="updateDiffTaxE" parameterClass="SimpleMap">
+		<![CDATA[
+			INSERT INTO 
+				KPA_DIFF_PARAM_DATA (
+					PARAM_DATA_NO,
+					PARAM_NO,
+					FIELD1_VALUE,
+					RETURN_VALUE,
+					FIELD2_VALUE,
+					START_MONTH,
+					END_MONTH,
+					SD_ED_VALUE
+				) 
+	       select KPA_DIFF_PARAM_DATA_SEQ.NEXTVAL as PARAM_DATA_NO,'81' as PARAM_NO,
+	       t.empid,
+	       rv.TAX_AMOUNT_ALL as return_value,
+	       t.chinesename,
+	       '',
+	       '',
+	       ''
+		   from hr_employee t,(select empid,TAX_AMOUNT_ALL from kpa_history$pamonthe2$ where pa_month=#pamonthe2:VARCHAR#) rv
+		   where t.join_type_code = 'C_12009_1330064'  and t.KO_EMP_DIFF_CODE = 'Y' 
+		   and t.empid = rv.empid
+		]]>	
+		
+	</insert>
+	
+	<delete id="deleteDiffTaxE1" parameterClass="SimpleMap" >
+		<![CDATA[
+				   DELETE KPA_DIFF_PARAM_DATA WHERE PARAM_NO = '81' 
+		]]>
+	</delete>
+	
+	<insert id="updateDiffTaxE1" parameterClass="SimpleMap">
+		<![CDATA[
+			INSERT INTO 
+				KPA_DIFF_PARAM_DATA (
+					PARAM_DATA_NO,
+					PARAM_NO,
+					FIELD1_VALUE,
+					RETURN_VALUE,
+					FIELD2_VALUE,
+					START_MONTH,
+					END_MONTH,
+					SD_ED_VALUE
+				) 
+	       select KPA_DIFF_PARAM_DATA_SEQ.NEXTVAL as PARAM_DATA_NO,'81' as PARAM_NO,
+	       t.empid,
+	       rv.TAX_AMOUNT_ALL as return_value,
+	       t.chinesename,
+	       '',
+	       '',
+	       ''
+		   from hr_employee t,(select empid,TAX_AMOUNT_ALL from kpa_history where pa_month=#pamonthe2:VARCHAR#) rv
+		   where t.join_type_code = 'C_12009_1330064'  and t.KO_EMP_DIFF_CODE = 'Y' 
+		   and t.empid = rv.empid
+		]]>	
+		
+	</insert>
+	
+		<delete id="deleteDiffOverseaE" parameterClass="SimpleMap" >
+		<![CDATA[
+				   DELETE KPA_DIFF_PARAM_DATA WHERE PARAM_NO = '109' 
+		]]>
+	</delete>
+	
+	<insert id="updateDiffOverseaE" parameterClass="SimpleMap">
+		<![CDATA[
+			INSERT INTO 
+				KPA_DIFF_PARAM_DATA (
+					PARAM_DATA_NO,
+					PARAM_NO,
+					FIELD1_VALUE,
+					RETURN_VALUE,
+					FIELD2_VALUE,
+					START_MONTH,
+					END_MONTH,
+					SD_ED_VALUE
+				) 
+	       select KPA_DIFF_PARAM_DATA_SEQ.NEXTVAL as PARAM_DATA_NO,'109' as PARAM_NO,
+	       t.empid,
+	       rv.SEA_SUBSIDY as return_value,
+	       t.chinesename,
+	       '',
+	       '',
+	       ''
+		   from hr_employee t,(select empid,SEA_SUBSIDY from kpa_history$pamonthe3$ where pa_month=#pamonthe3:VARCHAR#) rv
+		   where t.join_type_code = 'C_12009_1330064'  and t.KO_EMP_DIFF_CODE = 'Y' 
+		   and t.empid = rv.empid
+		]]>	
+		
+	</insert>
+	
+	<delete id="deleteDiffOverseaE1" parameterClass="SimpleMap" >
+		<![CDATA[
+				   DELETE KPA_DIFF_PARAM_DATA WHERE PARAM_NO = '109' 
+		]]>
+	</delete>
+	
+	<insert id="updateDiffOverseaE1" parameterClass="SimpleMap">
+		<![CDATA[
+			INSERT INTO 
+				KPA_DIFF_PARAM_DATA (
+					PARAM_DATA_NO,
+					PARAM_NO,
+					FIELD1_VALUE,
+					RETURN_VALUE,
+					FIELD2_VALUE,
+					START_MONTH,
+					END_MONTH,
+					SD_ED_VALUE
+				) 
+	       select KPA_DIFF_PARAM_DATA_SEQ.NEXTVAL as PARAM_DATA_NO,'109' as PARAM_NO,
+	       t.empid,
+	       rv.SEA_SUBSIDY as return_value,
+	       t.chinesename,
+	       '',
+	       '',
+	       ''
+		   from hr_employee t,(select empid,SEA_SUBSIDY from kpa_history where pa_month=#pamonthe3:VARCHAR#) rv
+		   where t.join_type_code = 'C_12009_1330064'  and t.KO_EMP_DIFF_CODE = 'Y' 
+		   and t.empid = rv.empid
+		]]>	
+		
+	</insert>
+	
+	<select id="findHistoryE" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+			        SELECT COUNT (*)
+				     FROM user_tables
+				    WHERE table_name = 'KPA_HISTORY$pamonthe1$'
+		]]>		
+	</select>
+	
+	<select id="findHistoryE_tax" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+			        SELECT COUNT (*)
+				     FROM user_tables
+				    WHERE table_name = 'KPA_HISTORY$pamonthe2$'
+		]]>		
+	</select>
+	
+	<select id="findHistoryE_oversea" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+			        SELECT COUNT (*)
+				     FROM user_tables
+				    WHERE table_name = 'KPA_HISTORY$pamonthe3$'
+		]]>		
+	</select>
+	
+	<select id="findHistoryS" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+			        SELECT COUNT (*)
+				     FROM user_tables
+				    WHERE table_name = 'KPA_HISTORY$pamonths1$'
+		]]>		
+	</select>
+	
+	<select id="findHistoryS_tax" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+			        SELECT COUNT (*)
+				     FROM user_tables
+				    WHERE table_name = 'KPA_HISTORY$pamonths2$'
+		]]>		
+	</select>
+	
+	<select id="findHistoryS_oversea" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+			        SELECT COUNT (*)
+				     FROM user_tables
+				    WHERE table_name = 'KPA_HISTORY$pamonths3$'
+		]]>		
+	</select>
+	
+		<!-- delete pa bonus param -->
+	<delete id="deleteDiffParam" parameterClass="SimpleMap" >
+		<![CDATA[
+				   DELETE KPA_DIFF_PARAM_ITEM PB WHERE PB.PARAM_NO = #param_no:NUMERIC# 
+		]]>
+	</delete>
+	
+	<!-- delete pa bonus param date -->
+	<delete id="deleteDiffParamDate" parameterClass="SimpleMap" >
+		<![CDATA[
+				   DELETE KPA_DIFF_PARAM_DATA PB WHERE PB.PARAM_NO = #param_no:NUMERIC# 
+		]]>
+	</delete>
+	
+	<select id="RetrieveDiffItemList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			     SELECT PB.ITEM_NO,
+				        PB.ITEM_NAME,
+				        PB.ITEM_EN_NAME,
+				        PB.ITEM_KOR_NAME,
+				        PB.ITEM_TYPE,
+				        ITEM_TYPE_CODE.CODE_NAME AS ITEM_TYPE_NAME,
+				        PB.ITEM_ID,
+				        PB.DESCR,
+				        PB.CALCU_ORDER,
+				        PB.PRICISION,
+				        PB.CARRY_BIT,
+				        PB.DATATYPE,
+				        DATA_TYPE_CODE.CODE_NAME AS DATATYPE_NAME
+				   FROM KPA_DIFF_ITEM PB , 
+				   		SY_CODE ITEM_TYPE_CODE ,
+				   		SY_CODE DATA_TYPE_CODE
+				  WHERE PB.ITEM_TYPE= ITEM_TYPE_CODE.CODE_ID(+)
+				    AND PB.DATATYPE= DATA_TYPE_CODE.CODE_ID(+)
+		]]>
+		
+
+		<isNotEmpty prepend="AND" property="item_no">
+			PB.ITEM_NO = #item_no:NUMERIC# 
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="search">
+			(PB.ITEM_NAME LIKE '%' ||  #search:VARCHAR# || '%' OR PB.ITEM_ID LIKE '%' || UPPER(#search:VARCHAR#) || '%')
+		</isNotEmpty>
+
+		<![CDATA[	     
+			   ORDER BY PB.CALCU_ORDER
+		]]>	
+		
+	</select>
+	
+		<!-- retrieve PaBonusItemListCnt -->
+	<select id="RetrieveDiffItemListCnt" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+			     SELECT COUNT(PB.ITEM_NO)
+				   FROM KPA_DIFF_ITEM PB , 
+				   		SY_CODE ITEM_TYPE_CODE ,
+				   		SY_CODE DATA_TYPE_CODE
+				  WHERE PB.ITEM_TYPE= ITEM_TYPE_CODE.CODE_ID(+)
+				    AND PB.DATATYPE= DATA_TYPE_CODE.CODE_ID(+)
+		]]>
+		
+		<isNotEmpty prepend="AND" property="search">
+			(PB.ITEM_NAME LIKE '%' ||  #search:VARCHAR# || '%' OR PB.ITEM_ID LIKE '%' || UPPER(#search:VARCHAR#) || '%')
+		</isNotEmpty>
+	</select>
+	
+		<!-- Validate Pa Bonus Item Id -->
+	<select id="ValidateDiffItemId" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+			     SELECT COUNT(PB.ITEM_NO)
+			       FROM KPA_DIFF_ITEM PB
+                  WHERE (PB.ITEM_ID = #item_id:VARCHAR#
+                     OR PB.ITEM_NAME = #item_name:VARCHAR# 
+                     OR INSTR(PB.ITEM_NAME, #item_name:VARCHAR#) = 1 
+                     OR INSTR(#item_name:VARCHAR#, PB.ITEM_NAME) = 1)
+		]]>	
+		<isNotEmpty prepend="AND" property="item_no">
+			<![CDATA[	 
+			 	PB.ITEM_NO <> #item_no:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		
+	</select>
+	
+		<!-- insert Pa Bonus item -->
+	<insert id="insertDiffItem" parameterClass="SimpleMap" >
+		<![CDATA[
+			INSERT INTO 
+				KPA_DIFF_ITEM (
+					ITEM_NO ,
+					ITEM_NAME ,
+					ITEM_EN_NAME ,
+					ITEM_KOR_NAME ,
+					DESCR ,
+					DATATYPE ,
+					CALCU_ORDER ,
+					ITEM_TYPE ,
+					PRICISION ,
+					CARRY_BIT ,
+					ITEM_ID
+				)
+				VALUES(
+					KPA_DIFF_ITEM_SEQ.NEXTVAL,
+					#item_name:VARCHAR#,
+					#item_en_name:VARCHAR#,
+					#item_kor_name:VARCHAR#,
+					#descr:VARCHAR#,
+					#datatype:VARCHAR#,
+					NVL((SELECT MAX(CALCU_ORDER) FROM KPA_DIFF_ITEM),0) + 1,
+					#item_type:VARCHAR#,
+					#pricision:NUMERIC#,
+					#carry_bit:NUMERIC#,
+					#item_id:VARCHAR#
+				)
+			
+		]]>
+	</insert>
+	
+		<delete id="deleteDiffItem" parameterClass="SimpleMap" >
+		<![CDATA[
+				   DELETE KPA_DIFF_ITEM PB WHERE PB.ITEM_NO = #item_no:NUMERIC# 
+		]]>
+	</delete>
+	
+	<!-- delete pa bonus formular date -->
+	<delete id="deleteDiffFormular" parameterClass="SimpleMap" >
+		<![CDATA[
+				   DELETE KPA_DIFF_FORMULAR PB
+		]]>
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="item_no">
+				PB.PA_ITEM_NO = #item_no:NUMERIC# 
+			</isNotEmpty>
+			
+			<isNotEmpty prepend="AND" property="formular_no">
+				PB.FORMULAR_NO = #formular_no:NUMERIC# 
+			</isNotEmpty>
+		</dynamic>
+	</delete>
+	
+		<!-- update Pa Bonus item -->
+	<update id="updateDiffItem" parameterClass="SimpleMap" >
+		<![CDATA[
+			UPDATE KPA_DIFF_ITEM SET
+					ITEM_NAME = #item_name:VARCHAR#,
+					ITEM_EN_NAME = #item_en_name:VARCHAR#,
+					ITEM_KOR_NAME = #item_kor_name:VARCHAR#,
+					DESCR = #descr:VARCHAR#,
+					DATATYPE = #datatype:VARCHAR#,
+					ITEM_TYPE = #item_type:VARCHAR#,
+					PRICISION = #pricision:NUMERIC#,
+					CARRY_BIT = #carry_bit:NUMERIC# ,
+					ITEM_ID = #item_id:VARCHAR#
+				WHERE ITEM_NO = #item_no:NUMERIC#		
+		]]>
+	</update>
+	
+	<select id="RetrieveDiffFormularList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			     SELECT PB.FORMULAR_NO,
+				        PB.PA_ITEM_NO,
+				        PB.CONDITION,
+				        PB.FORMULAR,
+				        PB.CONDITION_SEQ,
+				        PB.CONDITION_CN,
+				        PB.FORMULAR_CN
+				   FROM KPA_DIFF_FORMULAR PB
+		]]>
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="pa_item_no">
+				PB.PA_ITEM_NO = #pa_item_no:NUMERIC# 
+			</isNotEmpty>
+			
+			<isNotEmpty prepend="AND" property="formular_no">
+				PB.FORMULAR_NO = #formular_no:NUMERIC# 
+			</isNotEmpty>
+		</dynamic>
+
+		<![CDATA[	     
+			   ORDER BY PB.CONDITION_SEQ DESC
+		]]>	
+		
+	</select>
+	
+	<insert id="insertDiffFormular" parameterClass="SimpleMap" >
+		<![CDATA[
+			INSERT INTO 
+				KPA_DIFF_FORMULAR (
+					FORMULAR_NO,
+					PA_ITEM_NO,
+					CONDITION,
+					FORMULAR,
+					CONDITION_SEQ,
+					CONDITION_CN,
+					FORMULAR_CN
+				)
+				VALUES(
+					KPA_DIFF_FORMULAR_SEQ.NEXTVAL,
+					#pa_item_no:NUMERIC#,
+					#condition:VARCHAR#,
+					#formular:VARCHAR#,
+					NVL((SELECT MAX(CONDITION_SEQ) FROM KPA_DIFF_FORMULAR WHERE PA_ITEM_NO = #pa_item_no:NUMERIC#),0) + 1,
+					#condition_cn:VARCHAR#,
+					#formular_cn:VARCHAR#
+				)
+		]]>
+	</insert>
+
+	<insert id="updateDiffFormular" parameterClass="SimpleMap" >
+		<![CDATA[
+			UPDATE 
+				KPA_DIFF_FORMULAR SET
+					CONDITION = #condition:VARCHAR#,
+					FORMULAR = #formular:VARCHAR#,
+					CONDITION_CN = #condition_cn:VARCHAR#,
+					FORMULAR_CN = #formular_cn:VARCHAR#
+				WHERE FORMULAR_NO = #formular_no:NUMERIC#
+		]]>
+	</insert>	
+	
+	<select id="RetrieveDiffItemCaluOrder" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+			     SELECT CALCU_ORDER
+     	  		FROM KPA_DIFF_ITEM
+    		   WHERE ITEM_NO = #item_no:NUMERIC#
+		]]>
+		
+	</select>
+	
+	<update id="UpdateDiffItemCaluOrderUpOne" parameterClass="SimpleMap" >
+		<![CDATA[
+			     UPDATE KPA_DIFF_ITEM SET CALCU_ORDER = (SELECT CALCU_ORDER FROM KPA_BONUS_ITEM WHERE ITEM_NO = #item_no:NUMERIC#)
+       					WHERE CALCU_ORDER = (SELECT CALCU_ORDER - 1 FROM KPA_BONUS_ITEM WHERE ITEM_NO = #item_no:NUMERIC#)   
+		]]>
+	</update>
+	
+	<!-- update Pa Bonus item calcu_order do up  two -->
+	<update id="UpdateDiffItemCaluOrderUpTwo" parameterClass="SimpleMap" >
+		<![CDATA[
+			     UPDATE KPA_DIFF_ITEM SET CALCU_ORDER = CASE WHEN CALCU_ORDER > 1 THEN CALCU_ORDER -1 ELSE CALCU_ORDER END
+       				WHERE ITEM_NO = #item_no:NUMERIC# 
+		]]>
+	</update>
+	
+	<update id="UpdateDiffItemCaluOrderDownOne" parameterClass="SimpleMap" >
+		<![CDATA[
+			     UPDATE KPA_DIFF_ITEM SET CALCU_ORDER = #CALCU_ORDER:NUMERIC# WHERE CALCU_ORDER = #CALCU_ORDER:NUMERIC# + 1 
+		]]>
+	</update>
+	
+	<!-- update Pa Bonus item calcu_order do down two-->
+	<update id="UpdateDiffItemCaluOrderDownTwo" parameterClass="SimpleMap" >
+		<![CDATA[
+			UPDATE KPA_BONUS_ITEM SET CALCU_ORDER = 
+       				CASE WHEN (SELECT COUNT(ITEM_NO) FROM KPA_DIFF_ITEM WHERE CALCU_ORDER = #CALCU_ORDER:numeric# ) = 2 THEN CALCU_ORDER + 1 ELSE CALCU_ORDER END 
+       				WHERE ITEM_NO = #item_no:NUMERIC# 
+		]]>
+	</update>
+	
+</sqlMap>

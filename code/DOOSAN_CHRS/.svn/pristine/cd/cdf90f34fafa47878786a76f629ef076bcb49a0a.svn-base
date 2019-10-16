@@ -1,0 +1,6 @@
+# LSFC data source 
+driver=oracle.jdbc.driver.OracleDriver
+url=jdbc:oracle:thin:@pc5.lotteshanghai.cn:1521:oracle
+username=lsfc	
+password=lsfc
+

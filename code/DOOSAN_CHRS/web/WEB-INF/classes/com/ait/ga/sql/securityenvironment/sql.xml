@@ -1,0 +1,2049 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="ga.securityenvironment">
+<select id="IsNotExitsSecurityEnvironmentPlanList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[	
+ select t.documentno,
+       hr.chinesename,
+       to_char(t.securitychecksdate, 'yyyy-mm-dd') securitychecksdate,
+       v.deptname,
+       t.deptid,
+       t.location,
+       t.hiddendangerscommunications,
+       t.hiddendangerscommunications,
+       t.rectificationrequirements,
+       to_char(t.rectification_date, 'yyyy-mm-dd') rectification_date
+
+ from se_securitychecks_record t,hr_employee hr,hr_department v
+ where t.active = '1'
+ and hr.person_id=t.securitychecksor_id and t.cpny_id=#cpny_id:varchar#
+ and t.deptid=v.deptid(+)
+ and t.documentno in (select t.documentno
+     from se_securitychecks_record t
+     where t.deptid = #deptId:VARCHAR# 
+       or t.deptid = hr_get_level_deptid(#deptId:VARCHAR#, '4')
+       or t.deptid=hr_get_level_deptid(#deptId:VARCHAR#, '5')
+       or t.deptid=hr_get_level_deptid(#deptId:VARCHAR#, '6')
+     )
+ and t.ISCOMPLETEDRECTIFICATION='0'
+ order by t.documentno desc
+    ]]>
+</select>
+
+
+<select id="IsNotExitsSecurityEnvironmentList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[	
+ select t.documentno,
+       hr.chinesename,
+       to_char(t.securitychecksdate, 'yyyy-mm-dd') securitychecksdate,
+       v.deptname,
+       t.deptid,
+       t.location,
+       t.brief,
+       t.hiddendangerscommunications,
+       t.rectificationrequirements,
+       to_char(t.rectification_date, 'yyyy-mm-dd') rectification_date,
+       to_char(t.PLANCOMPLETIONDATE, 'yyyy-mm-dd') PLANCOMPLETIONDATE,
+       t.ISCOMPLETEDRECTIFICATION
+
+ from se_securitychecks_record t,hr_employee hr,hr_department v
+ where t.active = '1'
+ and hr.person_id=t.securitychecksor_id
+ and t.deptid = v.deptid(+)
+ and t.documentno in (select t.documentno
+     from se_securitychecks_record t
+     where t.deptid = #deptId:VARCHAR# 
+       or t.deptid = hr_get_level_deptid(#deptId:VARCHAR#, '4')
+       or t.deptid=hr_get_level_deptid(#deptId:VARCHAR#, '5')
+       or t.deptid=hr_get_level_deptid(#deptId:VARCHAR#, '6')
+     )
+ /*and t.isrectification='0'-- 退回不显示 */
+ and (t.isrectification = '0' or t.isrectification = '2')
+ and t.isplan='1'
+ /*and t.ISCOMPLETEDRECTIFICATION = '0' -- 是否已申请隐患反馈 */
+ order by t.documentno desc
+    ]]>
+</select>
+
+<update id="updateSecurityChecksState" parameterClass="SimpleMap">
+  <![CDATA[	
+    update se_securitychecks_record t  
+    set t.ISRECTIFICATION='1'  
+    where t.documentno=#document_number:VARCHAR#
+  ]]>
+
+</update>
+
+<insert id="andSecurityEnvironmentApply" parameterClass="SimpleMap">
+  <![CDATA[	
+    insert  into SE_CORRECTIVEPLAN_APPLY(
+  APPLYNO  ,
+  SECURITYCHECKSNO ,
+  DEPTID  ,
+  APPLYORID   ,
+  CORRECTIVEPLAN    ,
+  RECTIFICATIONCOMPLETIONDATE,
+  PLANCOMPLETIONDATE,
+  CREATEDATE          
+  ) values (
+  #applyno:NUMERIC#,
+  #document_number:VARCHAR#,
+  #deptId:VARCHAR#,
+  #person_id:VARCHAR#,
+  #Correctiveplan:VARCHAR#,
+  to_date(#RECTIFICATIONCOMPLETIONDATE:VARCHAR#,'yyyy-mm-dd'),
+  to_date(#PLANCOMPLETIONDATE:VARCHAR#,'yyyy-mm-dd'),
+  SYSDATE
+  )
+  ]]>
+
+</insert>
+
+<insert id="andSecurityEnvironmentAffirm" parameterClass="SimpleMap">
+  <![CDATA[	
+    insert into SE_CORRECTIVEPLAN_AFFIRM(    
+	  GA_AFFIRM_NO,
+	  APPLY_NO,
+	  AFFIRM_LEVEL,
+	  AFFIRMOR_ID,
+	  CREATE_DATE,
+	  CREATED_BY,	
+	  ACTIVITY,
+	  APPLY_TYPE
+   )values(
+   SE_CORRECTIVEPLAN_AFFIRM_SEQ.NEXTVAL,
+   #applyno:NUMERIC#,
+   #AffirmorLevel:NUMERIC#,
+   #AffirmorId:VARCHAR#,
+   SYSDATE,
+   #applerId:VARCHAR#,
+   '1', 
+   'SecurityEnvironmentApply'
+   )   
+   
+  ]]>
+</insert>
+<select id="getUpAffrimNumber" parameterClass="SimpleMap" resultClass="int">
+  <![CDATA[	
+select count(*) 
+from se_correctiveplan_affirm t
+where  t.apply_no=#applyno:VARCHAR#
+and t.affirm_level = #affrimlevel:VARCHAR# + 1 
+order by t.affirm_level
+    ]]>
+</select>
+
+<select id="getupaffrimemail" parameterClass="SimpleMap" resultClass="string">
+  <![CDATA[	
+   select  h.email
+from se_completrectificat_affirm t,hr_employee h,se_completrectificat_apply a
+where  a.securitychecksno=#applyno:VARCHAR#  and a.applyno = t.apply_no
+and t.affirmor_id = h.person_id 
+and t.affirm_level = #affrimlevel:numeric#
+order by t.affirm_level
+    ]]>
+</select>
+
+<select id="correctivePlanAffirmList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[	
+select t.applyno,
+       t.securitychecksno,
+       t.applyorid,
+       hr.chinesename,
+       de.deptname,
+       t.correctiveplan,
+       to_char(t.rectificationcompletiondate, 'yyyy-mm-dd') rectificationcompletiondate,
+       to_char(t.plancompletiondate, 'yyyy-mm-dd') plancompletiondate,
+       re.iscompletedrectification
+
+from se_correctiveplan_apply t, hr_employee hr, hr_department de,se_securitychecks_record re
+where t.active = '1'
+   and hr.person_id = t.applyorid
+   and de.deptid = t.deptid
+   and t.securitychecksno=re.documentno
+   and t.applyno in ( select distinct t.apply_no from se_correctiveplan_affirm t where t.activity=1 and t.affirmor_id=#applerId:VARCHAR#
+   ]]>
+   <isEqual prepend="AND" property="qryType" compareValue="0"> <!--未决裁过的 -->
+		<![CDATA[
+				 t.affirm_flag=0
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+		<![CDATA[
+				 t.affirm_flag =1
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 决裁否决的 -->
+		<![CDATA[
+				 t.affirm_flag =2
+	]]>
+	</isEqual>
+  <![CDATA[	
+   )
+  ]]>
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+		 (t.applyorid LIKE  '%'||#key:VARCHAR# || '%'  or hr.chinesename LIKE  '%'||#key:VARCHAR# || '%')
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[		   
+		 t.deptid=#deptid:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="startDate">
+		<![CDATA[		   
+		 to_char(t.createdate,'yyyy-mm-dd') between #startDate:VARCHAR#  and #endDate:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+</select>
+<select id="correctivePlanAffirmListNumber" parameterClass="SimpleMap" resultClass="int">
+  <![CDATA[	
+	select count(t.applyno) as applyno
+	from se_correctiveplan_apply t,hr_employee hr
+	where t.active = '1'
+	and hr.person_id = t.applyorid
+	and t.applyno in ( select distinct t.apply_no from se_correctiveplan_affirm t where t.activity=1 and t.affirmor_id=#applerId:VARCHAR#
+   ]]>
+   <isEqual prepend="AND" property="qryType" compareValue="0"> <!--未决裁过的 -->
+		<![CDATA[
+				 t.affirm_flag=0
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+		<![CDATA[
+				 t.affirm_flag =1
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 决裁否决的 -->
+		<![CDATA[
+				 t.affirm_flag =2
+	]]>
+	</isEqual>
+  <![CDATA[	
+   )
+  ]]>
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+		 (t.applyorid LIKE  '%'||#key:VARCHAR# || '%'  or hr.chinesename LIKE  '%'||#key:VARCHAR# || '%')
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[		   
+		 t.deptid=#deptid:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="startDate">
+		<![CDATA[		   
+		 to_char(t.createdate,'yyyy-mm-dd') between #startDate:VARCHAR#  and #endDate:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+</select>
+
+
+<select id="correctivePlanAffirmInfoList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[	
+select t.applyno,
+       t.securitychecksno,
+       t.applyorid,
+       hr.chinesename,
+       de.deptname,
+       t.correctiveplan,
+       to_char(t.rectificationcompletiondate, 'yyyy-mm-dd') rectificationcompletiondate,
+       to_char(t.plancompletiondate, 'yyyy-mm-dd') plancompletiondate,
+       re.iscompletedrectification
+
+from se_correctiveplan_apply t, hr_employee hr, hr_department de,se_securitychecks_record re
+where t.active = '1'
+   and hr.empid = t.applyorid
+   and de.deptid = t.deptid
+   and t.securitychecksno=re.documentno
+   and t.applyorid=#applerId:VARCHAR#
+   and t.applyno in ( select distinct t.apply_no from se_correctiveplan_affirm t where t.activity=1 
+   ]]>
+   <isEqual prepend="AND" property="qryType" compareValue="0"> <!--未决裁过的 -->
+		<![CDATA[
+				 t.affirm_flag=0
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+		<![CDATA[
+				 t.affirm_flag =1
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 决裁否决的 -->
+		<![CDATA[
+				 t.affirm_flag =2
+	]]>
+	</isEqual>
+  <![CDATA[	
+   )
+  ]]>
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+		 (t.applyorid LIKE  '%'||#key:VARCHAR# || '%'  or hr.chinesename LIKE  '%'||#key:VARCHAR# || '%')
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[		   
+		 t.deptid=#deptid:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="cpnyId">
+		<![CDATA[		   
+		 hr.CPNY_ID=#cpnyId:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="startDate">
+		<![CDATA[		   
+		 to_char(t.createdate,'yyyy-mm-dd') between #startDate:VARCHAR#  and #endDate:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+</select>
+
+<select id="correctivePlanAffirmInfoListNumber" parameterClass="SimpleMap" resultClass="int">
+  <![CDATA[	
+	select count(t.applyno) as applyno
+	from se_correctiveplan_apply t,hr_employee hr
+	where t.active = '1'
+	and hr.empid = t.applyorid
+	and t.applyorid=#applerId:VARCHAR# 
+	and t.applyno in ( select distinct t.apply_no from se_correctiveplan_affirm t where t.activity=1 
+   ]]>
+   <isEqual prepend="AND" property="qryType" compareValue="0"> <!--未决裁过的 -->
+		<![CDATA[
+				 t.affirm_flag=0
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+		<![CDATA[
+				 t.affirm_flag =1
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 决裁否决的 -->
+		<![CDATA[
+				 t.affirm_flag =2
+	]]>
+	</isEqual>
+  <![CDATA[	
+   )
+  ]]>
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+		 (t.applyorid LIKE  '%'||#key:VARCHAR# || '%'  or hr.chinesename LIKE  '%'||#key:VARCHAR# || '%')
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[		   
+		 t.deptid=#deptid:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="cpnyId">
+		<![CDATA[		   
+		 hr.CPNY_ID=#cpnyId:VARCHAR#
+		]]>	
+	</isNotEmpty>		
+	<isNotEmpty prepend="AND" property="startDate">
+		<![CDATA[		   
+		 to_char(t.createdate,'yyyy-mm-dd') between #startDate:VARCHAR#  and #endDate:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+</select>
+
+
+<select id="getIfAffirmNumber" parameterClass="SimpleMap" resultClass="int">
+  <![CDATA[	
+select count(t.applyno) as applyno
+from se_correctiveplan_apply t
+where t.active = '1'
+    ]]>
+</select>
+
+<select id="getapplyemail" parameterClass="SimpleMap" resultClass="string">
+  <![CDATA[	
+select email from hr_employee where ACTIVITY = 1 and  person_id=#applerId:VARCHAR#
+    ]]>
+</select>
+
+<select id="getForkliftAffirmEmail" parameterClass="SimpleMap" resultClass="string">
+  <![CDATA[	
+select h.email
+from se_forkliftmaintain_affirm t,hr_employee h
+where  t.apply_no=#affirmno:VARCHAR# 
+and t.affirmor_id = h.person_id 
+and t.affirm_level = #affrimlevel:NUMERIC# + 1 
+order by t.affirm_level    ]]>
+</select>
+
+<select id="correctivePlanAffirmorList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[	
+select  
+     t.ga_affirm_no ,t.affirm_flag,t.affirm_level,t.affirmor_id,hr.chinesename
+from se_correctiveplan_affirm t,hr_employee hr
+where t.affirmor_id=hr.empid
+      and t.apply_no=#applyno:VARCHAR#
+order by t.affirm_level
+
+    ]]>
+</select>
+
+<update id="ongingAffirm" parameterClass="SimpleMap">
+  <![CDATA[	
+update se_correctiveplan_affirm t
+set t.affirm_flag=#flag:VARCHAR#
+where t.ga_affirm_no=#affirmno:VARCHAR#
+    ]]>
+</update>
+<update id="updateCheckDate" parameterClass="SimpleMap">
+  <![CDATA[	
+update se_correctiveplan_apply t
+set t.plancompletiondate=to_date(#checkDate:VARCHAR#,'yyyy-mm-dd')
+where t.applyno=#applyno:NUMERIC#
+    ]]>
+</update>
+
+<update id="updateComplate" parameterClass="SimpleMap">
+  <![CDATA[	
+update se_securitychecks_record t
+set t.ISCOMPLETEDRECTIFICATION=#affno:VARCHAR#
+where t.DOCUMENTNO=#applyno:VARCHAR#
+    ]]>
+</update>
+
+<select id="IsNotOingCompletedRectificationList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[	
+select t.documentno,
+       hr.chinesename,
+       to_char(t.securitychecksdate, 'yyyy-mm-dd') securitychecksdate,
+       v.deptname,
+       t.deptid,
+       t.location,
+       t.hiddendangerscommunications,
+       t.hiddendangerscommunications,
+       t.rectificationrequirements,
+       to_char(t.rectification_date, 'yyyy-mm-dd') rectification_date
+
+  from se_securitychecks_record t,
+       hr_employee              hr,
+       hr_department            v,
+       se_correctiveplan_affirm affirm,
+       se_correctiveplan_apply  apply
+ where t.active = '1'
+   and hr.empid = t.securitychecksor_id
+   and t.deptid = v.deptid(+)
+   and t.deptid=#deptId:VARCHAR#
+   and affirm.apply_no = apply.applyno
+   and apply.securitychecksno = t.documentno  
+   and t.iscompletedrectification='0'
+   and affirm.affirm_flag='1'
+ order by t.documentno desc
+    ]]>
+</select>
+
+<select id="completedRectificationAffirmListNumber" parameterClass="SimpleMap" resultClass="int">
+  <![CDATA[	
+select count(t.applyno) as applyno
+from se_completrectificat_apply   t,
+       hr_employee              hr,
+       hr_department            de,
+       se_securitychecks_record re,
+(SELECT se_completrectificat_affirm.*,
+               UP_AFFIRM.AFFIRMOR_ID UP_AFFIRMOR_ID,
+               NVL(UP_AFFIRM.AFFIRM_FLAG, 1) UP_AFFIRM_FLAG,
+               CASE
+                 WHEN se_completrectificat_affirm.AFFIRM_LEVEL =
+                      MAX_AFFIRM.MAX_LEVEL THEN
+                  1
+                 ELSE
+                  0
+               END AS MAX_LEVEL_FLAG
+          FROM (SELECT se_completrectificat_affirm.*,
+                       se_completrectificat_affirm.AFFIRM_LEVEL - 1 UP_LEVEL,
+                       se_completrectificat_affirm.AFFIRM_LEVEL + 1 NEXT_LEVEL
+                  FROM se_completrectificat_affirm) se_completrectificat_affirm,
+               (SELECT se_completrectificat_affirm.APPLY_NO,
+                       se_completrectificat_affirm.AFFIRM_LEVEL,
+                       se_completrectificat_affirm.AFFIRMOR_ID,
+                       se_completrectificat_affirm.AFFIRM_FLAG
+                  FROM se_completrectificat_affirm) UP_AFFIRM,
+               (SELECT se_completrectificat_affirm.APPLY_NO,
+                       MAX(se_completrectificat_affirm.AFFIRM_LEVEL) MAX_LEVEL
+                  FROM se_completrectificat_affirm
+                 GROUP BY se_completrectificat_affirm.APPLY_NO) MAX_AFFIRM
+         WHERE se_completrectificat_affirm.APPLY_NO = UP_AFFIRM.APPLY_NO(+)
+           AND se_completrectificat_affirm.UP_LEVEL = UP_AFFIRM.AFFIRM_LEVEL(+)
+           AND se_completrectificat_affirm.APPLY_NO = MAX_AFFIRM.APPLY_NO(+)
+           and se_completrectificat_affirm.affirmor_id = #applerId:VARCHAR#) AFFIRM
+ where hr.person_id = t.applyorid
+   and de.deptid = t.deptid
+   and t.applyno = AFFIRM.APPLY_NO
+   AND AFFIRM.UP_AFFIRM_FLAG = 1
+   and t.securitychecksno = re.documentno
+   and t.applyno in ( select distinct t.apply_no from se_completrectificat_affirm t where t.activity=1 and t.affirmor_id=#applerId:VARCHAR#
+   ]]>
+   <isEqual prepend="AND" property="qryType" compareValue="0"> <!--未决裁过的 -->
+		<![CDATA[
+				 t.affirm_flag=0
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+		<![CDATA[
+				 t.affirm_flag =1
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 决裁否决的 -->
+		<![CDATA[
+				 t.affirm_flag =2
+	]]>
+	</isEqual>
+  <![CDATA[	
+   )
+  ]]>
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+		 (t.applyorid LIKE  '%'||#key:VARCHAR# || '%'  or hr.chinesename LIKE  '%'||#key:VARCHAR# || '%')
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[		   
+		 t.deptid=#deptid:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="startDate">
+		<![CDATA[		   
+		 to_char(t.createdate,'yyyy-mm-dd') between #startDate:VARCHAR#  and #endDate:VARCHAR#
+		]]>	
+	</isNotEmpty>
+</select>
+
+<select id="completedRectificationAffirmList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[	
+select t.applyno,
+       t.securitychecksno,
+       hr.chinesename,
+       t.APPLYORID,
+       de.deptname,
+       t.crfnote,      
+       re.isrectification,
+       to_char(t.overdate,'yyyy-mm-dd') overdate,
+       to_char(t.completiondate,'yyyy-mm-dd') completiondate,
+       t.createdate,
+       t.classification,
+       t.place,
+       t.detailsa,
+       t.CRFNOTE,
+	   t.active
+  from se_completrectificat_apply   t,
+       hr_employee              hr,
+       hr_department            de,
+       se_securitychecks_record re,
+(SELECT se_completrectificat_affirm.*,
+               UP_AFFIRM.AFFIRMOR_ID UP_AFFIRMOR_ID,
+               NVL(UP_AFFIRM.AFFIRM_FLAG, 1) UP_AFFIRM_FLAG,
+               CASE
+                 WHEN se_completrectificat_affirm.AFFIRM_LEVEL =
+                      MAX_AFFIRM.MAX_LEVEL THEN
+                  1
+                 ELSE
+                  0
+               END AS MAX_LEVEL_FLAG
+          FROM (SELECT se_completrectificat_affirm.*,
+                       se_completrectificat_affirm.AFFIRM_LEVEL - 1 UP_LEVEL,
+                       se_completrectificat_affirm.AFFIRM_LEVEL + 1 NEXT_LEVEL
+                  FROM se_completrectificat_affirm) se_completrectificat_affirm,
+               (SELECT se_completrectificat_affirm.APPLY_NO,
+                       se_completrectificat_affirm.AFFIRM_LEVEL,
+                       se_completrectificat_affirm.AFFIRMOR_ID,
+                       se_completrectificat_affirm.AFFIRM_FLAG
+                  FROM se_completrectificat_affirm) UP_AFFIRM,
+               (SELECT se_completrectificat_affirm.APPLY_NO,
+                       MAX(se_completrectificat_affirm.AFFIRM_LEVEL) MAX_LEVEL
+                  FROM se_completrectificat_affirm
+                 GROUP BY se_completrectificat_affirm.APPLY_NO) MAX_AFFIRM
+         WHERE se_completrectificat_affirm.APPLY_NO = UP_AFFIRM.APPLY_NO(+)
+           AND se_completrectificat_affirm.UP_LEVEL = UP_AFFIRM.AFFIRM_LEVEL(+)
+           AND se_completrectificat_affirm.APPLY_NO = MAX_AFFIRM.APPLY_NO(+)
+           and se_completrectificat_affirm.affirmor_id = #applerId:VARCHAR#) AFFIRM
+ where hr.person_id = t.applyorid
+   and de.deptid = t.deptid
+   and t.applyno = AFFIRM.APPLY_NO
+   AND AFFIRM.UP_AFFIRM_FLAG = 1
+   and t.securitychecksno = re.documentno
+   and t.applyno in ( select distinct t.apply_no from se_completrectificat_affirm t where t.activity=1 and t.affirmor_id=#applerId:VARCHAR#
+   ]]>
+   <isEqual prepend="AND" property="qryType" compareValue="0"> <!--未决裁过的 -->
+		<![CDATA[
+				 t.affirm_flag=0
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+		<![CDATA[
+				 t.affirm_flag =1
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 决裁否决的 -->
+		<![CDATA[
+				 t.affirm_flag =2
+	]]>
+	</isEqual>
+  <![CDATA[	
+   )
+  ]]>
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+		 (t.applyorid LIKE  '%'||#key:VARCHAR# || '%'  or hr.chinesename LIKE  '%'||#key:VARCHAR# || '%')
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[		   
+		 t.deptid=#deptid:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="startDate">
+		<![CDATA[		   
+		 to_char(t.createdate,'yyyy-mm-dd') between #startDate:VARCHAR#  and #endDate:VARCHAR#
+		]]>	
+	</isNotEmpty>
+   <![CDATA[	
+     order by t.securitychecksno desc 
+    ]]>
+</select>
+
+<!-- 设施维修决裁 -->
+
+<select id="facilityRectificationAffirmList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[	
+select t.applyno,
+       t.securitychecksno,
+       hr.chinesename,
+       t.APPLYORID,
+       de.deptname,
+       t.crfnote,      
+       to_char(t.overdate,'yyyy-mm-dd') overdate,
+       to_char(t.completiondate,'yyyy-mm-dd') completiondate,
+       t.createdate,
+       t.classification,
+       t.place,
+       t.detailsa,
+       t.CRFNOTE,
+       AFFIRM.ga_affirm_no,
+       AFFIRM.AFFIRM_LEVEL,
+       AFFIRM.MAX_LEVEL_FLAG,
+       t.weidan,
+	   t.active
+  from se_completrectificat_apply   t,
+       hr_employee              hr,
+       hr_department            de,
+    
+(SELECT se_completrectificat_affirm.*,
+               UP_AFFIRM.AFFIRMOR_ID UP_AFFIRMOR_ID,
+               NVL(UP_AFFIRM.AFFIRM_FLAG, 1) UP_AFFIRM_FLAG,
+               CASE
+                 WHEN se_completrectificat_affirm.AFFIRM_LEVEL =
+                      MAX_AFFIRM.MAX_LEVEL THEN
+                  1
+                 ELSE
+                  0
+               END AS MAX_LEVEL_FLAG
+          FROM (SELECT se_completrectificat_affirm.*,
+                       se_completrectificat_affirm.AFFIRM_LEVEL - 1 UP_LEVEL,
+                       se_completrectificat_affirm.AFFIRM_LEVEL + 1 NEXT_LEVEL
+                  FROM se_completrectificat_affirm) se_completrectificat_affirm,
+               (SELECT se_completrectificat_affirm.APPLY_NO,
+                       se_completrectificat_affirm.AFFIRM_LEVEL,
+                       se_completrectificat_affirm.AFFIRMOR_ID,
+                       se_completrectificat_affirm.AFFIRM_FLAG
+                  FROM se_completrectificat_affirm) UP_AFFIRM,
+               (SELECT se_completrectificat_affirm.APPLY_NO,
+                       MAX(se_completrectificat_affirm.AFFIRM_LEVEL) MAX_LEVEL
+                  FROM se_completrectificat_affirm
+                 GROUP BY se_completrectificat_affirm.APPLY_NO) MAX_AFFIRM
+         WHERE se_completrectificat_affirm.APPLY_NO = UP_AFFIRM.APPLY_NO(+)
+           AND se_completrectificat_affirm.UP_LEVEL = UP_AFFIRM.AFFIRM_LEVEL(+)
+           AND se_completrectificat_affirm.APPLY_NO = MAX_AFFIRM.APPLY_NO(+)
+           and se_completrectificat_affirm.affirmor_id = #applerId:VARCHAR#) AFFIRM
+ where hr.person_id = t.applyorid
+   and de.deptid = t.deptid
+   and t.applyno = AFFIRM.APPLY_NO
+   AND AFFIRM.UP_AFFIRM_FLAG = 1
+ 
+   and t.applyno in ( select distinct t.apply_no from se_completrectificat_affirm t where t.activity=1 and t.affirmor_id=#applerId:VARCHAR#
+   ]]>
+   <isEqual prepend="AND" property="qryType" compareValue="0"> <!--未决裁过的 -->
+		<![CDATA[
+				 t.affirm_flag=0
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+		<![CDATA[
+				 t.affirm_flag =1
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 决裁否决的 -->
+		<![CDATA[
+				 t.affirm_flag =2
+	]]>
+	</isEqual>
+  <![CDATA[	
+   )
+  ]]>
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+		 (t.applyorid LIKE  '%'||#key:VARCHAR# || '%'  or hr.chinesename LIKE  '%'||#key:VARCHAR# || '%')
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[		   
+		 t.deptid=#deptid:VARCHAR#
+		]]>	
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="cpny_id">
+		<![CDATA[		   
+		 hr.cpny_id=#cpny_id:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	
+	<isNotEmpty prepend="AND" property="completiondate">
+		<![CDATA[		   
+		t.completiondate>=to_date(#completiondate:VARCHAR#, 'yyyy-mm-dd')
+		]]>	
+	</isNotEmpty>
+   <![CDATA[	
+     order by t.securitychecksno desc 
+    ]]>
+</select>
+
+
+<select id="forkliftmaintainAffirmList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[  
+select t.applyno,
+       t.forkliftmaintainno,
+       hr.chinesename,
+       t.APPLYORID,
+       de.deptname,
+       t.crfnote,      
+       to_char(t.faultdate,'yyyy-mm-dd') faultdate,
+       t.createdate,
+       t.classification,
+       t.place,
+       t.detailsa,
+       t.CRFNOTE,
+       AFFIRM.ga_affirm_no,
+       AFFIRM.AFFIRM_LEVEL,
+       AFFIRM.MAX_LEVEL_FLAG,
+       t.weidan,
+       cd.code_name carNum,
+       t.mileage,
+       t.failuretype,
+     t.active
+  from se_forkliftmaintain_apply   t,
+       hr_employee              hr,
+       hr_department            de,
+       sy_code                  cd,
+    
+(SELECT se_forkliftmaintain_affirm.*,
+               UP_AFFIRM.AFFIRMOR_ID UP_AFFIRMOR_ID,
+               NVL(UP_AFFIRM.AFFIRM_FLAG, 1) UP_AFFIRM_FLAG,
+               CASE
+                 WHEN se_forkliftmaintain_affirm.AFFIRM_LEVEL =
+                      MAX_AFFIRM.MAX_LEVEL THEN
+                  1
+                 ELSE
+                  0
+               END AS MAX_LEVEL_FLAG
+          FROM (SELECT se_forkliftmaintain_affirm.*,
+                       se_forkliftmaintain_affirm.AFFIRM_LEVEL - 1 UP_LEVEL,
+                       se_forkliftmaintain_affirm.AFFIRM_LEVEL + 1 NEXT_LEVEL
+                  FROM se_forkliftmaintain_affirm) se_forkliftmaintain_affirm,
+               (SELECT se_forkliftmaintain_affirm.APPLY_NO,
+                       se_forkliftmaintain_affirm.AFFIRM_LEVEL,
+                       se_forkliftmaintain_affirm.AFFIRMOR_ID,
+                       se_forkliftmaintain_affirm.AFFIRM_FLAG
+                  FROM se_forkliftmaintain_affirm) UP_AFFIRM,
+               (SELECT se_forkliftmaintain_affirm.APPLY_NO,
+                       MAX(se_forkliftmaintain_affirm.AFFIRM_LEVEL) MAX_LEVEL
+                  FROM se_forkliftmaintain_affirm
+                 GROUP BY se_forkliftmaintain_affirm.APPLY_NO) MAX_AFFIRM
+         WHERE se_forkliftmaintain_affirm.APPLY_NO = UP_AFFIRM.APPLY_NO(+)
+           AND se_forkliftmaintain_affirm.UP_LEVEL = UP_AFFIRM.AFFIRM_LEVEL(+)
+           AND se_forkliftmaintain_affirm.APPLY_NO = MAX_AFFIRM.APPLY_NO(+)
+           and se_forkliftmaintain_affirm.affirmor_id = #applerId:VARCHAR#) AFFIRM
+ where hr.person_id = t.applyorid
+ 	and t.carnum = cd.code_id
+   and de.deptid = t.deptid
+   and t.applyno = AFFIRM.APPLY_NO
+   AND AFFIRM.UP_AFFIRM_FLAG = 1
+ 
+   and t.applyno in ( select distinct t.apply_no from se_forkliftmaintain_affirm t where t.activity=1 and t.affirmor_id=#applerId:VARCHAR#
+   ]]>
+   <isEqual prepend="AND" property="qryType" compareValue="0"> <!--未决裁过的 -->
+    <![CDATA[
+         t.affirm_flag=0
+  ]]>
+  </isEqual>
+  <isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+    <![CDATA[
+         t.affirm_flag =1
+  ]]>
+  </isEqual>
+  <isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 决裁否决的 -->
+    <![CDATA[
+         t.affirm_flag =2
+  ]]>
+  </isEqual>
+  <![CDATA[  
+   )
+  ]]>
+  <isNotEmpty prepend="AND" property="key">
+    <![CDATA[       
+     (t.applyorid LIKE  '%'||#key:VARCHAR# || '%'  or hr.chinesename LIKE  '%'||#key:VARCHAR# || '%')
+    ]]>  
+  </isNotEmpty>  
+  <isNotEmpty prepend="AND" property="deptid">
+    <![CDATA[       
+     t.deptid=#deptid:VARCHAR#
+    ]]>  
+  </isNotEmpty>
+  
+  <isNotEmpty prepend="AND" property="cpny_id">
+    <![CDATA[       
+     hr.cpny_id=#cpny_id:VARCHAR#
+    ]]>  
+  </isNotEmpty>  
+  
+  <isNotEmpty prepend="AND" property="completiondate">
+    <![CDATA[       
+    t.faultdate>=to_date(#completiondate:VARCHAR#, 'yyyy-mm-dd')
+    ]]>  
+  </isNotEmpty>
+   <![CDATA[  
+     order by t.faultdate desc 
+    ]]>
+</select>
+
+<!-- 决裁总数 -->
+<select id="facilityRectificationAffirmListNumber" parameterClass="SimpleMap" resultClass="int">
+  <![CDATA[	
+select count(t.applyno) as applyno
+  from se_completrectificat_apply   t,
+       hr_employee              hr,
+       hr_department            de,
+    
+(SELECT se_completrectificat_affirm.*,
+               UP_AFFIRM.AFFIRMOR_ID UP_AFFIRMOR_ID,
+               NVL(UP_AFFIRM.AFFIRM_FLAG, 1) UP_AFFIRM_FLAG,
+               CASE
+                 WHEN se_completrectificat_affirm.AFFIRM_LEVEL =
+                      MAX_AFFIRM.MAX_LEVEL THEN
+                  1
+                 ELSE
+                  0
+               END AS MAX_LEVEL_FLAG
+          FROM (SELECT se_completrectificat_affirm.*,
+                       se_completrectificat_affirm.AFFIRM_LEVEL - 1 UP_LEVEL,
+                       se_completrectificat_affirm.AFFIRM_LEVEL + 1 NEXT_LEVEL
+                  FROM se_completrectificat_affirm) se_completrectificat_affirm,
+               (SELECT se_completrectificat_affirm.APPLY_NO,
+                       se_completrectificat_affirm.AFFIRM_LEVEL,
+                       se_completrectificat_affirm.AFFIRMOR_ID,
+                       se_completrectificat_affirm.AFFIRM_FLAG
+                  FROM se_completrectificat_affirm) UP_AFFIRM,
+               (SELECT se_completrectificat_affirm.APPLY_NO,
+                       MAX(se_completrectificat_affirm.AFFIRM_LEVEL) MAX_LEVEL
+                  FROM se_completrectificat_affirm
+                 GROUP BY se_completrectificat_affirm.APPLY_NO) MAX_AFFIRM
+         WHERE se_completrectificat_affirm.APPLY_NO = UP_AFFIRM.APPLY_NO(+)
+           AND se_completrectificat_affirm.UP_LEVEL = UP_AFFIRM.AFFIRM_LEVEL(+)
+           AND se_completrectificat_affirm.APPLY_NO = MAX_AFFIRM.APPLY_NO(+)
+           and se_completrectificat_affirm.affirmor_id = #applerId:VARCHAR#) AFFIRM
+ where hr.person_id = t.applyorid
+   and de.deptid = t.deptid
+   and t.applyno = AFFIRM.APPLY_NO
+   AND AFFIRM.UP_AFFIRM_FLAG = 1
+ 
+   and t.applyno in ( select distinct t.apply_no from se_completrectificat_affirm t where t.activity=1 and t.affirmor_id=#applerId:VARCHAR#
+   ]]>
+   <isEqual prepend="AND" property="qryType" compareValue="0"> <!--未决裁过的 -->
+		<![CDATA[
+				 t.affirm_flag=0
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+		<![CDATA[
+				 t.affirm_flag =1
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 决裁否决的 -->
+		<![CDATA[
+				 t.affirm_flag =2
+	]]>
+	</isEqual>
+  <![CDATA[	
+   )
+  ]]>
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+		 (t.applyorid LIKE  '%'||#key:VARCHAR# || '%'  or hr.chinesename LIKE  '%'||#key:VARCHAR# || '%')
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[		   
+		 t.deptid=#deptid:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	
+	<isNotEmpty prepend="AND" property="cpny_id">
+		<![CDATA[		   
+		 hr.cpny_id=#cpny_id:VARCHAR#
+		]]>	
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="startDate">
+		<![CDATA[		   
+		 to_char(t.createdate,'yyyy-mm-dd') between #startDate:VARCHAR#  and #endDate:VARCHAR#
+		]]>	
+	</isNotEmpty>
+</select>
+
+<select id="forkliftmaintainAffirmListNumber" parameterClass="SimpleMap" resultClass="int">
+  <![CDATA[	
+select count(t.applyno) as applyno
+  from se_forkliftmaintain_apply   t,
+       hr_employee              hr,
+       hr_department            de,
+    
+(SELECT se_forkliftmaintain_affirm.*,
+               UP_AFFIRM.AFFIRMOR_ID UP_AFFIRMOR_ID,
+               NVL(UP_AFFIRM.AFFIRM_FLAG, 1) UP_AFFIRM_FLAG,
+               CASE
+                 WHEN se_forkliftmaintain_affirm.AFFIRM_LEVEL =
+                      MAX_AFFIRM.MAX_LEVEL THEN
+                  1
+                 ELSE
+                  0
+               END AS MAX_LEVEL_FLAG
+          FROM (SELECT se_forkliftmaintain_affirm.*,
+                       se_forkliftmaintain_affirm.AFFIRM_LEVEL - 1 UP_LEVEL,
+                       se_forkliftmaintain_affirm.AFFIRM_LEVEL + 1 NEXT_LEVEL
+                  FROM se_forkliftmaintain_affirm) se_forkliftmaintain_affirm,
+               (SELECT se_forkliftmaintain_affirm.APPLY_NO,
+                       se_forkliftmaintain_affirm.AFFIRM_LEVEL,
+                       se_forkliftmaintain_affirm.AFFIRMOR_ID,
+                       se_forkliftmaintain_affirm.AFFIRM_FLAG
+                  FROM se_forkliftmaintain_affirm) UP_AFFIRM,
+               (SELECT se_forkliftmaintain_affirm.APPLY_NO,
+                       MAX(se_forkliftmaintain_affirm.AFFIRM_LEVEL) MAX_LEVEL
+                  FROM se_forkliftmaintain_affirm
+                 GROUP BY se_forkliftmaintain_affirm.APPLY_NO) MAX_AFFIRM
+         WHERE se_forkliftmaintain_affirm.APPLY_NO = UP_AFFIRM.APPLY_NO(+)
+           AND se_forkliftmaintain_affirm.UP_LEVEL = UP_AFFIRM.AFFIRM_LEVEL(+)
+           AND se_forkliftmaintain_affirm.APPLY_NO = MAX_AFFIRM.APPLY_NO(+)
+           and se_forkliftmaintain_affirm.affirmor_id = #applerId:VARCHAR#) AFFIRM
+ where hr.person_id = t.applyorid
+   and de.deptid = t.deptid
+   and t.applyno = AFFIRM.APPLY_NO
+   AND AFFIRM.UP_AFFIRM_FLAG = 1
+ 
+   and t.applyno in ( select distinct t.apply_no from se_forkliftmaintain_affirm t where t.activity=1 and t.affirmor_id=#applerId:VARCHAR#
+   ]]>
+   <isEqual prepend="AND" property="qryType" compareValue="0"> <!--未决裁过的 -->
+		<![CDATA[
+				 t.affirm_flag=0
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+		<![CDATA[
+				 t.affirm_flag =1
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 决裁否决的 -->
+		<![CDATA[
+				 t.affirm_flag =2
+	]]>
+	</isEqual>
+  <![CDATA[	
+   )
+  ]]>
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+		 (t.applyorid LIKE  '%'||#key:VARCHAR# || '%'  or hr.chinesename LIKE  '%'||#key:VARCHAR# || '%')
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[		   
+		 t.deptid=#deptid:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	
+	<isNotEmpty prepend="AND" property="cpny_id">
+		<![CDATA[		   
+		 hr.cpny_id=#cpny_id:VARCHAR#
+		]]>	
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="startDate">
+		<![CDATA[		   
+		 to_char(t.createdate,'yyyy-mm-dd') between #startDate:VARCHAR#  and #endDate:VARCHAR#
+		]]>	
+	</isNotEmpty>
+</select>
+
+<select id="completedRectificationAffirmInfoList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[	
+select t.applyno,
+       t.securitychecksno,
+       hr.person_id,
+       hr.chinesename,
+       de.deptname,
+       t.crfnote,      
+       re.isrectification,
+       to_char(t.overdate,'yyyy-mm-dd') overdate,
+       to_char(t.completiondate,'yyyy-mm-dd') completiondate,
+	   hr1.chinesename as chinesename1
+  from se_completrectificat_apply   t,
+       hr_employee              hr,
+       hr_employee              hr1,
+       hr_department            de,
+       se_securitychecks_record re
+ where hr.person_id = t.applyorid
+   and de.deptid = t.deptid 
+   and re.APPLORID = hr1.person_id
+   and t.applyorid=#applerId:VARCHAR#
+   and t.securitychecksno = re.documentno   
+   ]]>
+   <isEqual prepend="AND" property="qryType" compareValue="0"> <!--未决裁过的 -->
+		<![CDATA[
+				t.active=0
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+		<![CDATA[
+				 t.active=1
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 决裁否决的 -->
+		<![CDATA[
+				t.active=2
+	]]>
+	</isEqual>
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+		 (t.applyorid LIKE  '%'||#key:VARCHAR# || '%'  or hr.chinesename LIKE  '%'||#key:VARCHAR# || '%')
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[		   
+		 t.deptid=#deptid:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="startDate">
+		<![CDATA[		   
+		 to_char(t.createdate,'yyyy-mm-dd') between #startDate:VARCHAR#  and #endDate:VARCHAR#
+		]]>	
+	</isNotEmpty>
+   <![CDATA[	
+     order by t.securitychecksno desc 
+    ]]>
+</select>
+
+<!-- 得到维修情况数据 -->
+<select id="facilityRectificationAffirmInfoList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[	
+select t.applyno,
+       t.securitychecksno,
+       t.applyorid,
+       hr.person_id,
+       hr.chinesename,
+       de.deptname,
+       t.crfnote,   
+       t.zhengaijiegu,
+       t.many,
+       t.createdate,   
+       t.classification,
+       t.place,
+       t.detailsa,
+       to_char(t.overdate,'yyyy-mm-dd') overdate,
+       to_char(t.completiondate,'yyyy-mm-dd') completiondate,
+	   hr1.chinesename as chinesename1,
+	   t.weidan,
+	   
+	   t.active
+  from se_completrectificat_apply   t,
+       hr_employee              hr,
+       hr_employee              hr1,
+       hr_department            de
+ where hr.person_id = t.applyorid
+   and de.deptid = t.deptid 
+   and t.applyorid = hr1.person_id
+    
+   ]]>
+   
+   <isNotEmpty prepend="AND" property="ADMIN_ID">
+		<![CDATA[
+			EXISTS ( SELECT SAD.ADMIN_DEPTID
+				   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+				  WHERE SAD.ADMIN_NO = SA.ADMINNO
+				    AND SA.ADMINID = #ADMIN_ID:VARCHAR2#
+				    AND SAD.ADMIN_DEPTID = t.deptid	
+			   ) 
+		]]>
+	</isNotEmpty>   
+   
+   <isEqual prepend="AND" property="qryType" compareValue="0"> <!--未决裁过的 -->
+		<![CDATA[
+				t.active=0
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+		<![CDATA[
+				 t.active=1
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 决裁否决的 -->
+		<![CDATA[
+				t.active=2
+	]]>
+	</isEqual>
+	
+	<!-- 完成判断 -->
+	
+	<isEqual prepend="AND" property="qryTypeOk" compareValue="1"> <!-- 已完成 -->
+		<![CDATA[
+				 t.isconfirm=1
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryTypeOk" compareValue="2"> <!-- 未完成 -->
+		<![CDATA[
+				nvl(t.isconfirm,4) <> 1
+	]]>
+	</isEqual>
+
+	
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+		 (t.applyorid LIKE  '%'||#key:VARCHAR# || '%'  or hr.chinesename LIKE  '%'||#key:VARCHAR# || '%')
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[		   
+		 t.deptid=#deptid:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="cpnyId">
+		<![CDATA[		   
+		 hr.CPNY_ID=#cpnyId:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	
+	<isNotEmpty prepend="AND" property="applerId">
+		<![CDATA[		   
+		 t.applyorid=#applerId:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="completiondate">
+		<![CDATA[		   
+		t.completiondate>=to_date(#completiondate:VARCHAR#, 'yyyy-mm-dd')
+		]]>	
+	</isNotEmpty>
+   <![CDATA[	
+     order by t.securitychecksno desc 
+    ]]>
+</select>
+
+<select id="forkliRectificationAffirmInfoList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[	
+select t.applyno,
+       t.forkliftmaintainno,
+       t.applyorid,
+       hr.person_id,
+       hr.chinesename,
+       de.deptname,
+       s.code_name CARBELONG,
+       t.crfnote,   
+       t.zhengaijiegu,
+       t.cou,
+       t.workh,
+       t.many,
+       t.createdate,   
+       t.classification,
+       t.place,
+       t.detailsa,
+       to_char(t.faultdate,'yyyy-mm-dd') faultdate,
+       to_char(t.completiondate,'yyyy-mm-dd') completiondate,
+	   hr1.chinesename as chinesename1,
+	   t.weidan,
+	   t.carnum,
+	   t.mileage,
+	   t.active
+  from se_forkliftmaintain_apply   t,
+  	   sy_code                     s,
+       hr_employee              hr,
+       hr_employee              hr1,
+       hr_department            de
+ where hr.person_id = t.applyorid
+   and de.deptid = t.deptid
+   and s.code_id = t.carbelong 
+   and t.applyorid = hr1.person_id
+    
+   ]]>
+   
+   <isNotEmpty prepend="AND" property="ADMIN_ID">
+		<![CDATA[
+			EXISTS ( SELECT SAD.ADMIN_DEPTID
+				   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+				  WHERE SAD.ADMIN_NO = SA.ADMINNO
+				    AND SA.ADMINID = #ADMIN_ID:VARCHAR2#
+				    AND SAD.ADMIN_DEPTID = t.deptid	
+			   ) 
+		]]>
+	</isNotEmpty>   
+   
+   <isEqual prepend="AND" property="qryType" compareValue="0"> <!--未决裁过的 -->
+		<![CDATA[
+				t.active=0
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+		<![CDATA[
+				 t.active=1
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 决裁否决的 -->
+		<![CDATA[
+				t.active=2
+	]]>
+	</isEqual>
+	
+	<!-- 完成判断 -->
+	
+	<isEqual prepend="AND" property="qryTypeOk" compareValue="1"> <!-- 已完成 -->
+		<![CDATA[
+				 t.isconfirm=1
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryTypeOk" compareValue="2"> <!-- 未完成 -->
+		<![CDATA[
+				nvl(t.isconfirm,4) <> 1
+	]]>
+	</isEqual>
+
+	
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+		 (t.applyorid LIKE  '%'||#key:VARCHAR# || '%'  or hr.chinesename LIKE  '%'||#key:VARCHAR# || '%')
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[		   
+		 t.deptid=#deptid:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="cpnyId">
+		<![CDATA[		   
+		 hr.CPNY_ID=#cpnyId:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	
+	<isNotEmpty prepend="AND" property="applerId">
+		<![CDATA[		   
+		 t.applyorid=#applerId:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="completiondate">
+		<![CDATA[		   
+		t.faultdate>=to_date(#completiondate:VARCHAR#, 'yyyy-mm-dd')
+		]]>	
+	</isNotEmpty>
+   <![CDATA[	
+     order by t.faultdate desc 
+    ]]>
+</select>
+
+<!-- EXCEL 导出 -->
+<select id="excelfacilityRectificationAffirmInfoList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[	
+select t.applyno,
+       t.securitychecksno,
+       t.applyorid,
+       hr.person_id,
+       hr.chinesename,
+       de.deptname,
+       t.crfnote,   
+       t.zhengaijiegu,
+       t.many,
+       t.createdate,   
+       t.classification,
+       t.place,
+       t.detailsa,
+       to_char(t.overdate,'yyyy-mm-dd') overdate,
+       to_char(t.completiondate,'yyyy-mm-dd') completiondate,
+	   hr1.chinesename as chinesename1,
+	   t.weidan,
+	   t.active
+  from se_completrectificat_apply   t,
+       hr_employee              hr,
+       hr_employee              hr1,
+       hr_department            de
+ where hr.person_id = t.applyorid
+   and de.deptid = t.deptid 
+   and t.applyorid = hr1.person_id
+    
+   ]]>
+   
+   <isNotEmpty prepend="AND" property="ADMIN_ID">
+		<![CDATA[
+			EXISTS ( SELECT SAD.ADMIN_DEPTID
+				   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+				  WHERE SAD.ADMIN_NO = SA.ADMINNO
+				    AND SA.ADMINID = #ADMIN_ID:VARCHAR2#
+				    AND SAD.ADMIN_DEPTID = t.deptid	
+			   ) 
+		]]>
+	</isNotEmpty>   
+   
+   <isEqual prepend="AND" property="qryType" compareValue="0"> <!--未决裁过的 -->
+		<![CDATA[
+				t.active=0
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+		<![CDATA[
+				 t.active=1
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 决裁否决的 -->
+		<![CDATA[
+				t.active=2
+	]]>
+	</isEqual>
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+		 (t.applyorid LIKE  '%'||#key:VARCHAR# || '%'  or hr.chinesename LIKE  '%'||#key:VARCHAR# || '%')
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[		   
+		 t.deptid=#deptid:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	
+	<isNotEmpty prepend="AND" property="applerId">
+		<![CDATA[		   
+		 t.applyorid=#applerId:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="completiondate">
+		<![CDATA[		   
+		t.completiondate>=to_date(#completiondate:VARCHAR#, 'yyyy-mm-dd')
+		]]>	
+	</isNotEmpty>
+   <![CDATA[	
+     order by t.securitychecksno desc 
+    ]]>
+</select>
+
+<select id="excelForkliRectificationAffirmInfoList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[	
+select t.applyno,
+       t.forkliftmaintainno,
+       t.applyorid,
+       hr.person_id,
+       hr.chinesename,
+       de.deptname,
+       s.code_name carbelong,
+       t.crfnote,
+       t.cou,
+       t.workh,   
+       t.zhengaijiegu,
+       t.many,
+       t.createdate,   
+       t.classification,
+       t.place,
+       t.detailsa,
+       to_char(t.FAULTDATE,'yyyy-mm-dd') FAULTDATE,
+       to_char(t.completiondate,'yyyy-mm-dd') completiondate,
+	   hr1.chinesename as chinesename1,
+	   t.weidan,
+	   t.carnum,
+	   t.mileage,
+	   t.active
+  from se_forkliftmaintain_apply   t,
+  	   sy_code                     s,
+       hr_employee              hr,
+       hr_employee              hr1,
+       hr_department            de
+ where hr.person_id = t.applyorid
+   and de.deptid = t.deptid
+   and s.code_id = t.carbelong   
+   and t.applyorid = hr1.person_id
+    
+   ]]>
+   
+   <isNotEmpty prepend="AND" property="ADMIN_ID">
+		<![CDATA[
+			EXISTS ( SELECT SAD.ADMIN_DEPTID
+				   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+				  WHERE SAD.ADMIN_NO = SA.ADMINNO
+				    AND SA.ADMINID = #ADMIN_ID:VARCHAR2#
+				    AND SAD.ADMIN_DEPTID = t.deptid	
+			   ) 
+		]]>
+	</isNotEmpty>   
+   
+   <isEqual prepend="AND" property="qryType" compareValue="0"> <!--未决裁过的 -->
+		<![CDATA[
+				t.active=0
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+		<![CDATA[
+				 t.active=1
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 决裁否决的 -->
+		<![CDATA[
+				t.active=2
+	]]>
+	</isEqual>
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+		 (t.applyorid LIKE  '%'||#key:VARCHAR# || '%'  or hr.chinesename LIKE  '%'||#key:VARCHAR# || '%')
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[		   
+		 t.deptid=#deptid:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	
+	<isNotEmpty prepend="AND" property="applerId">
+		<![CDATA[		   
+		 t.applyorid=#applerId:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="completiondate">
+		<![CDATA[		   
+		t.completiondate>=to_date(#completiondate:VARCHAR#, 'yyyy-mm-dd')
+		]]>	
+	</isNotEmpty>
+   <![CDATA[	
+     order by t.forkliftmaintainno desc 
+    ]]>
+</select>
+
+<!-- 维修情况excel导出 -->
+<select id="facilityExcelList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[	
+select t.applyno,
+       t.securitychecksno,
+       hr.person_id,
+       hr.chinesename,
+       de.deptname,
+       t.crfnote,   
+       t.createdate,   
+       t.classification,
+       t.place,
+       t.detailsa,
+       to_char(t.overdate,'yyyy-mm-dd') overdate,
+       to_char(t.completiondate,'yyyy-mm-dd') completiondate,
+	   hr1.chinesename as chinesename1
+  from se_completrectificat_apply   t,
+       hr_employee              hr,
+       hr_employee              hr1,
+       hr_department            de
+ where hr.person_id = t.applyorid
+   and de.deptid = t.deptid 
+   and t.applyorid = hr1.person_id
+    
+   ]]>
+   
+   <isNotEmpty prepend="AND" property="ADMIN_ID">
+		<![CDATA[
+			EXISTS ( SELECT SAD.ADMIN_DEPTID
+				   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+				  WHERE SAD.ADMIN_NO = SA.ADMINNO
+				    AND SA.ADMINID = #ADMIN_ID:VARCHAR2#
+				    AND SAD.ADMIN_DEPTID = t.deptid	
+			   ) 
+		]]>
+	</isNotEmpty>   
+   
+   <isEqual prepend="AND" property="qryType" compareValue="0"> <!--未决裁过的 -->
+		<![CDATA[
+				t.active=0
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+		<![CDATA[
+				 t.active=1
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 决裁否决的 -->
+		<![CDATA[
+				t.active=2
+	]]>
+	</isEqual>
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+		 (t.applyorid LIKE  '%'||#key:VARCHAR# || '%'  or hr.chinesename LIKE  '%'||#key:VARCHAR# || '%')
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[		   
+		 t.deptid=#deptid:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	
+	<isNotEmpty prepend="AND" property="applerId">
+		<![CDATA[		   
+		 t.applyorid=#applerId:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="startDate">
+		<![CDATA[		   
+		 to_char(t.createdate,'yyyy-mm-dd') between #startDate:VARCHAR#  and #endDate:VARCHAR#
+		]]>	
+	</isNotEmpty>
+   <![CDATA[	
+     order by t.securitychecksno desc 
+    ]]>
+</select>
+
+<!-- 得到申请情况数据总数 -->
+<select id="facilityRectificationAffirmInfoListNumber" parameterClass="SimpleMap" resultClass="int">
+  <![CDATA[	
+select count(t.applyno) as applyno
+from se_completrectificat_apply t,
+       hr_employee                hr,
+       hr_employee                hr1,
+       hr_department              de
+where hr.person_id = t.applyorid
+   and de.deptid = t.deptid 
+   and t.applyorid = hr1.person_id
+ 
+   ]]>
+   
+     <isNotEmpty prepend="AND" property="ADMIN_ID">
+		<![CDATA[
+			EXISTS ( SELECT SAD.ADMIN_DEPTID
+				   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+				  WHERE SAD.ADMIN_NO = SA.ADMINNO
+				    AND SA.ADMINID = #ADMIN_ID:VARCHAR2#
+				    AND SAD.ADMIN_DEPTID = t.deptid	
+			   ) 
+		]]>
+	</isNotEmpty>  
+   
+   <isEqual prepend="AND" property="qryType" compareValue="0"> <!--未决裁过的 -->
+		<![CDATA[
+				t.active=0
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+		<![CDATA[
+				 t.active=1
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 决裁否决的 -->
+		<![CDATA[
+				t.active=2
+	]]>
+	</isEqual>
+	
+	<!-- 完成判断 -->
+	
+	<isEqual prepend="AND" property="qryTypeOk" compareValue="1"> <!-- 已完成 -->
+		<![CDATA[
+				 t.isconfirm=1
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryTypeOk" compareValue="2"> <!-- 未完成 -->
+		<![CDATA[
+				t.isconfirm <> 1
+	]]>
+	</isEqual>
+	
+	
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+		 (t.applyorid LIKE  '%'||#key:VARCHAR# || '%'  or hr.chinesename LIKE  '%'||#key:VARCHAR# || '%')
+		]]>	
+	</isNotEmpty>	
+	
+	<isNotEmpty prepend="AND" property="applerId">
+		<![CDATA[		   
+		 t.applyorid=#applerId:VARCHAR#
+		]]>	
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[		   
+		 t.deptid=#deptid:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="cpnyId">
+		<![CDATA[		   
+		 hr.CPNY_ID=#cpnyId:VARCHAR#
+		]]>	
+	</isNotEmpty>		
+	<isNotEmpty prepend="AND" property="startDate">
+		<![CDATA[		   
+		 to_char(t.createdate,'yyyy-mm-dd') between #startDate:VARCHAR#  and #endDate:VARCHAR#
+		]]>	
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="completiondate">
+		<![CDATA[		   
+		t.completiondate>=to_date(#completiondate:VARCHAR#, 'yyyy-mm-dd')
+		]]>	
+	</isNotEmpty>
+</select>
+
+<select id="forkliRectificationAffirmInfoListNumber" parameterClass="SimpleMap" resultClass="int">
+  <![CDATA[	
+select count(t.applyno) as applyno
+from se_forkliftmaintain_apply t,
+       hr_employee                hr,
+       hr_employee                hr1,
+       hr_department              de
+where hr.person_id = t.applyorid
+   and de.deptid = t.deptid 
+   and t.applyorid = hr1.person_id
+ 
+   ]]>
+   
+     <isNotEmpty prepend="AND" property="ADMIN_ID">
+		<![CDATA[
+			EXISTS ( SELECT SAD.ADMIN_DEPTID
+				   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+				  WHERE SAD.ADMIN_NO = SA.ADMINNO
+				    AND SA.ADMINID = #ADMIN_ID:VARCHAR2#
+				    AND SAD.ADMIN_DEPTID = t.deptid	
+			   ) 
+		]]>
+	</isNotEmpty>  
+   
+   <isEqual prepend="AND" property="qryType" compareValue="0"> <!--未决裁过的 -->
+		<![CDATA[
+				t.active=0
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+		<![CDATA[
+				 t.active=1
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 决裁否决的 -->
+		<![CDATA[
+				t.active=2
+	]]>
+	</isEqual>
+	
+	<!-- 完成判断 -->
+	
+	<isEqual prepend="AND" property="qryTypeOk" compareValue="1"> <!-- 已完成 -->
+		<![CDATA[
+				 t.isconfirm=1
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryTypeOk" compareValue="2"> <!-- 未完成 -->
+		<![CDATA[
+				t.isconfirm <> 1
+	]]>
+	</isEqual>
+	
+	
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+		 (t.applyorid LIKE  '%'||#key:VARCHAR# || '%'  or hr.chinesename LIKE  '%'||#key:VARCHAR# || '%')
+		]]>	
+	</isNotEmpty>	
+	
+	<isNotEmpty prepend="AND" property="applerId">
+		<![CDATA[		   
+		 t.applyorid=#applerId:VARCHAR#
+		]]>	
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[		   
+		 t.deptid=#deptid:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="cpnyId">
+		<![CDATA[		   
+		 hr.CPNY_ID=#cpnyId:VARCHAR#
+		]]>	
+	</isNotEmpty>		
+	<isNotEmpty prepend="AND" property="startDate">
+		<![CDATA[		   
+		 to_char(t.createdate,'yyyy-mm-dd') between #startDate:VARCHAR#  and #endDate:VARCHAR#
+		]]>	
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="completiondate">
+		<![CDATA[		   
+		t.completiondate>=to_date(#completiondate:VARCHAR#, 'yyyy-mm-dd')
+		]]>	
+	</isNotEmpty>
+</select>
+
+
+<select id="completedRectificationAffirmInfoListNumber" parameterClass="SimpleMap" resultClass="int">
+  <![CDATA[	
+select count(t.applyno) as applyno
+from se_completrectificat_apply   t,
+       hr_employee              hr
+ where hr.person_id = t.applyorid
+   and t.applyorid=#applerId:VARCHAR#
+   ]]>
+   <isEqual prepend="AND" property="qryType" compareValue="0"> <!--未决裁过的 -->
+		<![CDATA[
+				t.active=0
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+		<![CDATA[
+				 t.active=1
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 决裁否决的 -->
+		<![CDATA[
+				t.active=2
+	]]>
+	</isEqual>
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+		 (t.applyorid LIKE  '%'||#key:VARCHAR# || '%'  or hr.chinesename LIKE  '%'||#key:VARCHAR# || '%')
+		]]>	
+	</isNotEmpty>	
+	
+	<isNotEmpty prepend="AND" property="applerId">
+		<![CDATA[		   
+		 t.applyorid=#applerId:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	
+	<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[		   
+		 t.deptid=#deptid:VARCHAR#
+		]]>	
+	</isNotEmpty>	
+	<isNotEmpty prepend="AND" property="startDate">
+		<![CDATA[		   
+		 to_char(t.createdate,'yyyy-mm-dd') between #startDate:VARCHAR#  and #endDate:VARCHAR#
+		]]>	
+	</isNotEmpty>
+</select>
+
+<select id="completedRectificationAffirmorList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[	
+select t.ga_affirm_no,
+       t.affirm_flag,
+       t.apply_no,
+       t.affirm_level,
+       t.affirmor_id,
+       hr.chinesename,
+       CASE WHEN 
+       T.AFFIRM_LEVEL=MAX_AFFIRM_TABLE.MAX_AFFIRM_LEVEL
+       THEN 1
+       ELSE 0
+       END MAX_AFFIRM_FLAG,
+       t.AFFIRMORIDEA
+  from se_completrectificat_affirm t,
+       hr_employee hr,
+       (select  max(affirm.affirm_level) MAX_AFFIRM_LEVEL
+          from se_completrectificat_affirm affirm
+         WHERE affirm.apply_no=#applyno:VARCHAR#
+        ) MAX_AFFIRM_TABLE
+ where t.affirmor_id = hr.person_id
+    and t.apply_no=#applyno:VARCHAR#
+ order by t.affirm_level
+    ]]>
+</select>
+
+
+<select id="forkliRectificationAffirmorList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[	
+select t.ga_affirm_no,
+       t.affirm_flag,
+       t.apply_no,
+       t.affirm_level,
+       t.affirmor_id,
+       hr.chinesename,
+       CASE WHEN 
+       T.AFFIRM_LEVEL=MAX_AFFIRM_TABLE.MAX_AFFIRM_LEVEL
+       THEN 1
+       ELSE 0
+       END MAX_AFFIRM_FLAG,
+       to_char(t.update_date,'yyyy-mm-dd HH24:mi') update_date,
+       t.AFFIRMORIDEA
+  from se_forkliftmaintain_affirm t,
+       hr_employee hr,
+       (select  max(affirm.affirm_level) MAX_AFFIRM_LEVEL
+          from se_forkliftmaintain_affirm affirm
+         WHERE affirm.apply_no=#applyno:VARCHAR#
+        ) MAX_AFFIRM_TABLE
+ where t.affirmor_id = hr.person_id
+    and t.apply_no=#applyno:VARCHAR#
+ order by t.affirm_level
+    ]]>
+</select>
+
+<select id="forkliftMaintainAffirmorList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[  
+select t.ga_affirm_no,
+       t.affirm_flag,
+       t.apply_no,
+       t.affirm_level,
+       t.affirmor_id,
+       hr.chinesename,
+       CASE WHEN 
+       T.AFFIRM_LEVEL=MAX_AFFIRM_TABLE.MAX_AFFIRM_LEVEL
+       THEN 1
+       ELSE 0
+       END MAX_AFFIRM_FLAG,
+       t.AFFIRMORIDEA
+  from se_forkliftmaintain_affirm t,
+       hr_employee hr,
+       (select  max(affirm.affirm_level) MAX_AFFIRM_LEVEL
+          from se_forkliftmaintain_affirm affirm
+         WHERE affirm.apply_no=#applyno:VARCHAR#
+        ) MAX_AFFIRM_TABLE
+ where t.affirmor_id = hr.person_id
+    and t.apply_no=#applyno:VARCHAR#
+ order by t.affirm_level
+    ]]>
+</select>
+
+<update id="crfongingFacilityAffirm" parameterClass="SimpleMap">
+  <![CDATA[	
+update se_completrectificat_affirm t
+set t.affirm_flag=#affirmFlag:VARCHAR#
+where t.apply_no=#applyNo:VARCHAR#
+and t.affirm_level=#affrimlevel:VARCHAR#
+    ]]>
+</update>
+
+<update id="forkliftmaintainAffirm" parameterClass="SimpleMap">
+  <![CDATA[	
+update se_forkliftmaintain_affirm t
+set t.affirm_flag=#affirmFlag:VARCHAR#,update_date=sysdate
+where t.apply_no=#applyNo:VARCHAR#
+and t.affirm_level=#affrimlevel:VARCHAR#
+    ]]>
+</update>
+
+<!-- 更新设施维修申请担当 -->
+<update id="crfongingAffirmWD" parameterClass="SimpleMap">
+  <![CDATA[	
+update se_completrectificat_apply t
+set t.weidan=#chinesenamewd:VARCHAR#
+where t.applyno=#applyNo:VARCHAR#
+
+    ]]>
+</update>
+
+<update id="crforkliAffirmWD" parameterClass="SimpleMap">
+  <![CDATA[	
+update se_forkliftmaintain_apply t
+set t.weidan=#chinesenamewd:VARCHAR#
+where t.applyno=#applyNo:VARCHAR#
+    ]]>
+</update>
+
+<update id="crfongingAffirm" parameterClass="SimpleMap">
+  <![CDATA[	
+update se_completrectificat_affirm t
+set t.affirm_flag=#flag:VARCHAR#
+where t.ga_affirm_no=#affirmNo:VARCHAR#
+
+    ]]>
+</update>
+
+<update id="crforkliAffirm" parameterClass="SimpleMap">
+  <![CDATA[	
+update se_forkliftmaintain_affirm t
+set t.affirm_flag=#flag:VARCHAR#,t.update_date=sysdate
+where t.ga_affirm_no=#affirmNoGa:VARCHAR#
+
+    ]]>
+</update>
+
+<!-- 决裁通过 -->
+<update id="crfongingAffirm02" parameterClass="SimpleMap">
+  <![CDATA[	
+update se_completrectificat_apply t
+set t.active=#affirmFlag:VARCHAR#
+where t.applyno=#applyNo:VARCHAR#
+
+    ]]>
+</update>
+
+<update id="crforkliftmaintainAffirm02" parameterClass="SimpleMap">
+  <![CDATA[	
+update se_forkliftmaintain_apply t
+set t.active=#affirmFlag:VARCHAR#
+where t.applyno=#applyNo:VARCHAR#
+
+    ]]>
+</update>
+
+<update id="crForkliAffirm" parameterClass="SimpleMap">
+  <![CDATA[	
+update se_forkliftmaintain_apply t
+set t.active=#flag:VARCHAR#
+where t.applyno=#affirmNo:VARCHAR#
+    ]]>
+</update>
+
+<!-- 决裁通过 -->
+<update id="crfongingAffirm01" parameterClass="SimpleMap">
+  <![CDATA[	
+update se_completrectificat_apply t
+set t.active=#flag:VARCHAR#
+where t.applyno=#applyNoId:VARCHAR#
+
+    ]]>
+</update>
+
+<!-- 只要还有决裁者  她就会编程0 -->
+<update id="crfongingAffirm03" parameterClass="SimpleMap">
+  <![CDATA[	
+update se_completrectificat_apply t
+set t.active='0'
+where t.applyno=#applyNoId:VARCHAR#
+
+    ]]>
+</update>
+
+<!-- 最后一级决裁者通过 更改决裁标识为已决裁完成 -->
+<update id="crfongingAffirm04" parameterClass="SimpleMap">
+  <![CDATA[	
+update se_completrectificat_apply t
+set t.active='1'
+where t.applyno=#applyNoId:VARCHAR#
+
+    ]]>
+</update>
+
+<update id="oingCorrectivePlanDelete" parameterClass="SimpleMap">
+  <![CDATA[	
+update se_correctiveplan_apply t
+set t.active='1'
+where t.applyno=#applyno:VARCHAR#
+    ]]>
+</update>
+
+<update id="oingCompletedRectificationDelete" parameterClass="SimpleMap">
+  <![CDATA[	
+update se_completrectificat_apply t
+set t.active='1'
+where t.applyno=#applyno:VARCHAR#
+    ]]>
+</update>
+
+<update id="updateCorrectivePlanState" parameterClass="SimpleMap">
+  <![CDATA[	
+update se_securitychecks_record t
+set  t.ISCOMPLETEDRECTIFICATION='0'
+where t.documentno=#documentno:VARCHAR#
+    ]]>
+</update>
+
+<update id="updateCompletedRectificationState" parameterClass="SimpleMap">
+  <![CDATA[	
+update se_securitychecks_record t
+set  t.ISCOMPLETEDRECTIFICATION='1'
+where t.documentno=#documentno:VARCHAR#
+    ]]>
+</update>
+
+<update id="confirmCrfongingApply" parameterClass="SimpleMap">
+<![CDATA[
+		 update se_completrectificat_apply t set t.active = #flag:varchar#
+        		where t.SECURITYCHECKSNO = #documentNo:varchar#
+  	]]>
+</update>
+
+
+<!-- 设施维修决裁 -->
+<update id="facilityconfirmCrfongingApply" parameterClass="SimpleMap">
+<![CDATA[
+		 update se_completrectificat_apply t set t.active = #flag:varchar#
+        		where t.SECURITYCHECKSNO = #documentNo:varchar#
+        		and t.applyno=#affirmNo:VARCHAR#
+  	]]>
+</update>
+
+<update id="forkliconfirmCrfongingApply" parameterClass="SimpleMap">
+<![CDATA[
+		 update se_forkliftmaintain_apply t set t.active = #flag:varchar#
+        		where t.forkliftmaintainno = #documentNo:varchar#
+        		and t.applyno=#affirmNo:VARCHAR#
+  	]]>
+</update>
+
+<update id="confirmCrfongingRecord" parameterClass="SimpleMap">
+<![CDATA[
+		 update se_securitychecks_record t set t.ISRECTIFICATION = #flag:varchar#
+        		where t.DOCUMENTNO = #documentNo:varchar#
+  	]]>
+</update>
+
+<delete id="DelAffirmInfo" parameterClass="SimpleMap">
+<![CDATA[
+		 delete SE_COMPLETRECTIFICAT_AFFIRM f where f.APPLY_NO = #APPLYNO:varchar#
+  	]]>
+</delete>
+
+<delete id="DelapplayInfo" parameterClass="SimpleMap">
+<![CDATA[
+		 delete SE_COMPLETRECTIFICAT_APPLY f where f.securitychecksno = #SECURITYCHECKSNO:varchar#
+  	]]>
+</delete>
+
+<delete id="DelForkliAffirmInfo" parameterClass="SimpleMap">
+<![CDATA[
+		 delete SE_FORKLIFTMAINTAIN_AFFIRM f where f.APPLY_NO = #APPLYNO:varchar#
+  	]]>
+</delete>
+
+<delete id="DelForkliapplayInfo" parameterClass="SimpleMap">
+<![CDATA[
+		 delete SE_FORKLIFTMAINTAIN_APPLY f where f.forkliftmaintainno = #FORKLIFTMAINTAINNO:varchar#
+  	]]>
+</delete>
+
+<update id="udateApplayInfo" parameterClass="SimpleMap">
+<![CDATA[
+		 update SE_SECURITYCHECKS_RECORD t set t.ISCOMPLETEDRECTIFICATION = '0'
+        		where t.DOCUMENTNO = #SECURITYCHECKSNO:varchar#
+  	]]>
+</update>
+
+<select id="getApplayInfo" parameterClass="SimpleMap" resultClass="string">
+<![CDATA[
+		 select APPLYNO from SE_COMPLETRECTIFICAT_APPLY t where t.SECURITYCHECKSNO = #SECURITYCHECKSNO:varchar#
+  	]]>
+</select>
+
+<select id="getForkliApplayInfo" parameterClass="SimpleMap" resultClass="string">
+<![CDATA[
+		 select APPLYNO from SE_FORKLIFTMAINTAIN_APPLY t where t.FORKLIFTMAINTAINNO = #FORKLIFTMAINTAINNO:varchar#
+  	]]>
+</select>
+
+	<!-- 通过决裁等级来获取接收者的email -->
+	<select id="getlevelaffemail"  parameterClass="SimpleMap" resultClass="string">
+	select  hr.email
+		 from Se_Completrectificat_Affirm t, hr_employee hr
+		 where t.apply_no =#applyno:NUMERIC#
+		 and t.affirmor_id = hr.person_id(+)
+		 and t.affirm_level = (select t.affirm_level
+		                       from Se_Completrectificat_Affirm t
+		                       where t.ga_affirm_no = #affirmNo:NUMERIC#)+1
+	
+	</select>
+
+</sqlMap>

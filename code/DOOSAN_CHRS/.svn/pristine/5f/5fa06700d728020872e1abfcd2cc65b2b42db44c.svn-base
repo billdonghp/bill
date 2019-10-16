@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="pa.postgrade">
+
+	<select id="getPostGrade" resultClass="SimpleMap" parameterClass="SimpleMap">
+		<![CDATA[
+				  SELECT 
+				        POST_GRADE_ID,	
+				        POST_GRADE_NAME,
+				        POST_GRADE_VALUE,
+				        HP.POST_GRADE_FIRST_NO,
+				        HP.POST_GRADE_FIRST_MONEY,
+				        TO_CHAR(hp.CREATE_DATE,'YYYY-MM-DD') CREATE_DATE,
+		                HP.POST_GRADE_YEAR
+				   FROM hr_post_grade hp
+				  WHERE HP.POST_GRADE_VALUE > 0 and hp.cpny_id=#cpny_id:VARCHAR#
+		]]>
+	<isNotEmpty prepend="AND" property="postgradeYear">
+		<![CDATA[ 
+				HP.POST_GRADE_YEAR = #postgradeYear:VARCHAR#
+		]]>
+	</isNotEmpty>
+	<isEmpty prepend="AND" property="postgradeYear">
+		<![CDATA[ 
+				HP.POST_GRADE_YEAR = (SELECT MAX(POST_GRADE_YEAR) FROM hr_post_grade)
+		]]>
+	</isEmpty>
+		<![CDATA[     			   
+		       order by POST_GRADE_ID
+    	]]>
+	</select>
+	
+	<select id="getDeptPostGrade" resultClass="SimpleMap" parameterClass="SimpleMap">
+		<![CDATA[
+			    SELECT DEPTID, DEPTNAME, POST_GRADE_YEAR, PARENT_DEPT_ID, DEPT_LEVEL
+				  FROM( 
+				       SELECT HD.DEPTID, HD.DEPTNAME, HR.POST_GRADE_YEAR, HD.PARENT_DEPT_ID, HD.DEPT_LEVEL,
+							   CASE
+				               WHEN HD.DEPTID like '630%'
+				               THEN '63000000'
+				               WHEN HD.DEPTID like '780%'
+				               THEN '78000000'
+				               WHEN HD.DEPTID like '600%'
+				               THEN '60000000'
+				               WHEN HD.DEPTID like '610%'
+				               THEN '61000000'
+				               WHEN HD.DEPTID like '590%'
+				               THEN '59000000'
+				               ELSE '71000000'
+				               END AS CPNY_ID 
+				       FROM HR_EMPLOYEE HR, HR_DEPARTMENT HD
+				         WHERE HR.DEPTID(+) = HD.DEPTID
+				           AND HR.ACTIVITY(+) = 1
+				         GROUP BY HD.DEPTID, HD.DEPTNAME, HD.PARENT_DEPT_ID, HD.DEPT_LEVEL, HR.POST_GRADE_YEAR,HR.CPNY_ID
+				      ) HR_DEPARTMENT WHERE HR_DEPARTMENT.CPNY_ID=#cpny_id:VARCHAR#
+				  
+		 ]]>
+		 <isNotEmpty prepend="" property="DEPTID">
+		<![CDATA[ 
+				START WITH HR_DEPARTMENT.DEPTID = #DEPTID:VARCHAR#
+		]]>
+		</isNotEmpty>
+		<isEmpty prepend="" property="DEPTID">
+		<![CDATA[ 
+				START WITH HR_DEPARTMENT.DEPT_LEVEL = (SELECT MIN(DEPT_LEVEL) FROM HR_DEPARTMENT)
+		]]>
+		</isEmpty>
+		<![CDATA[
+				  
+				 CONNECT BY PRIOR HR_DEPARTMENT.DEPTID = HR_DEPARTMENT.PARENT_DEPT_ID
+		]]>
+	</select>
+	
+	
+	
+	<select id="getPostGradeYear" resultClass="SimpleMap" parameterClass="SimpleMap">
+		<![CDATA[
+				SELECT DISTINCT HP.POST_GRADE_YEAR
+				  FROM HR_POST_GRADE HP where hp.cpny_id=#cpny_id:VARCHAR#
+			  ORDER BY HP.POST_GRADE_YEAR DESC
+    ]]>
+	</select>
+
+	<select id="getPostGradeById" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[  
+	        select
+	        	POST_GRADE_YEAR,
+		        POST_GRADE_ID,	
+		        POST_GRADE_NAME,
+		        POST_GRADE_EN_NAME,
+		        POST_GRADE_VALUE,
+		        POST_GRADE_FIRST_NO,
+		        POST_GRADE_FIRST_MONEY,
+		        TO_CHAR(CREATE_DATE,'YYYY-MM-DD') CREATE_DATE,
+		       	CREATED_BY	
+			from hr_post_grade  
+		   WHERE POST_GRADE_ID= #GRADEID:VARCHAR# AND POST_GRADE_YEAR = #POST_GRADE_YEAR:VARCHAR#
+		     AND hr_post_grade.CPNY_ID = #cpny_id:VARCHAR#
+    ]]>
+	</select>
+
+	<insert id="InsertPostGrade" parameterClass="SimpleMap">
+		<![CDATA[
+		insert into hr_post_grade(
+				 POST_GRADE_YEAR,                   
+				 POST_GRADE_ID,
+				 POST_GRADE_NAME, 
+				 POST_GRADE_FIRST_NO,
+				 POST_GRADE_FIRST_MONEY,
+				 POST_GRADE_VALUE,        
+				 CREATE_DATE,
+				 CREATED_BY ,
+				 activity,
+				 CPNY_ID
+			 ) 
+			 values
+			 (
+				 #POST_GRADE_YEAR#,
+				 #GRADEID#,
+				 #POSTGRADENAME#,
+				 #POSTGRADEFIRSTNO:NUMERIC#,
+				 #POSTGRADEFIRSTMONEY:NUMERIC#,
+				 #POSTGRADEVALUE:NUMERIC#,
+				 sysdate,
+				 'EHR',
+				 '1',
+				 #CPNY_ID:VARCHAR#
+			 )
+	]]>              
+	</insert>
+
+	<update id="UpdatePostGrade" parameterClass="SimpleMap">
+		<![CDATA[  
+			   UPDATE hr_post_grade    
+				  SET   
+				  POST_GRADE_FIRST_NO=#POSTGRADEFIRSTNO:NUMERIC#,
+				  POST_GRADE_FIRST_MONEY=#POSTGRADEFIRSTMONEY:NUMERIC#,
+				  POST_GRADE_VALUE=#POSTGRADEVALUE:NUMERIC#,   
+				  update_date=sysdate,updated_by='EHR'
+				  WHERE POST_GRADE_ID=#GRADEID# 
+				    AND POST_GRADE_YEAR = #POST_GRADE_YEAR#
+				    AND CPNY_ID = #CPNY_ID#
+			]]>
+	</update>
+	
+	<update id="UpdateDeptPostGrade" parameterClass="SimpleMap">
+		<![CDATA[  
+			   UPDATE HR_EMPLOYEE HR SET HR.POST_GRADE_YEAR = #POST_GRADE_YEAR:VARCHAR# WHERE HR.DEPTID = #DEPTID:VARCHAR# 
+			]]>
+	</update>               
+
+	<delete id="deletePostGrade" parameterClass="SimpleMap">
+		<![CDATA[   
+			   delete from hr_post_grade 
+			   where POST_GRADE_ID=#id#
+			   and   cpny_id = #cpnyId#     
+			]]>
+	</delete>
+	
+	
+	<select id="getPostGradeTypeList" resultClass="SimpleMap">
+		<![CDATA[
+				 SELECT DISTINCT HP.POST_GRADE_ID,HP.POST_GRADE_NAME FROM HR_POST_GRADE HP ORDER BY HP.POST_GRADE_ID
+		]]>
+	</select>
+	
+	<select id="validateInsertPostGrade" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+				 SELECT COUNT(*) FROM HR_POST_GRADE HP WHERE HP.POST_GRADE_YEAR = #POST_GRADE_YEAR# AND HP.POST_GRADE_ID = #GRADEID# AND HP.CPNY_ID=#CPNY_ID:VARCHAR#
+		]]>
+	</select>
+</sqlMap>

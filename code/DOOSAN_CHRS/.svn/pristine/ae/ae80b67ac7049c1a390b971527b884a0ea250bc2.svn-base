@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="ga.conferenceroom">
+	<select id="visiterApplyId" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			  select t.CONFERENCENO from pu_conferenceroom_apply t
+	  	]]>
+</select>
+
+<select id="conferenceroomApplyIdApplyId" parameterClass="SimpleMap" resultClass="string">
+	<![CDATA[
+		  select temp.CONFERENCENO
+		  from (select t.CONFERENCENO
+		          from pu_conferenceroom_apply t
+		         order by substr(t.CONFERENCENO,9,10) desc) temp
+		   where rownum = 1  
+  	]]>
+</select>
+	
+<insert id="addconferenceRoomApply" parameterClass="SimpleMap">
+  <![CDATA[	
+    insert into PU_CONFERENCEROOM_APPLY(    
+	  APPLYNO      ,
+	  APPLYORID    ,
+	  APPLYORDEPTID ,
+	  APPLYDATE     ,
+	  BOOKDATE      ,
+	  ENDDATE		,
+	  BOOKSTARTTIME ,
+	  BOOKENDTIME   ,
+	  PEOPLECLASS	,
+	  BOOKNUMBER    ,
+	  PURPOSEOFUSE   ,
+	  CONFERENCEROOM ,
+	  EQUIPS	,
+	  ACTIVE     ,
+	  BEFORE_BOOKDATE	,
+	  BEFORE_ENDDATE	,
+	  BEFORE_BOOKSTARTTIME	,
+	  BEFORE_BOOKENDTIME	,
+	  BEFORE_CONFERENCEROOM	,
+	  BEFORE_EQUIPS,
+	  CONFERENCENO, 
+	  PEOPLECLASS_UP,
+	  OTHERREQUEST,
+	  cpny_id 
+   )values(
+   PU_CONFERENCEROOM_APPLY_SEQ.NEXTVAL,
+   #applerId:VARCHAR#,
+   #deptId:VARCHAR#,
+   SYSDATE,
+   to_date(#Formatdate:VARCHAR#,'yyyy-mm-dd'),
+   to_date(#Formatdate:VARCHAR#,'yyyy-mm-dd'),
+   #starttime:VARCHAR#,
+   #endtime:VARCHAR#,
+   #peopleclass:VARCHAR#,
+   #bookNumber:NUMERIC#,
+   #Purposeofuse:VARCHAR#,
+   #conferenceRoom:VARCHAR#,  
+   #equips:VARCHAR#,
+   '1',
+   to_date(#Formatdate:VARCHAR#,'yyyy-mm-dd')	,
+   to_date(#Formatdate:VARCHAR#,'yyyy-mm-dd')	,
+   #starttime:VARCHAR#	,
+   #endtime:VARCHAR#	,
+   #conferenceRoom:VARCHAR#	,
+   #equips:VARCHAR#,
+   #documentno:VARCHAR#,  
+   #peopleclass_up:VARCHAR#,
+   #otherRequest:VARCHAR#,
+   #cpny_id:VARCHAR#
+   )   
+   
+  ]]>
+</insert>
+
+<insert id="addconferenceRoomAffirm" parameterClass="SimpleMap">
+  <![CDATA[	
+    insert into PU_CONFERENCEROOM_AFFIRM(    
+	  GA_AFFIRM_NO,
+	  APPLY_NO,
+	  AFFIRM_LEVEL,
+	  AFFIRMOR_ID,
+	  CREATE_DATE,
+	  CREATED_BY,	
+	  ACTIVITY,
+	  APPLY_TYPE
+   )values(
+   PU_CONFERENCEROOM_AFFIRM_SEQ.NEXTVAL,
+   #applyno:NUMERIC#,
+   #AffirmorLevel:NUMERIC#,
+   #AffirmorId:VARCHAR#,
+   SYSDATE,
+   #applerId:VARCHAR#,
+   '1', 
+   'ConferenceRoomApply'
+   )   
+   
+  ]]>
+</insert>
+<select id="conferenceRoomAffirmListNumber" parameterClass="SimpleMap" resultClass="int">
+  <![CDATA[	
+   select count(t.apply_no)  from PU_CONFERENCEROOM_AFFIRM t 
+   where t.activity='1' and t.affirmor_id=#applerId:VARCHAR# 
+    ]]>
+</select>
+
+<select id="roomnameList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[	
+   select *  from pu_room where (cpny_id=#cpny_id:VARCHAR# or cpny_id is null) and active='0'
+    ]]>
+   <isNotEmpty prepend="AND" property="applerId">
+			<![CDATA[		  
+	(CONFIRMORID like '%' || #applerId:VARCHAR2# || '%'  OR CONFIRMORID IS NULL)		 
+		]]>
+   </isNotEmpty> 
+   <![CDATA[	
+     order by id
+    ]]> 
+</select>
+
+<select id="roomname" parameterClass="SimpleMap" resultClass="string">
+  <![CDATA[	
+   select *  from pu_room t where t.id=#id:varchar#
+    ]]>
+</select>
+
+<select id="roomConfirmorid" parameterClass="SimpleMap" resultClass="string">
+  <![CDATA[	
+   select confirmorid  from pu_room t where t.id=#id:varchar#
+    ]]>
+</select>
+
+<select id="meetroomList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[	
+   select t.ga_visiter_apply_id  from ga_visiter_apply t, hr_employee e, hr_department m
+ where t.play_apply =e.person_id
+ and m.deptid=e.deptid
+ and to_date(t.visiter_date,'YYYY-MM-DD')>=to_date(to_char(sysdate-1,'YYYY-MM-DD'),'YYYY-MM-DD')
+    ]]>
+     <isNotEmpty prepend="AND" property="applerId">
+			<![CDATA[		   
+		 EXISTS ( SELECT SAD.ADMIN_DEPTID
+					   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+					  WHERE SAD.ADMIN_NO = SA.ADMINNO
+					    AND SA.ADMINID = #applerId:VARCHAR2#
+					    AND SAD.ADMIN_DEPTID = e.DEPTID	
+				   ) 
+		]]>
+		</isNotEmpty>
+		<![CDATA[		   
+		 order by t.ga_visiter_apply_id desc
+		]]>
+</select>
+
+<select id="equipList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[	
+   		select peoples,equip  from pu_room where id = #TypeId:NUMERIC#
+    ]]>
+</select>
+
+<select id="meetList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[	
+   		select T.VISITER_DATE,t.VISITER_COME_TIME,t.VISITER_END_TIME,t.VISITER_OBJECTIVE,t.VISITER_PEOPLE_NUM
+  from ga_visiter_apply t where t.ga_visiter_apply_id=#TypeId:varchar#
+    ]]>
+</select>
+
+<select id="conferenceRoomAffirmList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[	
+ select a.applyno,a.applyorid,a.applyordeptid,a.bookstarttime,a.bookendtime,a.booknumber,a.purposeofuse,a.isconfirm,
+      to_char(a.applydate,'yyyy-mm-dd') as applydate,
+     to_char(a.bookdate,'yyyy-mm-dd') as bookdate,
+       t.affirm_flag,
+       t.affirm_level,
+       t.affirmor_id,
+       code.code_name,
+       hr.chinesename as chinesename,
+       v.deptname as deptname
+  from PU_CONFERENCEROOM_APPLY  a,
+       PU_CONFERENCEROOM_AFFIRM t,
+       hr_employee       hr,
+       sy_code           code,
+       hr_department     v
+
+ where a.active = '1'
+   and hr.empid(+) = a.applyorid
+   and t.apply_no =a.applyno
+   and t.activity = '1'
+   and t.affirmor_id = #applerId:VARCHAR# 
+   and code.code_id = a.conferenceroom
+   and v.deptid = a.applyordeptid
+ order by a.applydate desc
+    ]]>
+</select>
+
+
+<update id="confirmConferenceRoomAffirm" parameterClass="SimpleMap">
+<![CDATA[
+	update PU_CONFERENCEROOM_AFFIRM  set AFFIRM_FLAG=#flag:NUMERIC#
+	where  AFFIRMOR_ID = #affirmorid:VARCHAR#
+	and APPLY_NO=#affirmno:NUMERIC#
+  ]]>
+</update>
+
+
+<select id="ConfirmConferenceRoomInfoListNumber" parameterClass="SimpleMap" resultClass="int">
+<![CDATA[
+ select count(t.applyno)  from PU_CONFERENCEROOM_APPLY t where t.applyorid=#applerId:VARCHAR#   and t.active='1'	
+  ]]>
+</select>
+
+
+<select id="ConfirmConferenceRoomInfoList" parameterClass="SimpleMap" resultClass="SimpleMap">
+<![CDATA[	
+ select a.applyno,a.applyorid,a.applyordeptid,a.bookstarttime,a.bookendtime,a.booknumber,a.purposeofuse,a.isconfirm,
+      to_char(a.applydate,'yyyy-mm-dd') as applydate,
+     to_char(a.bookdate,'yyyy-mm-dd') as bookdate,
+       t.affirm_flag,
+       t.affirm_level,
+       t.affirmor_id,
+       code.code_name,
+       hr.chinesename as chinesename,
+       v.deptname as deptname
+  from PU_CONFERENCEROOM_APPLY  a,
+       PU_CONFERENCEROOM_AFFIRM t,
+       hr_employee       hr,
+       sy_code           code,
+       hr_department     v
+
+ where a.active = '1'
+   and hr.empid(+) = a.applyorid
+   and t.apply_no =a.applyno
+   and t.activity = '1'
+   and a.applyorid =#applerId:VARCHAR# 
+   and code.code_id = a.conferenceroom
+   and v.deptid = a.applyordeptid
+ order by a.applydate desc
+  ]]>
+</select>
+
+<update id="deleteConfirmConferenceRoomApply" parameterClass="SimpleMap">
+<![CDATA[
+ update PU_CONFERENCEROOM_APPLY t set t.active=#flag:NUMERIC#
+ where t.applyno=#applyno:VARCHAR#
+  ]]>
+</update>
+
+
+<select id="allUsingConfirmConferenceRoom"  resultClass="SimpleMap">
+<![CDATA[	
+select t.conferenceno, to_char(min(t.bookdate), 'yyyy-mm-dd') as bookdate,
+       to_char(to_date(to_char(min(t.bookdate), 'yyyy-mm-dd') || ' ' ||
+                       min(t.bookstarttime),
+                       'yyyy-mm-dd hh24:mi'),
+               'yyyy-mm-dd hh24:mi') as fromtime,
+       to_char(to_date(to_char(max(t.enddate), 'yyyy-mm-dd') || ' ' ||
+                       max(t.bookendtime),
+                       'yyyy-mm-dd hh24:mi'),
+               'yyyy-mm-dd hh24:mi') as endtime,
+       t.purposeofuse,
+       r.roomname,
+       v.deptname,
+       h.chinesename,c.cpny_location
+  from pu_conferenceroom_apply t, pu_room r, hr_department v,hr_employee h,hr_company c
+ where t.conferenceroom = r.id
+   and t.applyorid =h.person_id
+   and t.active = '1'
+   and v.deptid = t.applyordeptid
+   and t.enddate >= to_date(to_char(SYSDATE, 'yyyy-mm-dd'), 'yyyy-mm-dd')   
+   and r.cpny_id=c.cpny_id
+  ]]>
+  <isEqual prepend="AND" property="cpnyId" compareValue="59000000"><!-- DICI and t.isconfirm = '1' -->
+		<![CDATA[
+	   			   r.cpny_id=#cpnyId:VARCHAR#
+	   	]]>
+  </isEqual>
+  <isNotEqual prepend="AND" property="cpnyId" compareValue="59000000">
+		<![CDATA[
+	   			   r.cpny_id=#cpnyId:VARCHAR#
+	   	]]>
+  </isNotEqual>
+  <![CDATA[	
+    group by t.conferenceno,t.purposeofuse  ,r.roomname, v.deptname,h.chinesename,c.cpny_location  
+   order by bookdate, fromtime, endtime,c.cpny_location
+   ]]>
+</select>
+
+<select id="getconfirm" parameterClass="SimpleMap" resultClass="string">
+<![CDATA[
+ select email from hr_employee where ACTIVITY = 1 and person_id = #applerId:VARCHAR#
+  ]]>
+</select>
+
+<select id="getconfirm1" parameterClass="SimpleMap" resultClass="SimpleMap">
+<![CDATA[
+ select email from hr_employee e where e.person_id in (select adminid from sy_admin where instr(screen_grant_no,#eaa:varchar# ) <> 0) and e.cpny_id=#cpny_id:varchar#
+  ]]>
+</select>
+
+<select id="selectConfirmoridStr" parameterClass="SimpleMap" resultClass="SimpleMap">
+<![CDATA[
+ select email from hr_employee e where e.person_id in ($selectEmpidLStr$) and e.cpny_id=#cpny_id:varchar#
+  ]]>
+</select>
+
+</sqlMap>

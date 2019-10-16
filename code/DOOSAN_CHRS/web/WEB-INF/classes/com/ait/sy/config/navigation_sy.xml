@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<navigation-mapper>
+
+	<operation name="PAGE_NOT_FOUND">
+		<command>com.ait.web.ErrorCommand</command>
+		<return-url>/error.jsp</return-url>
+	</operation>
+
+	<operation name="view">
+		<command>com.ait.sy.servlet.SyViewCommand</command>
+		<return-url></return-url>
+	</operation>
+
+	<operation name="modify">
+		<command>com.ait.sy.servlet.SyUpdateCommand</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="save">  
+		<command>com.ait.sy.servlet.SySaveCommand</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="essLeaveParam">
+		<command>com.ait.sys.cmd.essleave.ViewEssLeaveParamCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="essOvertimeParam">
+		<command>com.ait.sys.cmd.essovertime.ViewEssOvertimeParamCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="essLeaveParam_add">
+		<command>com.ait.sys.cmd.essleave.InsertEssLeaveParamCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="essOvertimeParam_add">
+		<command>com.ait.sys.cmd.essovertime.InsertEssOvertimeParamCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="essLeaveParam_update">
+		<command>com.ait.sys.cmd.essleave.UpdateEssLeaveParamCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="essOvertimeParam_update">
+		<command>com.ait.sys.cmd.essovertime.UpdateEssOvertimeParamCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="essLeaveParam_del">
+		<command>com.ait.sys.cmd.essleave.DeleteEssLeaveParamCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="essOvertimeParam_del">
+		<command>com.ait.sys.cmd.essovertime.DeleteEssOvertimeParamCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="retrieveDataForUpdateEssLeaveParam">
+		<command>com.ait.sys.cmd.essleave.RetrievedataEssLeaveParamForUpdateCmd</command>
+		<return-url></return-url>
+	</operation>	
+	
+	<operation name="retrieveDataForUpdateEssOvertimeParam">
+		<command>com.ait.sys.cmd.essovertime.RetrievedataEssOvertimeParamForUpdateCmd</command>
+		<return-url></return-url>
+	</operation>	
+	
+
+	<operation name="deletepostgradecmd">
+		<command>com.ait.sys.cmd.postgrade.DeletePostGradeCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<operation name="insertpostgradecmd">
+		<command>com.ait.sys.cmd.postgrade.InsertPostGradeCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<operation name="retrievedataforupdatepostgradecmd">
+		<command>com.ait.sys.cmd.postgrade.RetrievedataForUpdatePostGradeCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<operation name="updatepostgradecmd">
+		<command>com.ait.sys.cmd.postgrade.UpdatePostGradeCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<operation name="viewpostgradecmd">
+		<command>com.ait.sys.cmd.postgrade.ViewPostGradeCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<operation name="deletepostgroupcmd">
+		<command>com.ait.sys.cmd.postgroup.DeletePostGroupCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<operation name="viewpostgroupcmd">
+		<command>com.ait.sys.cmd.postgroup.ViewPostGroupCmd</command>
+		<return-url></return-url>
+	</operation>
+	<operation name="ispostgroupidexistcmd">
+		<command>com.ait.sys.cmd.postgroup.IsPostGroupIdExistCmd</command>
+		<return-url></return-url>
+	</operation>
+	<operation name="updatepostgroupcmd">
+		<command>com.ait.sys.cmd.postgroup.UpdatePostGroupCmd</command>
+		<return-url></return-url>
+	</operation>
+	<operation name="retrievedataforupdatepostgroupcmd">
+		<command>com.ait.sys.cmd.postgroup.RetrievedataForUpdatePostGroupCmd</command>
+		<return-url></return-url>
+	</operation>
+	<operation name="insertpostgroupcmd">
+		<command>com.ait.sys.cmd.postgroup.InsertPostGroupCmd</command>
+		<return-url></return-url>
+	</operation>
+	<operation name="deletepostcmd">
+		<command>com.ait.sys.cmd.post.DeletePostCmd</command>
+		<return-url></return-url>
+	</operation>
+	<operation name="viewpostcmd">
+		<command>com.ait.sys.cmd.post.ViewPostCmd</command>
+		<return-url></return-url>
+	</operation>
+	<operation name="retrievedatapostforupdate">
+		<command>com.ait.sys.cmd.post.RetrievedataPostForUpdate</command>
+		<return-url></return-url>
+	</operation>
+	<operation name="updatepostcmd">
+		<command>com.ait.sys.cmd.post.UpdatePostCmd</command>
+		<return-url></return-url>
+	</operation>
+	<operation name="insertpostcmd">
+		<command>com.ait.sys.cmd.post.InsertPostCmd</command>
+		<return-url></return-url>
+	</operation>
+
+
+	<operation name="updatepostlevelcmd">
+		<command>com.ait.sys.cmd.postlevel.UpdatePostLevelCmd</command>
+		<return-url></return-url>
+	</operation>
+	<operation name="retrievedataforupdatepostlevelcmd">
+		<command>com.ait.sys.cmd.postlevel.RetrievedataForUpdatePostLevelCmd</command>
+		<return-url></return-url>
+	</operation>
+	<operation name="deletepostlevelcmd">
+		<command>com.ait.sys.cmd.postlevel.DeletePostLevelCmd</command>
+		<return-url></return-url>
+	</operation>
+	<operation name="insertpostlevelcmd">
+		<command>com.ait.sys.cmd.postlevel.InsertPostLevelCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<operation name="viewpostlevelcmd">
+		<command>com.ait.sys.cmd.postlevel.ViewPostLevelCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<operation name="getselectlistforpostaddcmd">
+		<command>com.ait.sys.cmd.post.GetSelectListForPostAddCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<operation name="ispostgradeidexistcmd">
+		<command>com.ait.sys.cmd.postgrade.IsPostGradeIdExistCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<operation name="ispostlevelidexistcmd">
+		<command>com.ait.sys.cmd.postlevel.IsPostLevelIdExistCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<operation name="ispostidexistcmd">
+		<command>com.ait.sys.cmd.post.IsPostIdExistCmd</command>
+		<return-url></return-url>
+	</operation>
+
+
+</navigation-mapper>

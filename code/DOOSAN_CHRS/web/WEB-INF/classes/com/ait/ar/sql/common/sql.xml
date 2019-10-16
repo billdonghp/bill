@@ -1,0 +1,3048 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="ar.common">
+	
+	<!--
+	comment : DIY职级分类
+	-->
+	<sql id="DIY_POST_GRADE_SQL">
+	<isNotEmpty prepend="AND" property="empType">
+			<isEqual prepend="" property="empType"
+				compareValue="office">
+			<!-- 职员 -->
+				<![CDATA[
+						  HR_EMPLOYEE.POST_GRADE_CODE <> 'C_12004_1352187' 
+				]]>
+			</isEqual>
+			<isEqual prepend="" property="empType"
+				compareValue="work">
+				<!-- 工人 -->
+				<![CDATA[
+						 HR_EMPLOYEE.POST_GRADE_CODE = 'C_12004_1352187' 
+				]]>
+			</isEqual>
+		</isNotEmpty>
+	</sql>
+	
+	<!--
+	comment : 其他公司职级分类
+	-->
+	<sql id="OTHER_POST_GRADE_SQL">
+	<isNotEmpty prepend="AND" property="empType">
+			<isEqual prepend="" property="empType"
+				compareValue="office">
+			<!-- 职员 -->
+				<![CDATA[
+						  HR_EMPLOYEE.POST_GRADE_CODE <> 'C_12004_1330054' 
+				      AND HR_EMPLOYEE.POST_GRADE_CODE <> 'C_12004_1324167'
+				]]>
+			</isEqual>
+			<isEqual prepend="" property="empType"
+				compareValue="work">
+				<!-- 工人 -->
+				<![CDATA[
+						 HR_EMPLOYEE.POST_GRADE_CODE IN ('C_12004_1330054','C_12004_1324167') 
+				]]>
+			</isEqual>
+	</isNotEmpty>
+	</sql>
+	
+	<!-- retrieve attendance detail -->
+	<select id="RetrieveAttDetail" parameterClass="SimpleMap"
+		resultClass="ArDetail">
+		<![CDATA[
+		            SELECT B.PK_NO pkNo,
+	                       B.EMPID empID,
+	                       B.POST_CODE POSITION_CODE,
+	                       POSITION.CODE_NAME positioNname,
+	                       POSITION.CODE_EN_NAME enPositionName,
+	                       B.CHINESENAME empName,
+	                       B.CHINESE_PINYIN empPinyin,
+	                       B.ENGLISHNAME enEmpName,
+	                       B.DEPTID,
+	                       HR_DEPARTMENT.DEPTNAME deptName,
+	                       HR_DEPARTMENT.DEPT_EN_NAME enDept,
+	                       B.AR_DATE_STR ar_date_str,
+	                       AR_GET_APPLYRESULT_TOTIME(B.PERSONID,B.AR_DATE_STR) AS applyToTime,
+	                       B.DATE_TYPE date_type,
+	                       B.AR_MONTH_STR ar_month_str,
+	                       B.AR_ITEM_NO itemNo,
+	                       AR_ITEM.ITEM_NAME itemName,
+	                       AR_ITEM.ITEM_EN_NAME enItemName,
+	                       NVL(TO_CHAR(B.FROM_TIME,'YYYY-MM-DD HH24:MI:SS'),'') fromTime,
+	                       NVL(TO_CHAR(B.TO_TIME, 'YYYY-MM-DD HH24:MI:SS'),'') toTime,
+	                       B.SHIFT_NO shiftNo,
+	                       AR_SHIFT010.SHIFT_NAME shiftName,
+	                       AR_SHIFT010.SHIFT_EN_NAME enShiftName,
+	                       B.QUANTITY quantity,
+	                       B.UNIT unit,
+	                       UNIT.CODE_NAME unitName,
+	                       UNIT.CODE_EN_NAME unitEnName,
+	                       B.LOCK_YN isLock,
+	                       nvl(AR_FLAG,4)  arFlag, 
+	                       nvl(FLAG,4) Flag, 
+	                       REMARK,
+	                       CASE
+					         WHEN B.CPNY_ID = '61000000' AND B.AR_ITEM_NO IN ('30', '31', '32') AND B.QUANTITY > AR_GET_APPLYRESULT_TOTIME(B.personId, B.AR_DATE_STR) THEN
+					          'Y'
+					         WHEN B.CPNY_ID = '61000000' AND AR_ITEM.ITEM_GROUP_CODE = 'LeavelGroup' AND B.QUANTITY>8 THEN
+					          'Y'
+					         ELSE
+					          'N'
+					       END abnormalFlag,
+	                       NVL(AR_CALENDER.LOCK_FLAG , DECODE(B.EMP_DIFF_CODE ,'C_12067_1330308', AR_CALENDER.LOCK_FLAG_Z , AR_CALENDER.LOCK_FLAG_G )) status
+	  FROM (SELECT A.*, ROWNUM RNM
+          FROM (SELECT  * FROM  (
+                           select AR_DETAIL.pk_no,
+	                       AR_DETAIL.empid as personId,
+	                       HR_EMPLOYEE.empid,
+	                       AR_DETAIL.ar_item_no,
+	                       AR_DETAIL.from_time,
+	                       AR_DETAIL.to_time,
+	                       AR_DETAIL.shift_no,
+	                       AR_DETAIL.ar_date_str,
+	                       AR_DETAIL.ar_month_str,
+	                       AR_DETAIL.quantity,
+	                       AR_DETAIL.lock_yn,
+	                       AR_DETAIL.date_type,
+	                       AR_DETAIL.unit,
+	                       AR_DETAIL.mod_date,
+	                       AR_DETAIL.AR_FLAG,
+	                       AR_DETAIL.FLAG,
+	                       AR_DETAIL.REMARK,
+	                       HR_EMPLOYEE.EMP_DIFF_CODE,
+	                       HR_EMPLOYEE.POST_CODE,
+	                       HR_EMPLOYEE.DEPTID,
+	                       HR_EMPLOYEE.CHINESENAME,
+	                       HR_EMPLOYEE.CHINESE_PINYIN,
+	                       HR_EMPLOYEE.ENGLISHNAME,
+	                       HR_EMPLOYEE.CPNY_ID
+	                  from $tableName$ AR_DETAIL, HR_EMPLOYEE
+	                 WHERE AR_DETAIL.AR_DATE_STR BETWEEN #sDate# AND #eDate#
+	                   AND AR_DETAIL.EMPID = HR_EMPLOYEE.PERSON_ID
+             ]]>
+	<isEqual property="cnpyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isNotEqual property="cnpyId" compareValue="60000000"><!-- OTHER -->
+					<include refid="OTHER_POST_GRADE_SQL"/>
+	</isNotEqual>
+	
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+						EXISTS ( SELECT *
+	                                FROM AR_SUPERVISOR_INFO J
+	                               WHERE AR_SUPERVISOR_ID = #supervisor:VARCHAR#
+	                                 AND HR_EMPLOYEE.DEPTID = J.SUPERVISED_DEPTID 						      
+						  )
+				]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="condition">
+			<![CDATA[ 
+					(   HR_EMPLOYEE.EMPID LIKE '%' || #condition:VARCHAR# || '%'
+			          OR HR_EMPLOYEE.CHINESENAME LIKE '%' || #condition:VARCHAR# || '%'
+			         )
+				    
+			 ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="itemNo">
+			<![CDATA[ 
+						AR_DETAIL.AR_ITEM_NO = #itemNo:NUMERIC#
+					    
+				 ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="deptid">
+			<![CDATA[
+				 		HR_EMPLOYEE.DEPTID IN (
+					      			SELECT DEPTID 
+					                FROM HR_DEPARTMENT 
+					                START WITH DEPTID = #deptid#
+					                CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+					   ) 
+			    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="sLength">
+			<isNotEmpty prepend="AND" property="eLength">
+				<![CDATA[ 
+							(AR_DETAIL.QUANTITY >= #sLength:NUMERIC# AND AR_DETAIL.QUANTITY <= #eLength:NUMERIC# )  
+					 ]]>
+			</isNotEmpty>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="sLength">
+			<isEmpty prepend="AND" property="eLength">
+				<![CDATA[ 
+							AR_DETAIL.QUANTITY = #sLength:NUMERIC# 
+					 ]]>
+			</isEmpty>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="eLength">
+			<isEmpty prepend="AND" property="sLength">
+				<![CDATA[ 
+							AR_DETAIL.QUANTITY = #eLength:NUMERIC#
+					 ]]>
+			</isEmpty>
+		</isNotEmpty>
+
+		<![CDATA[ 
+			    ) ORDER BY AR_DATE_STR,DEPTID,EMPID,QUANTITY) A
+		 ]]>
+		<isNotEmpty prepend="WHERE" property="endRownum">
+			<![CDATA[
+			         ROWNUM <= #endRownum:NUMERIC#
+			]]>
+		</isNotEmpty>
+
+		<![CDATA[
+			        ) B,
+			       (SELECT A.AR_DATE_STR,
+					       A.CPNY_ID,
+					       A.LOCK_FLAG_G,
+					       A.LOCK_FLAG_Z,
+					       B.SUPERVISOR_ID,
+					       B.LOCK_DATE_STR,
+					       B.LOCK_FLAG
+					  FROM AR_CALENDER A, AR_SUPERVISOR_LOCK_INFO B
+					 WHERE A.AR_DATE_STR = B.LOCK_DATE_STR(+)
+					   AND A.CPNY_ID = #cnpyId:VARCHAR#
+					   AND B.SUPERVISOR_ID(+) = #supervisor:VARCHAR#) AR_CALENDER,
+			       HR_DEPARTMENT,
+			       AR_SHIFT010,
+			       AR_ITEM,
+			       SY_CODE UNIT,
+			       SY_CODE POSITION
+			 WHERE B.AR_DATE_STR = AR_CALENDER.AR_DATE_STR
+			   AND B.DEPTID = HR_DEPARTMENT.DEPTID
+			   AND B.SHIFT_NO = AR_SHIFT010.SHIFT_NO
+			   AND B.AR_ITEM_NO = AR_ITEM.ITEM_NO
+			   AND B.UNIT = UNIT.CODE_ID(+)
+			   AND B.POST_CODE = POSITION.CODE_ID(+)
+	   	 ]]>
+		<isNotEmpty prepend="AND" property="startRownum">
+			<![CDATA[
+	   	 		B.RNM > #startRownum:NUMERIC#
+	   	 	]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY B.RNM
+		]]>
+	</select>
+	
+	<select id="RetrieveAttDetailByZhishe" parameterClass="SimpleMap"
+		resultClass="ArDetail">
+		<![CDATA[
+		            SELECT B.PK_NO pkNo,
+	                       B.EMPID empID,
+	                       B.POST_CODE POSITION_CODE,
+	                       POSITION.CODE_NAME positioNname,
+	                       POSITION.CODE_EN_NAME enPositionName,
+	                       B.CHINESENAME empName,
+	                       B.CHINESE_PINYIN empPinyin,
+	                       B.ENGLISHNAME enEmpName,
+	                       B.DEPTID,
+	                       HR_DEPARTMENT.DEPTNAME deptName,
+	                       HR_DEPARTMENT.DEPT_EN_NAME enDept,
+	                       B.AR_DATE_STR ar_date_str,
+	                       B.DATE_TYPE date_type,
+	                       B.AR_MONTH_STR ar_month_str,
+	                       B.AR_ITEM_NO itemNo,
+	                       AR_ITEM.ITEM_NAME itemName,
+	                       AR_ITEM.ITEM_EN_NAME enItemName,
+	                       NVL(TO_CHAR(B.FROM_TIME,'YYYY-MM-DD HH24:MI:SS'),'') fromTime,
+	                       NVL(TO_CHAR(B.TO_TIME, 'YYYY-MM-DD HH24:MI:SS'),'') toTime,
+	                       B.SHIFT_NO shiftNo,
+	                       AR_SHIFT010.SHIFT_NAME shiftName,
+	                       AR_SHIFT010.SHIFT_EN_NAME enShiftName,
+	                       B.QUANTITY quantity,
+	                       B.UNIT unit,
+	                       UNIT.CODE_NAME unitName,
+	                       UNIT.CODE_EN_NAME unitEnName,
+	                       B.LOCK_YN isLock,
+	                       nvl(AR_FLAG,4)  arFlag, 
+	                       NVL(AR_CALENDER.LOCK_FLAG , DECODE(B.EMP_DIFF_CODE ,'C_12067_1330308', AR_CALENDER.LOCK_FLAG_Z , AR_CALENDER.LOCK_FLAG_G )) status
+	  FROM (SELECT A.*, ROWNUM RNM
+          FROM (SELECT  * FROM  (
+                           select AR_DETAIL.pk_no,
+	                       AR_DETAIL.empid as personId,
+	                       HR_EMPLOYEE.empid,
+	                       AR_DETAIL.ar_item_no,
+	                       AR_DETAIL.from_time,
+	                       AR_DETAIL.to_time,
+	                       AR_DETAIL.shift_no,
+	                       AR_DETAIL.ar_date_str,
+	                       AR_DETAIL.ar_month_str,
+	                       AR_DETAIL.quantity,
+	                       AR_DETAIL.lock_yn,
+	                       AR_DETAIL.date_type,
+	                       AR_DETAIL.unit,
+	                       AR_DETAIL.mod_date,
+	                       AR_DETAIL.AR_FLAG,
+	                       HR_EMPLOYEE.EMP_DIFF_CODE,
+	                       HR_EMPLOYEE.POST_CODE,
+	                       HR_EMPLOYEE.DEPTID,
+	                       HR_EMPLOYEE.CHINESENAME,
+	                       HR_EMPLOYEE.CHINESE_PINYIN,
+	                       HR_EMPLOYEE.ENGLISHNAME
+	                  from $tableName$ AR_DETAIL, HR_EMPLOYEE
+	                 WHERE AR_DETAIL.AR_DATE_STR BETWEEN #sDate# AND #eDate#
+	                   AND AR_DETAIL.EMPID = HR_EMPLOYEE.PERSON_ID
+	                   AND DECODE(AR_DETAIL.AR_FLAG,'',-1,AR_DETAIL.AR_FLAG) <> 1
+             ]]>
+
+	
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+						EXISTS ( SELECT *
+	                                FROM AR_SUPERVISOR_INFO J
+	                               WHERE AR_SUPERVISOR_ID = #supervisor:VARCHAR#
+	                                 AND HR_EMPLOYEE.DEPTID = J.SUPERVISED_DEPTID 						      
+						  )
+				]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="condition">
+			<![CDATA[ 
+					(   HR_EMPLOYEE.EMPID LIKE '%' || #condition:VARCHAR# || '%'
+			          OR HR_EMPLOYEE.CHINESENAME LIKE '%' || #condition:VARCHAR# || '%'
+			         )
+				    
+			 ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="itemNo">
+			<![CDATA[ 
+						AR_DETAIL.AR_ITEM_NO = #itemNo:NUMERIC#
+					    
+				 ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="deptid">
+			<![CDATA[
+				 		HR_EMPLOYEE.DEPTID IN (
+					      			SELECT DEPTID 
+					                FROM HR_DEPARTMENT 
+					                START WITH DEPTID = #deptid#
+					                CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+					   ) 
+			    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="sLength">
+			<isNotEmpty prepend="AND" property="eLength">
+				<![CDATA[ 
+							(AR_DETAIL.QUANTITY >= #sLength:NUMERIC# AND AR_DETAIL.QUANTITY <= #eLength:NUMERIC# )  
+					 ]]>
+			</isNotEmpty>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="sLength">
+			<isEmpty prepend="AND" property="eLength">
+				<![CDATA[ 
+							AR_DETAIL.QUANTITY = #sLength:NUMERIC# 
+					 ]]>
+			</isEmpty>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="eLength">
+			<isEmpty prepend="AND" property="sLength">
+				<![CDATA[ 
+							AR_DETAIL.QUANTITY = #eLength:NUMERIC#
+					 ]]>
+			</isEmpty>
+		</isNotEmpty>
+
+		<![CDATA[ 
+			    ) ORDER BY AR_DATE_STR,DEPTID,EMPID) A
+		 ]]>
+		<isNotEmpty prepend="WHERE" property="endRownum">
+			<![CDATA[
+			         ROWNUM <= #endRownum:NUMERIC#
+			]]>
+		</isNotEmpty>
+
+		<![CDATA[
+			        ) B,
+			       (SELECT A.AR_DATE_STR,
+					       A.CPNY_ID,
+					       A.LOCK_FLAG_G,
+					       A.LOCK_FLAG_Z,
+					       B.SUPERVISOR_ID,
+					       B.LOCK_DATE_STR,
+					       B.LOCK_FLAG
+					  FROM AR_CALENDER A, AR_SUPERVISOR_LOCK_INFO B
+					 WHERE A.AR_DATE_STR = B.LOCK_DATE_STR(+)
+					   AND A.CPNY_ID = #cnpyId:VARCHAR#
+					   AND B.SUPERVISOR_ID(+) = #supervisor:VARCHAR#) AR_CALENDER,
+			       HR_DEPARTMENT,
+			       AR_SHIFT010,
+			       AR_ITEM,
+			       SY_CODE UNIT,
+			       SY_CODE POSITION
+			 WHERE B.AR_DATE_STR = AR_CALENDER.AR_DATE_STR
+			   AND B.DEPTID = HR_DEPARTMENT.DEPTID
+			   AND B.SHIFT_NO = AR_SHIFT010.SHIFT_NO
+			   AND B.AR_ITEM_NO = AR_ITEM.ITEM_NO
+			   AND B.UNIT = UNIT.CODE_ID(+)
+			   AND B.POST_CODE = POSITION.CODE_ID(+)
+	   	 ]]>
+		<isNotEmpty prepend="AND" property="startRownum">
+			<![CDATA[
+	   	 		B.RNM > #startRownum:NUMERIC#
+	   	 	]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY B.RNM
+		]]>
+	</select>
+
+	<!-- retrieve attendance detailBack list -->
+	<select id="RetrieveAttDetailBackList" parameterClass="SimpleMap" resultClass="ArDetail" >
+		<![CDATA[	
+			SELECT AD.PK_NO pkNo,
+			       AD.EMPID EMPID,
+			       AD.POSITION_CODE,
+			       B.CODE_NAME POSITIONNAME,
+			       B.CODE_EN_NAME ENPOSITIONNAME,
+			       AD.CHINESENAME EMPNAME,
+			       HR_DEPARTMENT.DEPTID,
+			       HR_DEPARTMENT.DEPTNAME DEPTNAME,
+			       AD.AR_DATE_STR AR_DATE_STR,
+			       AD.DATE_TYPE DATE_TYPE,
+			       AD.AR_MONTH_STR AR_MONTH_STR,
+			       AD.AR_ITEM_NO ITEMNO,
+			       AR_ITEM.ITEM_NAME ITEMNAME,
+			       NVL(TO_CHAR(AD.FROM_TIME, 'YYYY-MM-DD HH24:MI:SS'), '') FROMTIME,
+			       NVL(TO_CHAR(AD.TO_TIME, 'YYYY-MM-DD HH24:MI:SS'), '') TOTIME,
+			       AD.SHIFT_NO SHIFTNO,
+			       AR_SHIFT010.SHIFT_NAME SHIFTNAME,
+			       AD.QUANTITY QUANTITY,
+			       AD.UNIT UNIT,
+			       A.CODE_NAME UNITNAME,
+			       AD.LOCK_YN ISLOCK,
+			       CREATE_EMP.CHINESENAME AS CREATEBY,
+			       TO_CHAR(AD.CREATE_DATE, 'YYYY-MM-DD HH24:MI') AS CREATEDATE,
+			       AD.OPERATION,
+			       AD.REMARK
+		      FROM (SELECT A.*, ROWNUM RNM
+          FROM (SELECT  * FROM  (
+                    select AR_DETAIL.pk_no,
+	                       AR_DETAIL.empid as personId,
+	                       HR_EMPLOYEE.empid,
+	                       AR_DETAIL.ar_item_no,
+	                       AR_DETAIL.from_time,
+	                       AR_DETAIL.to_time,
+	                       AR_DETAIL.shift_no,
+	                       AR_DETAIL.ar_date_str,
+	                       AR_DETAIL.ar_month_str,
+	                       AR_DETAIL.quantity,
+	                       AR_DETAIL.lock_yn,
+	                       AR_DETAIL.date_type,
+	                       AR_DETAIL.unit,
+	                       AR_DETAIL.CREATE_DATE CREATE_DATE,
+                           AR_DETAIL.CREATED_BY  CREATED_BY,
+                           AR_DETAIL.OPERATION   OPERATION,
+                           AR_DETAIL.REMARK      REMARK,
+                           HR_EMPLOYEE.EMP_DIFF_CODE,
+                           HR_EMPLOYEE.POST_CODE,
+                           HR_EMPLOYEE.POSITION_CODE,
+	                       HR_EMPLOYEE.DEPTID,
+	                       HR_EMPLOYEE.CHINESENAME,
+	                       HR_EMPLOYEE.CHINESE_PINYIN,
+	                       HR_EMPLOYEE.ENGLISHNAME
+	                  from (
+	                  	   select AR_BACK.pk_no,
+		                          AR_BACK.empid,
+		                          AR_BACK.ar_item_no,
+		                          AR_BACK.from_time,
+		                          AR_BACK.to_time,
+		                          AR_BACK.shift_no,
+		                          AR_BACK.ar_date_str,
+		                          AR_BACK.ar_month_str,
+		                          AR_BACK.quantity,
+		                          AR_BACK.lock_yn,
+		                          AR_BACK.date_type,
+		                          AR_BACK.unit,
+		                          AR_BACK.CREATE_DATE CREATE_DATE,
+		                          AR_BACK.CREATED_BY CREATED_BY,
+		                          AR_BACK.OPERATION OPERATION,
+		                          AR_BACK.REMARK
+		                    from AR_DETAIL_BACK AR_BACK
+		                    union all
+		                    select AR.pk_no,
+		                           AR.empid,
+		                           AR.ar_item_no,
+		                           AR.from_time,
+		                           AR.to_time,
+		                           AR.shift_no,
+		                           AR.ar_date_str,
+		                           AR.ar_month_str,
+		                           AR.quantity,
+		                           AR.lock_yn,
+		                           AR.date_type,
+		                           AR.unit,
+		                           AR.Mod_Date CREATE_DATE,
+		                           '结果' CREATED_BY,
+		                           '结果' OPERATION,
+		                           AR.REMARK
+		                     from AR_DETAIL AR
+		                     WHERE AR.LOCK_YN = 'Y'
+	            		 ) AR_DETAIL, 
+	                  	   HR_EMPLOYEE
+	                 WHERE 1 = 1
+	]]>
+	<isNotEmpty prepend="AND" property="sDate">
+	<![CDATA[      
+	                   AR_DETAIL.AR_DATE_STR BETWEEN TO_CHAR(TO_DATE(#sDate# , 'YYYY-MM-DD') , 'YYYY/MM/DD') AND TO_CHAR(TO_DATE(#eDate# , 'YYYY-MM-DD') , 'YYYY/MM/DD')
+	]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="sDateU">
+	<![CDATA[      
+	                   AR_DETAIL.CREATE_DATE BETWEEN TO_DATE(#sDateU#,'YYYY-MM-DD') AND TO_DATE(#eDateU# , 'YYYY-MM-DD') + 1
+	                  
+	]]>
+	</isNotEmpty>
+	<![CDATA[
+	 				   AND AR_DETAIL.EMPID = HR_EMPLOYEE.PERSON_ID
+	]]>
+	<isEqual property="cnpyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isNotEqual property="cnpyId" compareValue="60000000"><!-- OTHER -->
+					<include refid="OTHER_POST_GRADE_SQL"/>
+	</isNotEqual>
+	
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+						EXISTS ( SELECT *
+	                                FROM AR_SUPERVISOR_INFO J
+	                               WHERE AR_SUPERVISOR_ID = #supervisor:VARCHAR#
+	                                 AND HR_EMPLOYEE.DEPTID = J.SUPERVISED_DEPTID 						      
+						  )
+				]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="key">
+			<![CDATA[ 
+					(    HR_EMPLOYEE.EMPID = #key:VARCHAR# 
+			          OR HR_EMPLOYEE.CHINESENAME LIKE '%' || #key:VARCHAR# || '%'
+			         )
+				    
+			 ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="itemNo">
+			<![CDATA[ 
+						AR_DETAIL.AR_ITEM_NO = #itemNo:NUMERIC#
+					    
+				 ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="deptid">
+			<![CDATA[
+				 		HR_EMPLOYEE.DEPTID IN (
+					      			SELECT DEPTID 
+					                FROM HR_DEPARTMENT 
+					                START WITH DEPTID = #deptid#
+					                CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+					   ) 
+			    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="sLength">
+			<isNotEmpty prepend="AND" property="eLength">
+				<![CDATA[ 
+							(AR_DETAIL.QUANTITY >= #sLength:NUMERIC# AND AR_DETAIL.QUANTITY <= #eLength:NUMERIC# )  
+					 ]]>
+			</isNotEmpty>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="sLength">
+			<isEmpty prepend="AND" property="eLength">
+				<![CDATA[ 
+							AR_DETAIL.QUANTITY = #sLength:NUMERIC# 
+					 ]]>
+			</isEmpty>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="eLength">
+			<isEmpty prepend="AND" property="sLength">
+				<![CDATA[ 
+							AR_DETAIL.QUANTITY = #eLength:NUMERIC#
+					 ]]>
+			</isEmpty>
+		</isNotEmpty>
+		
+	
+		<![CDATA[ 
+			    ) ORDER BY AR_DATE_STR, EMPID,OPERATION, DEPTID DESC) A
+		 ]]>
+		<isNotEmpty prepend="WHERE" property="endRownum">
+			<![CDATA[
+			         ROWNUM <= #endRownum:NUMERIC#
+			]]>
+		</isNotEmpty>
+
+		<![CDATA[
+			        ) AD,
+		           HR_DEPARTMENT,
+		           AR_SHIFT010,
+		           AR_ITEM,
+		           SY_CODE A,
+             	   SY_CODE B,
+             	   HR_EMPLOYEE CREATE_EMP
+		   WHERE AD.DEPTID = HR_DEPARTMENT.DEPTID
+		     AND AD.SHIFT_NO = AR_SHIFT010.SHIFT_NO
+		     AND AD.AR_ITEM_NO = AR_ITEM.ITEM_NO
+			 AND AD.UNIT = A.CODE_ID(+)
+	         AND AD.POSITION_CODE=B.CODE_ID(+)
+	         AND AD.CREATED_BY = CREATE_EMP.PERSON_ID(+)
+		]]>
+		
+		<isNotEmpty prepend="AND" property="startRownum">
+			<![CDATA[
+	   	 		AD.RNM > #startRownum:NUMERIC#
+	   	 	]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY AD.RNM
+		]]>	
+	</select>
+
+	<!-- retrieve attendance detailBack count -->
+	<select id="RetrieveAttDetailBackCnt" parameterClass="SimpleMap"
+		resultClass="int">
+		<![CDATA[			
+		  SELECT COUNT(*) CUT
+		      FROM (SELECT A.*, ROWNUM RNM
+          FROM (SELECT  * FROM  (
+                    select AR_DETAIL.pk_no,
+	                       AR_DETAIL.empid as personId,
+	                       HR_EMPLOYEE.empid,
+	                       AR_DETAIL.ar_item_no,
+	                       AR_DETAIL.from_time,
+	                       AR_DETAIL.to_time,
+	                       AR_DETAIL.shift_no,
+	                       AR_DETAIL.ar_date_str,
+	                       AR_DETAIL.ar_month_str,
+	                       AR_DETAIL.quantity,
+	                       AR_DETAIL.lock_yn,
+	                       AR_DETAIL.date_type,
+	                       AR_DETAIL.unit,
+	                       AR_DETAIL.CREATE_DATE CREATE_DATE,
+                           AR_DETAIL.CREATED_BY  CREATED_BY,
+                           AR_DETAIL.OPERATION   OPERATION,
+                           HR_EMPLOYEE.EMP_DIFF_CODE,
+                           HR_EMPLOYEE.POST_CODE,
+                           HR_EMPLOYEE.POSITION_CODE,
+	                       HR_EMPLOYEE.DEPTID,
+	                       HR_EMPLOYEE.CHINESENAME,
+	                       HR_EMPLOYEE.CHINESE_PINYIN,
+	                       HR_EMPLOYEE.ENGLISHNAME
+	                  from (
+	                  	   select AR_BACK.pk_no,
+		                          AR_BACK.empid,
+		                          AR_BACK.ar_item_no,
+		                          AR_BACK.from_time,
+		                          AR_BACK.to_time,
+		                          AR_BACK.shift_no,
+		                          AR_BACK.ar_date_str,
+		                          AR_BACK.ar_month_str,
+		                          AR_BACK.quantity,
+		                          AR_BACK.lock_yn,
+		                          AR_BACK.date_type,
+		                          AR_BACK.unit,
+		                          AR_BACK.CREATE_DATE CREATE_DATE,
+		                          AR_BACK.CREATED_BY CREATED_BY,
+		                          AR_BACK.OPERATION OPERATION
+		                    from AR_DETAIL_BACK AR_BACK
+		                    union all
+		                    select AR.pk_no,
+		                           AR.empid,
+		                           AR.ar_item_no,
+		                           AR.from_time,
+		                           AR.to_time,
+		                           AR.shift_no,
+		                           AR.ar_date_str,
+		                           AR.ar_month_str,
+		                           AR.quantity,
+		                           AR.lock_yn,
+		                           AR.date_type,
+		                           AR.unit,
+		                           AR.Mod_Date CREATE_DATE,
+		                           '结果' CREATED_BY,
+		                           '结果' OPERATION
+		                     from AR_DETAIL AR
+		                     WHERE AR.LOCK_YN = 'Y'
+	            		 ) AR_DETAIL, 
+	                  	   HR_EMPLOYEE
+	                 WHERE 1 = 1
+	]]>
+	<isNotEmpty prepend="AND" property="sDate">
+	<![CDATA[      
+	                   AR_DETAIL.AR_DATE_STR BETWEEN TO_CHAR(TO_DATE(#sDate# , 'YYYY-MM-DD') , 'YYYY/MM/DD') AND TO_CHAR(TO_DATE(#eDate# , 'YYYY-MM-DD') , 'YYYY/MM/DD')
+	]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="sDateU">
+	<![CDATA[      
+	                   AR_DETAIL.CREATE_DATE BETWEEN TO_DATE(#sDateU#,'YYYY-MM-DD') AND TO_DATE(#eDateU# , 'YYYY-MM-DD') + 1
+	                  
+	]]>
+	</isNotEmpty>
+	<![CDATA[
+	                   AND AR_DETAIL.EMPID = HR_EMPLOYEE.PERSON_ID 
+		      ]]>
+	<isEqual property="cnpyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isNotEqual property="cnpyId" compareValue="60000000"><!-- OTHER -->
+					<include refid="OTHER_POST_GRADE_SQL"/>
+	</isNotEqual>
+	
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+						EXISTS ( SELECT *
+	                                FROM AR_SUPERVISOR_INFO J
+	                               WHERE AR_SUPERVISOR_ID = #supervisor:VARCHAR#
+	                                 AND HR_EMPLOYEE.DEPTID = J.SUPERVISED_DEPTID 						      
+						  )
+				]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="key">
+			<![CDATA[ 
+					(    HR_EMPLOYEE.EMPID = #key:VARCHAR# 
+			          OR HR_EMPLOYEE.CHINESENAME LIKE '%' || #key:VARCHAR# || '%'
+			         )
+				    
+			 ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="itemNo">
+			<![CDATA[ 
+						AR_DETAIL.AR_ITEM_NO = #itemNo:NUMERIC#
+					    
+				 ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="deptid">
+			<![CDATA[
+				 		HR_EMPLOYEE.DEPTID IN (
+					      			SELECT DEPTID 
+					                FROM HR_DEPARTMENT 
+					                START WITH DEPTID = #deptid#
+					                CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+					   ) 
+			    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="sLength">
+			<isNotEmpty prepend="AND" property="eLength">
+				<![CDATA[ 
+							(AR_DETAIL.QUANTITY >= #sLength:NUMERIC# AND AR_DETAIL.QUANTITY <= #eLength:NUMERIC# )  
+					 ]]>
+			</isNotEmpty>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="sLength">
+			<isEmpty prepend="AND" property="eLength">
+				<![CDATA[ 
+							AR_DETAIL.QUANTITY = #sLength:NUMERIC# 
+					 ]]>
+			</isEmpty>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="eLength">
+			<isEmpty prepend="AND" property="sLength">
+				<![CDATA[ 
+							AR_DETAIL.QUANTITY = #eLength:NUMERIC#
+					 ]]>
+			</isEmpty>
+		</isNotEmpty>
+		
+	
+		<![CDATA[ 
+			    )) A
+		 ]]>
+		<isNotEmpty prepend="WHERE" property="endRownum">
+			<![CDATA[
+			         ROWNUM <= #endRownum:NUMERIC#
+			]]>
+		</isNotEmpty>
+
+		<![CDATA[
+			        ) AD,
+		           HR_DEPARTMENT,
+		           AR_SHIFT010,
+		           AR_ITEM,
+		           SY_CODE A,
+             	   SY_CODE B,
+             	   HR_EMPLOYEE CREATE_EMP
+		   WHERE AD.DEPTID = HR_DEPARTMENT.DEPTID
+		     AND AD.SHIFT_NO = AR_SHIFT010.SHIFT_NO
+		     AND AD.AR_ITEM_NO = AR_ITEM.ITEM_NO
+			 AND AD.UNIT = A.CODE_ID(+)
+	         AND AD.POSITION_CODE=B.CODE_ID(+)
+	         AND AD.CREATED_BY = CREATE_EMP.PERSON_ID(+)
+		]]>
+		
+		<isNotEmpty prepend="AND" property="startRownum">
+			<![CDATA[
+	   	 		AD.RNM > #startRownum:NUMERIC#
+	   	 	]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY AD.RNM
+		]]>	
+	</select>
+
+	<!-- retrieve attendance detail count -->
+	<select id="RetrieveAttDetailCnt" parameterClass="SimpleMap"
+		resultClass="int">
+		<![CDATA[	
+		  SELECT COUNT(*) CNT
+			FROM $tableName$ AR_DETAIL,
+		         HR_EMPLOYEE,		              
+		         AR_ITEM		        
+		   WHERE AR_DETAIL.EMPID = HR_EMPLOYEE.PERSON_ID		       
+		     AND AR_DETAIL.AR_ITEM_NO = AR_ITEM.ITEM_NO
+		     AND AR_DATE_STR BETWEEN #sDate# AND #eDate#		   
+		]]>
+	<isEqual property="cnpyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isNotEqual property="cnpyId" compareValue="60000000"><!-- OTHER -->
+					<include refid="OTHER_POST_GRADE_SQL"/>
+	</isNotEqual>
+
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+					(EXISTS ( SELECT *
+                                FROM AR_SUPERVISOR_INFO J
+                               WHERE AR_SUPERVISOR_ID = #supervisor:VARCHAR#
+                                 AND HR_EMPLOYEE.DEPTID = J.SUPERVISED_DEPTID 
+					  ) OR HR_EMPLOYEE.EMPID = #supervisor:VARCHAR# )
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="condition">
+			<![CDATA[ 
+				(   HR_EMPLOYEE.EMPID LIKE '%' || #condition:VARCHAR# || '%'
+		          OR HR_EMPLOYEE.CHINESENAME LIKE '%' || #condition:VARCHAR# || '%'
+		         )
+			    
+		 ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="itemNo">
+			<![CDATA[ 
+				AR_DETAIL.AR_ITEM_NO = #itemNo:NUMERIC#
+			    
+		 ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptid">
+			<![CDATA[
+		 		HR_EMPLOYEE.DEPTID IN (
+							SELECT DEPTID 
+			                FROM HR_DEPARTMENT 
+			                START WITH DEPTID = #deptid#
+			                CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+			   ) 
+	    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="sLength">
+			<isNotEmpty prepend="AND" property="eLength">
+				<![CDATA[ 
+							(AR_DETAIL.QUANTITY >= #sLength:NUMERIC# AND AR_DETAIL.QUANTITY <= #eLength:NUMERIC# )  
+					 ]]>
+			</isNotEmpty>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="sLength">
+			<isEmpty prepend="AND" property="eLength">
+				<![CDATA[ 
+							AR_DETAIL.QUANTITY = #sLength:NUMERIC# 
+					 ]]>
+			</isEmpty>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="eLength">
+			<isEmpty prepend="AND" property="sLength">
+				<![CDATA[ 
+							AR_DETAIL.QUANTITY = #eLength:NUMERIC#
+					 ]]>
+			</isEmpty>
+		</isNotEmpty>
+	</select>
+
+	<!-- retrieve monthly attendance -->
+	<select id="RetrieveAttMonthly" parameterClass="SimpleMap"
+		resultClass="SimpleMap" remapResults="true">
+		<![CDATA[	
+		SELECT AR_HISTORY.AR_MONTH,
+			   AR_HISTORY.EMPID, 
+			   AR_HISTORY.PERSON_ID AS PERSON,
+			   AR_HISTORY.CHINESENAME,
+			   AR_HISTORY.PINYINNAME,
+			   AR_HISTORY.DEPTID,
+			   AR_HISTORY.DEPARTMENT,
+			   AR_HISTORY.DEPTFULLNAME,
+			   AR_HISTORY.Join_Type JOIN_TYPE_NAME,
+       		   AR_HISTORY.POSITION_CODE,
+       		   AR_HISTORY.ATTENDANCE_PERIOD,
+       		   AR_HISTORY.ATTENDANCE_PERIOD_CODE,
+       		   NVL(PA_PROGRESS.ATT_MO_LOCK_FLAG,0) AS MOTHLYLOCK,
+			   $sqlStatement$
+		  FROM AR_HISTORY , PA_PROGRESS
+		 WHERE AR_HISTORY.AR_MONTH = PA_PROGRESS.PA_MONTH_STR(+)
+   		   AND AR_HISTORY.ATTENDANCE_PERIOD_CODE = PA_PROGRESS.STAT_TYPE_CODE(+)
+   		   and AR_HISTORY.Cpny_Id=PA_PROGRESS.Cpny_Id
+		 ]]>
+		<isNotEmpty prepend="AND" property="empType">
+			<isEqual prepend="" property="empType"
+				compareValue="office">
+<!-- 职员 -->
+				<![CDATA[
+					  AR_HISTORY.POST_GRADE_CODE <> 'C_12004_1330054' 
+			      AND AR_HISTORY.POST_GRADE_CODE <> 'C_12004_1324167'
+			]]>
+			</isEqual>
+			<isEqual prepend="" property="empType"
+				compareValue="work">
+<!-- 工人 -->
+				<![CDATA[
+					 AR_HISTORY.POST_GRADE_CODE IN ('C_12004_1330054','C_12004_1324167') 
+			]]>
+			</isEqual>
+		</isNotEmpty>
+
+		<isEmpty prepend="AND" property="arEndMonth">
+			<![CDATA[
+			    AR_HISTORY.AR_MONTH = #arMonth:VARCHAR#
+		    ]]>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="arEndMonth">
+			<![CDATA[
+			    AR_HISTORY.AR_MONTH BETWEEN #arMonth:VARCHAR# AND #arEndMonth:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="condition">
+			<![CDATA[
+			    (   AR_HISTORY.EMPID LIKE '%' || #condition:VARCHAR# || '%'
+			     OR AR_HISTORY.PERSON_ID LIKE '%' || #condition:VARCHAR# || '%'
+		         OR AR_HISTORY.CHINESENAME LIKE '%' || #condition:VARCHAR# || '%'
+		         OR UPPER(AR_HISTORY.PINYINNAME) LIKE '%' || UPPER(#condition:VARCHAR#) || '%'
+		        )	
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="empID">
+			<![CDATA[
+			      AR_HISTORY.EMPID = #empID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="chineseName">
+			<![CDATA[
+			      AR_HISTORY.CHINESENAME = #chineseName:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+					(EXISTS ( SELECT *
+                                FROM AR_SUPERVISOR_INFO J
+                               WHERE AR_SUPERVISOR_ID = #supervisor:VARCHAR#
+                                 AND AR_HISTORY.DEPTID = J.SUPERVISED_DEPTID 
+					  ) OR AR_HISTORY.EMPID = #supervisor:VARCHAR# )
+			]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="empDiffType">
+			<![CDATA[
+					AR_HISTORY.ATTENDANCE_PERIOD_CODE = #empDiffType:VARCHAR2#
+			]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="deptID">
+			<![CDATA[
+			      	      EXISTS (
+						  SELECT     *
+	                     	FROM HR_DEPARTMENT B1
+	                     	WHERE B1.DEPTID=AR_HISTORY.DEPTID
+	                 	START WITH B1.DEPTID = #deptID:VARCHAR#
+	                 	CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID
+	                )
+		    ]]>
+		</isNotEmpty>
+
+		<![CDATA[
+			ORDER BY   AR_HISTORY.DEPTID DESC,  AR_HISTORY.POSITION_CODE,AR_HISTORY.EMPID 
+		]]>
+
+	</select>
+
+	<!-- retrieve ar Personal information -->
+	<select id="RetrieveArPersonalData" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[	
+				SELECT  'totalA' AS TOTAL
+			     		$sqlStatement$  
+			      FROM  AR_DETAIL AR
+			     WHERE  AR.EMPID = #personId:VARCHAR#
+			       AND  AR.AR_MONTH_STR = #arMonth:VARCHAR#
+		 ]]>
+
+
+	</select>
+
+	<!-- retrieve monthly attendance count -->
+	<select id="RetrieveAttMonthlyCnt" parameterClass="SimpleMap"
+		resultClass="int">
+		<![CDATA[	
+			 	SELECT COUNT(*)
+				  FROM AR_HISTORY , PA_PROGRESS
+				 WHERE AR_HISTORY.AR_MONTH = PA_PROGRESS.PA_MONTH_STR(+)
+		   		   AND AR_HISTORY.ATTENDANCE_PERIOD_CODE = PA_PROGRESS.STAT_TYPE_CODE(+)
+		   		   and AR_HISTORY.Cpny_Id=PA_PROGRESS.Cpny_Id
+		]]>
+
+		<isNotEmpty prepend="AND" property="empType">
+			<isEqual prepend="" property="empType"
+				compareValue="office">
+<!-- 职员 -->
+				<![CDATA[
+					  AR_HISTORY.POST_GRADE_CODE <> 'C_12004_1330054' 
+			      AND AR_HISTORY.POST_GRADE_CODE <> 'C_12004_1324167'
+			]]>
+			</isEqual>
+			<isEqual prepend="" property="empType"
+				compareValue="work">
+<!-- 工人 -->
+				<![CDATA[
+					 AR_HISTORY.POST_GRADE_CODE IN ('C_12004_1330054','C_12004_1324167') 
+			]]>
+			</isEqual>
+		</isNotEmpty>
+
+		<isEmpty prepend="AND" property="arEndMonth">
+			<![CDATA[
+			    AR_HISTORY.AR_MONTH = #arMonth:VARCHAR#
+		    ]]>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="arEndMonth">
+			<![CDATA[
+			    AR_HISTORY.AR_MONTH BETWEEN #arMonth:VARCHAR# AND #arEndMonth:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="condition">
+			<![CDATA[
+			    (   AR_HISTORY.EMPID LIKE '%' || #condition:VARCHAR# || '%'
+			     OR AR_HISTORY.PERSON_ID LIKE '%' || #condition:VARCHAR# || '%'
+		         OR AR_HISTORY.CHINESENAME LIKE '%' || #condition:VARCHAR# || '%'
+		         OR UPPER(AR_HISTORY.PINYINNAME) LIKE '%' || UPPER(#condition:VARCHAR#) || '%'
+		        )	
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="empID">
+			<![CDATA[
+			      AR_HISTORY.EMPID = #empID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="empDiffType">
+			<![CDATA[
+					AR_HISTORY.ATTENDANCE_PERIOD_CODE = #empDiffType:VARCHAR2#
+			]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="chineseName">
+			<![CDATA[
+			      AR_HISTORY.CHINESENAME = #chineseName:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+					(EXISTS ( SELECT *
+                                FROM AR_SUPERVISOR_INFO J
+                               WHERE AR_SUPERVISOR_ID = #supervisor:VARCHAR#
+                                 AND AR_HISTORY.DEPTID = J.SUPERVISED_DEPTID 
+					  ) OR AR_HISTORY.EMPID = #supervisor:VARCHAR# )
+			]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="deptID">
+			<![CDATA[
+			      	      EXISTS (
+						  SELECT     *
+	                     	FROM HR_DEPARTMENT B1
+	                     	WHERE B1.DEPTID=AR_HISTORY.DEPTID
+	                 	START WITH B1.DEPTID = #deptID:VARCHAR#
+	                 	CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID
+	                )
+		    ]]>
+		</isNotEmpty>
+
+	</select>
+
+	<!-- retrieve annual holidy list -->
+	<select id="RetrieveAnnualHolidyList" parameterClass="SimpleMap"
+		resultClass="Annual">
+		<![CDATA[	
+			  SELECT A.HOLIDAY_NO		 			        holidyNo,
+			  		 A.EMPID								empid,
+					 B.CHINESENAME							chineseName,
+					 B.CHINESE_PINYIN						pinyinName,
+					 B.DEPTID								deptID,
+					 C.DEPTNAME								department,
+			    	 HOLIDAY_DATE       					holidyDate,
+  					 CURR_Y_HOLIDAY   					    yearDays,
+  					 CURR_Y_HOLIDAY - NVL(G.USED_HOLIDAY,0) leftYearDays,
+  					 NVL(G.USED_HOLIDAY,0)     				usedYearDays,
+					 NVL(CURR_Y_HOLIDAY,0)*8				annualHours,
+					 NVL(SPEC_HOLIDAY,0)*8					annualHoursUsed,
+					 NVL(G.USED_HOLIDAY,0) * 8				annualHoursLeft,
+  					 TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD')	createDate,
+  					 A.CREATED_BY       			 		createdBy,
+  					 TO_CHAR(A.UPDATE_DATE,'YYYY-MM-DD')	updateDate,
+  					 A.UPDATED_BY       					updatedBy,
+  					 A.ORDER_NO         					orderNo,
+  					 A.ACTIVITY         					activity
+				FROM AR_ANNUAL_HOLIDAY A,
+					 HR_EMPLOYEE B,
+					 HR_DEPARTMENT C,
+					(					  				
+					 SELECT   E.EMPID,
+					         SUM (DECODE (E.AR_ITEM_NO,
+					                      14, DECODE (F.UNIT,
+					                                  'HOUR', E.QUANTITY / 8,
+					                                  'MINUTE', E.QUANTITY / 8 / 60,
+					                                  E.QUANTITY
+					                                 ),
+					                      0
+					                     )
+					             ) USED_HOLIDAY
+					    FROM AR_DETAIL E, AR_ITEM_PARAM F
+					   WHERE SUBSTR (E.AR_MONTH_STR, 1, 4) = #holidyDate#
+					         AND E.AR_ITEM_NO = F.AR_ITEM_NO
+					 GROUP BY E.EMPID) G 
+			   WHERE A.EMPID = B.EMPID
+				 AND B.DEPTID = C.DEPTID
+				 AND A.HOLIDAY_DATE = #holidyDate#
+				 AND A.EMPID = G.EMPID(+)
+		]]>
+
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+			 		 EXISTS ( SELECT *
+		  	 		  	        FROM AR_SUPERVISOR_INFO D
+							   WHERE B.DEPTID = D.SUPERVISED_DEPTID
+		 					     AND D.AR_SUPERVISOR_ID = #supervisor#
+		 	 		  	 	)
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="condition">
+			<![CDATA[
+			    (   A.EMPID LIKE '%' || #condition:VARCHAR# || '%'
+			      OR B.CHINESENAME LIKE '%' || #condition:VARCHAR# || '%'
+			      OR C.DEPTNAME LIKE '%' || #condition:VARCHAR# || '%'
+		         )
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="deptID">
+			<![CDATA[
+			   EXISTS (
+						  SELECT     *
+	                     	FROM HR_DEPARTMENT B1
+	                     	WHERE B1.DEPTID = B.DEPTID
+	                 	START WITH B1.DEPTID = #deptID:VARCHAR#
+	                 	CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID
+	                )
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="empID">
+			<![CDATA[
+			      A.EMPID = #empID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="chineseName">
+			<![CDATA[
+			      B.CHINESENAME = #chineseName:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+
+		<![CDATA[
+			ORDER BY A.EMPID
+		]]>
+	</select>
+
+	<!-- retrieve annual holidy count -->
+	<select id="RetrieveAnnualHolidyCnt" parameterClass="SimpleMap"
+		resultClass="int">
+		<![CDATA[	
+			  SELECT COUNT(*) CNT
+				FROM AR_ANNUAL_HOLIDAY A,
+					 HR_EMPLOYEE B,
+					 HR_DEPARTMENT C,
+					 AR_SUPERVISOR_INFO D
+			   WHERE A.EMPID = B.EMPID
+				 AND B.DEPTID = C.DEPTID
+				 AND B.DEPTID = D.SUPERVISED_DEPTID 
+				 AND A.HOLIDAY_DATE = #holidyDate#
+				 AND D.AR_SUPERVISOR_ID = #supervisor#
+				 AND (   A.EMPID LIKE '%' || #condition:VARCHAR# || '%'
+				      OR B.CHINESENAME LIKE '%' || #condition:VARCHAR# || '%'
+				      OR C.DEPTNAME LIKE '%' || #condition:VARCHAR# || '%'
+			         )
+		]]>
+	</select>
+
+	<!-- insert annual holidy -->
+	<insert id="insertAnnualHolidy" parameterClass="Annual">
+		<![CDATA[	
+		  INSERT INTO AR_ANNUAL_HOLIDAY A
+				 (HOLIDAY_NO,
+				  EMPID,
+				  HOLIDAY_DATE,
+				  CURR_Y_HOLIDAY,
+				  SPEC_HOLIDAY,
+				  USED_HOLIDAY,
+				  USED_SP_HOLIDAY,
+				  CREATE_DATE,
+				  CREATED_BY,
+				  ACTIVITY)
+		  VALUES( AR_ANNUAL_SEQ.NEXTVAL,
+		   		  #empID:VARCHAR#,
+				  #holidyDate:VARCHAR#,
+				  #yearDays:NUMERIC#,
+				  #leftYearDays:NUMERIC#,
+				  #usedYearDays:NUMERIC#,
+				  0,
+				  SYSDATE,
+				  #createdBy:VARCHAR#,
+				  1
+		   		 )
+		  ]]>
+	</insert>
+
+	<!-- update annual holidy -->
+	<update id="updateAnnualHolidy" parameterClass="Annual">
+		<![CDATA[
+		
+		 	UPDATE AR_ANNUAL_HOLIDAY 
+			   SET CURR_Y_HOLIDAY = #yearDays:NUMERIC#,
+			   	   SPEC_HOLIDAY = #leftYearDays:NUMERIC#,
+				   USED_HOLIDAY = #usedYearDays:NUMERIC#,
+				   UPDATE_DATE = SYSDATE,
+				   UPDATED_BY = #updatedBy:VARCHAR#
+			 WHERE HOLIDAY_NO = #holidyNo#
+	 	]]>
+	</update>
+
+	<!-- delete imported annual temp data -->
+	<delete id="deleteAnnualImportTempData"
+		parameterClass="SimpleMap">
+		<![CDATA[
+		
+		　DELETE FROM I_AR_ANNUAL_HOLIDAY 
+		]]>
+		　
+	</delete>
+
+	<!-- insert import data into annual holidy -->
+	<insert id="insertAnnualHolidyByImport">
+		<![CDATA[	
+		
+			  INSERT INTO AR_ANNUAL_HOLIDAY A
+					 (HOLIDAY_NO,
+					  EMPID,
+					  HOLIDAY_DATE,
+					  CURR_Y_HOLIDAY,
+					  SPEC_HOLIDAY,
+					  USED_HOLIDAY,
+					  USED_SP_HOLIDAY,
+					  CREATE_DATE,
+					  CREATED_BY)
+				SELECT AR_ANNUAL_SEQ.NEXTVAL,
+					   B.EMPID,
+					   B.HOLIDAY_DATE,
+					   B.CURR_Y_HOLIDAY,
+					   B.SPEC_HOLIDAY,
+					   B.USED_HOLIDAY,
+					   B.USED_SP_HOLIDAY,
+					   B.CREATE_DATE,
+					   CREATED_BY
+			      FROM I_AR_ANNUAL_HOLIDAY B
+				 WHERE NOT EXISTS ( SELECT *
+					 	   		      FROM AR_ANNUAL_HOLIDAY C
+					 	   		  	 WHERE C.EMPID = B.EMPID
+									   AND C.HOLIDAY_DATE = B.HOLIDAY_DATE
+					 	   		   )
+		  ]]>
+	</insert>
+
+	<!-- update import data into annual holidy -->
+	<update id="updateAnnualHolidyByImport">
+		<![CDATA[
+		
+		 UPDATE AR_ANNUAL_HOLIDAY A
+		    SET (A.CURR_Y_HOLIDAY,
+				 A.SPEC_HOLIDAY,
+				 A.USED_HOLIDAY,
+				 A.USED_SP_HOLIDAY,
+				 A.UPDATE_DATE,
+				 A.UPDATED_BY) 
+			   =
+				(SELECT B.CURR_Y_HOLIDAY,
+				 		B.SPEC_HOLIDAY,
+						B.USED_HOLIDAY,
+						B.USED_SP_HOLIDAY,
+						B.CREATE_DATE,
+						B.CREATED_BY
+				   FROM I_AR_ANNUAL_HOLIDAY B
+				  WHERE  B.EMPID = A.EMPID
+					AND B.HOLIDAY_DATE = A.HOLIDAY_DATE)
+  WHERE EXISTS ( 
+  			   	 SELECT * 
+				   FROM I_AR_ANNUAL_HOLIDAY C
+				  WHERE C.EMPID = A.EMPID
+				    AND C.HOLIDAY_DATE = A.HOLIDAY_DATE
+  			   )
+	 	]]>
+	</update>
+
+	<!-- retrieve attendance detail for attendance view -->
+	<!-- 排除加班和值班项目,如果有休假项目不取正常出勤和休息，如果有多个休假项目取第一个项目(休息日有可能只有一条加班项目，所以需要取该加班项目的日期) -->
+	<select id="retrieveAttDetailForView" parameterClass="SimpleMap"
+		resultClass="ArDetail">
+		<![CDATA[	
+			
+			      SELECT A.EMPID											          empID, 
+						 B.CHINESENAME												  empName,
+				         C.DEPTNAME													  deptName, 
+						 A.AR_DATE_STR												  ar_date_str,  
+						 A.AR_ITEM_NO												  itemNo, 
+						 NVL(E.ITEM_NAME,' ')										　itemName,
+						 E.SHORT_NAME 												  itemShortName,
+				         A.SHIFT_NO													  shiftNo, 
+						 D.SHIFT_NAME												  shiftName,
+						 TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')) date_day,
+						 A.AR_MONTH_STR												  ar_month_str
+				    FROM (  SELECT M.AR_DATE_STR,
+					               MAX(M.EMPID) AS EMPID,
+					               MAX(M.SHIFT_NO) AS SHIFT_NO,
+					               MAX(DECODE(N.ITEM_GROUP_CODE,
+					                          'NormalGroup',
+					                          0,
+					                          'OverTimeGroup',
+					                          0,
+					                          'ProprietaryGroup',
+					                          0,
+					                          M.AR_ITEM_NO)) AR_ITEM_NO,
+					               MAX(M.AR_MONTH_STR) AS AR_MONTH_STR
+					          FROM AR_DETAIL M, AR_ITEM N
+					         WHERE M.AR_ITEM_NO = N.ITEM_NO
+					           AND M.QUANTITY > 0
+					           AND M.AR_MONTH_STR = #ar_month_str#
+					           AND M.EMPID = #empID#
+					         GROUP BY M.AR_DATE_STR) A,
+				         HR_EMPLOYEE B,
+				         HR_DEPARTMENT C,
+				         AR_SHIFT010 D,
+				         AR_ITEM E
+				   WHERE A.EMPID = B.PERSON_ID(+)
+				     AND B.DEPTID = C.DEPTID(+)
+				     AND A.SHIFT_NO = D.SHIFT_NO(+)
+				     AND A.AR_ITEM_NO = E.ITEM_NO(+)
+				     AND A.AR_DATE_STR < TO_CHAR(SYSDATE,'YYYY/MM/DD')
+				     AND (EXISTS (SELECT *
+		                   FROM AR_SUPERVISOR_INFO J
+		                  WHERE AR_SUPERVISOR_ID = #supervisor#
+		                    AND B.DEPTID = J.SUPERVISED_DEPTID) OR A.EMPID = #supervisor# )
+					ORDER BY A.AR_DATE_STR, A.EMPID 
+		]]>
+
+	</select>
+
+	<!-- 获取考勤月内的迟到、早退、旷工信息 -->
+	<select id="retrieveSpecialItemForView" parameterClass="SimpleMap"
+		resultClass="ArDetail">
+		<![CDATA[	
+				  SELECT A.EMPID											          empID, 
+						 B.CHINESENAME												  empName,
+				         C.DEPTNAME													  deptName, 
+						 A.AR_DATE_STR												  ar_date_str,  
+						 A.AR_ITEM_NO												  itemNo, 
+						 NVL(E.ITEM_NAME,'')										  itemName,
+						 E.SHORT_NAME 												  itemShortName,
+				         A.SHIFT_NO													  shiftNo, 
+						 D.SHIFT_NAME												  shiftName,
+						 TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')) date_day,
+						 A.AR_MONTH_STR												  ar_month_str												
+				    FROM (	 	    SELECT I.EMPID,
+										   SUM(DECODE(J.ITEM_GROUP_CODE,'ProprietaryGroup',I.AR_ITEM_NO,0)) AR_ITEM_NO,
+										   I.SHIFT_NO,
+										   I.AR_DATE_STR,
+										   I.AR_MONTH_STR
+									  FROM (SELECT G.EMPID,
+												   MIN(G.AR_ITEM_NO) AR_ITEM_NO, 	   	 	
+												   G.SHIFT_NO,
+												   G.AR_DATE_STR,
+												   G.AR_MONTH_STR
+											  FROM AR_DETAIL G,
+											  	   AR_ITEM H
+											 WHERE G.AR_MONTH_STR  = #ar_month_str#
+											   AND G.EMPID = #empID#
+											   AND G.AR_ITEM_NO = H.ITEM_NO
+											   AND H.ITEM_GROUP_CODE <> 'ProprietaryGroup'
+										  GROUP BY G.EMPID, G.SHIFT_NO, G.AR_DATE_STR, G.AR_MONTH_STR
+										 UNION ALL
+										  	SELECT G.EMPID,
+												   MIN(G.AR_ITEM_NO) AR_ITEM_NO, 	   	 	
+												   G.SHIFT_NO,
+												   G.AR_DATE_STR,
+												   G.AR_MONTH_STR
+											  FROM AR_DETAIL G,
+											  	   AR_ITEM H
+											 WHERE G.AR_MONTH_STR  = #ar_month_str#
+											   AND G.EMPID = #empID#
+											   AND G.AR_ITEM_NO = H.ITEM_NO
+											   AND H.ITEM_GROUP_CODE = 'ProprietaryGroup' 
+										  GROUP BY G.EMPID, G.SHIFT_NO, G.AR_DATE_STR, G.AR_MONTH_STR) I,
+										    AR_ITEM J
+									WHERE I.AR_ITEM_NO = J.ITEM_NO
+								 GROUP BY I.EMPID,I.SHIFT_NO,I.AR_DATE_STR,I.AR_MONTH_STR) A,
+				         HR_EMPLOYEE B,
+				         HR_DEPARTMENT C,
+				         AR_SHIFT010 D,
+				         AR_ITEM E
+				   WHERE A.EMPID = B.PERSON_ID(+)
+				     AND B.DEPTID = C.DEPTID(+)
+				     AND A.SHIFT_NO = D.SHIFT_NO(+)
+				     AND A.AR_ITEM_NO = E.ITEM_NO(+)
+				     AND A.AR_DATE_STR < TO_CHAR(SYSDATE,'YYYY/MM/DD')
+				     AND (EXISTS (SELECT *
+		                   FROM AR_SUPERVISOR_INFO J
+		                  WHERE AR_SUPERVISOR_ID = #supervisor#
+		                    AND B.DEPTID = J.SUPERVISED_DEPTID) OR A.EMPID = #supervisor# )
+					ORDER BY A.AR_DATE_STR, A.EMPID
+			]]>
+	</select>
+		
+	<!-- retrieve attendance start time and end time -->
+	<select id="retrieveAttStartEndTime" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[	
+	 				  SELECT TO_CHAR(AR_GET_STARTDATE_EMPID(#ar_month_str#,#empID#),'DD') START_DATE,
+					  		 TO_CHAR(AR_GET_ENDDATE_EMPID(#ar_month_str#,#empID#),'DD') END_DATE 
+					  	FROM DUAL
+			]]>
+	</select>
+
+	<!-- retrieve over time for attendance view -->
+	<select id="retrieveOverTimeByView" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[	
+	
+					SELECT D.EMPID		   			 			empID,
+						   D.SHIFT_NO 	   						shiftNo,
+						   DECODE(D.OVERTIME,0,'0',D.OVERTIME)   overTime,
+						   D.AR_DATE_STR						ar_date_str,
+						   D.AR_MONTH_STR						ar_month_str,
+						   D.DATE_DAY							date_day,
+						   GET_CODE_NAME(D.UNIT) 				unit
+					  FROM (
+							SELECT   A.EMPID, 
+									 A.SHIFT_NO,
+									 MAX(C.UNIT) UNIT,
+							         MAX (DECODE (B.ITEM_GROUP_CODE,
+							                      'OverTimeGroup', DECODE (NVL(E.UNIT,C.UNIT),
+							                                               'DAY', A.QUANTITY * 8,
+							                                               'MINUTE', A.QUANTITY / 60,
+							                                               A.QUANTITY
+							                                              ),
+							                      0
+							                     )
+							             ) 		   						OVERTIME,
+									 A.AR_DATE_STR,
+							         A.AR_MONTH_STR,
+							         TO_NUMBER (TO_CHAR (TO_DATE (A.AR_DATE_STR, 'YYYY-MM-DD'), 'DD')
+							                   ) DATE_DAY
+							    FROM AR_DETAIL A, 
+							    	 AR_ITEM B, 
+							    	 AR_ITEM_PARAM C,
+							    	 (
+									 SELECT E1.EMPID, 
+									 		E1.GROUP_NO,
+											E2.*
+									   FROM AR_EMP_GROUP E1,
+									   		AR_ITEM_PARAM E2
+									  WHERE TO_CHAR(E1.GROUP_NO) = E2.AR_GROUP_NO
+									    AND E1.EMPID = #empID#
+									    AND E2.STAT_TYPE_CODE = (SELECT EMP_DIFF_CODE FROM HR_EMPLOYEE WHERE PERSON_ID = E1.EMPID)
+									  ) E,
+									  HR_EMPLOYEE H
+							   WHERE A.AR_ITEM_NO = B.ITEM_NO
+							     AND A.EMPID = H.PERSON_ID(+)
+							     AND B.ITEM_NO = C.AR_ITEM_NO
+							     AND A.AR_MONTH_STR = #ar_month_str#
+							     AND A.EMPID = #empID#
+								 AND C.AR_GROUP_NO = 'constant'
+								 AND B.ITEM_NO = E.AR_ITEM_NO(+)
+								 AND C.STAT_TYPE_CODE = (SELECT EMP_DIFF_CODE FROM HR_EMPLOYEE WHERE PERSON_ID = A.EMPID)
+								 AND A.AR_DATE_STR < TO_CHAR(SYSDATE,'YYYY/MM/DD')
+								 AND (EXISTS (SELECT *
+					                   FROM AR_SUPERVISOR_INFO J
+					                  WHERE AR_SUPERVISOR_ID = #supervisor#
+					                    AND H.DEPTID = J.SUPERVISED_DEPTID) OR A.EMPID = #supervisor# )
+							GROUP BY A.EMPID, A.SHIFT_NO, A.AR_DATE_STR, A.AR_MONTH_STR
+							ORDER BY A.AR_DATE_STR ) D
+		]]>
+	</select>
+
+	<!-- retrieve monthly attendance report -->
+	<select id="retrieveMonthlyAttReport" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[	
+				
+			    SELECT *
+		  		  FROM AR_HISTORY, 
+					   HR_EMPLOYEE,
+					   HR_DEPARTMENT
+				 WHERE AR_HISTORY.EMPID = HR_EMPLOYEE.EMPID
+				   AND AR_HISTORY.AR_MONTH = #arMonth:VARCHAR#
+				   AND HR_EMPLOYEE.DEPTID = HR_DEPARTMENT.DEPTID
+			  
+	  	]]>
+
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+			 		 EXISTS ( SELECT *
+		  	 		  	        FROM AR_SUPERVISOR_INFO 
+							   WHERE HR_EMPLOYEE.DEPTID = AR_SUPERVISOR_INFO.SUPERVISED_DEPTID
+		 					     AND AR_SUPERVISOR_INFO.AR_SUPERVISOR_ID = #supervisor:VARCHAR#
+		 	 		  	 	)
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="deptID">
+			<![CDATA[
+			      EXISTS (
+						  SELECT     *
+	                     	FROM HR_DEPARTMENT B1
+	                     	WHERE B1.DEPTID = HR_EMPLOYEE.DEPTID
+	                 	START WITH B1.DEPTID = #deptID:VARCHAR#
+	                 	CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID
+	                )
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="statusCode">
+			<![CDATA[
+			      	   HR_EMPLOYEE.STATUS_CODE = #statusCode:VARCHAR#   
+		    ]]>
+		</isNotEmpty>
+
+		<![CDATA[
+					ORDER BY HR_EMPLOYEE.EMPID
+		]]>
+
+	</select>
+
+	<!-- retrieve shift list -->
+	<select id="retrieveShiftList" resultClass="SimpleMap">
+		<![CDATA[
+			
+		SELECT   SHIFT_NO, SHIFT_NAME
+				    FROM AR_SHIFT010 A
+				ORDER BY SHIFT_NO
+
+	  	]]>
+	</select>
+
+	<!-- retrieve monthly status list -->
+	<select id="retrieveMonthlyStatusList" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[
+		
+			   SELECT PA_MONTH_STR,
+					  ATT_MO_FLAG,
+					  PARAM_INITIAL_FLAG,
+					  CALC_FLAG,
+					  ATT_MO_LOCK_FLAG,
+					  CALC_LOCK_FLAG,
+					  PA_LOCK_FLAG,
+					  PA_OPEN_FLAG,
+					  LOCK_USER_ID,
+					  LOCK_DATE,
+			          A.STAT_TYPE_CODE,
+			          B.CODE_NAME AS STAT_TYPE,
+			          A.CPNY_ID,
+                      CPNY.CODE_NAME CPNYNAME
+				 FROM PA_PROGRESS A, SY_CODE B,SY_CODE CPNY
+                WHERE A.STAT_TYPE_CODE = B.CODE_ID 
+                 AND A.CPNY_ID=CPNY.CODE_ID(+)
+	  	]]>
+
+		<isNotEmpty prepend="AND" property="PA_MONTH_STR">
+			<![CDATA[
+				  PA_MONTH_STR = #PA_MONTH_STR:VARCAHR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="STAT_TYPE_CODE">
+			<![CDATA[
+				  STAT_TYPE_CODE = #STAT_TYPE_CODE:VARCAHR#
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CPNY_ID">
+			<![CDATA[
+				  A.CPNY_ID = #CPNY_ID:VARCAHR#
+			]]>
+		</isNotEmpty>
+
+
+	</select>
+
+	<!-- retrieve monthly status count -->
+	<select id="retrieveMonthlyStatusCnt" parameterClass="SimpleMap"
+		resultClass="int">
+		<![CDATA[
+		
+			   SELECT COUNT(*) CNT
+				 FROM PA_PROGRESS
+	  	]]>
+
+		<isNotEmpty prepend="WHERE" property="PA_MONTH_STR">
+			<![CDATA[
+				  PA_MONTH_STR = #PA_MONTH_STR#
+			]]>
+		</isNotEmpty>
+
+	</select>
+
+	<!-- insert monthly status -->
+	<insert id="insertMonthlyStatus" parameterClass="SimpleMap">
+		<![CDATA[	
+		
+		  INSERT INTO PA_PROGRESS
+					  (PA_MONTH_STR,
+					  ATT_MO_FLAG,
+					  PARAM_INITIAL_FLAG,
+					  CALC_FLAG,
+					  ATT_MO_LOCK_FLAG,
+					  CALC_LOCK_FLAG,
+					  PA_LOCK_FLAG,
+					  PA_OPEN_FLAG,
+					  LOCK_USER_ID,
+					  LOCK_DATE,
+					  STAT_TYPE_CODE,
+					  CPNY_ID)
+			   VALUES (#PA_MONTH_STR:VARCHAR#,
+			   		   NVL(#ATT_MO_FLAG:NUMERIC#,0),
+			   		   NVL(#PARAM_INITIAL_FLAG:NUMERIC#,0),
+					   NVL(#CALC_FLAG:NUMERIC#,0),
+					   NVL(#ATT_MO_LOCK_FLAG:NUMERIC#,0),
+					   NVL(#CALC_LOCK_FLAG:NUMERIC#,0),
+					   NVL(#PA_LOCK_FLAG:NUMERIC#,0),
+					   NVL(#PA_OPEN_FLAG:NUMERIC#,0),
+					   #LOCK_USER_ID:VARCHAR#,
+					   SYSDATE,
+					   #STAT_TYPE_CODE:VARCHAR#,
+					   #CPNY_ID:VARCHAR#
+			   		  )
+			 ]]>
+	</insert>
+
+	<!-- update daily attendance status -->
+	<update id="updateDailyAttStatus" parameterClass="SimpleMap">
+		<![CDATA[
+	  			  UPDATE PA_PROGRESS
+				     SET ATT_MO_FLAG = NVL(#ATT_MO_FLAG:NUMERIC#,0)
+				   WHERE PA_MONTH_STR = #PA_MONTH_STR#
+				     AND ATT_MO_LOCK_FLAG = 0
+				     AND CPNY_ID=#cpnyId:VARCHAR#
+				     AND STAT_TYPE_CODE = #STAT_TYPE_CODE#
+		]]>
+	</update>
+
+	<!-- update monthly attendance status -->
+	<update id="updateMonthlyAttStatus" parameterClass="SimpleMap">
+		<![CDATA[
+	  			  UPDATE PA_PROGRESS
+				     SET ATT_MO_LOCK_FLAG = NVL(#ATT_MO_LOCK_FLAG:NUMERIC#,0)
+				   WHERE PA_MONTH_STR = #PA_MONTH_STR#
+				     AND PA_LOCK_FLAG = 0
+				     AND CPNY_ID=#cpnyId:VARCHAR#
+				     AND STAT_TYPE_CODE = #STAT_TYPE_CODE#
+		]]>
+	</update>
+
+	<!-- update monthly pay status -->
+	<update id="updateMonthlyPayStatus" parameterClass="SimpleMap">
+		<![CDATA[
+	  			  UPDATE PA_PROGRESS
+				     SET PA_LOCK_FLAG = NVL(#PA_LOCK_FLAG:NUMERIC#,0)
+				   WHERE PA_MONTH_STR = #PA_MONTH_STR:VARCHAR#
+				      AND CPNY_ID=#cpnyId:VARCHAR#
+				     AND STAT_TYPE_CODE = #STAT_TYPE_CODE:VARCHAR#
+				     
+		]]>
+	</update>
+
+	<!-- retrieve annual holidy report -->
+	<select id="retrieveAnnualHolidyReport" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[	
+			  SELECT A.EMPID								"工号",
+					 B.CHINESENAME							"姓名",
+					 B.CHINESE_PINYIN						"拼音名",
+					 C.DEPTNAME								"部门",
+					 F.CODE_NAME							"所属公司",
+			    	 HOLIDAY_DATE       					"年份",
+  					 CURR_Y_HOLIDAY   					    "本年年假",
+  					 CURR_Y_HOLIDAY - NVL(G.USED_HOLIDAY,0) "剩余年假",
+  					 NVL(G.USED_HOLIDAY,0)     				"已用年假"
+				FROM AR_ANNUAL_HOLIDAY A,
+					 HR_EMPLOYEE B,
+					 HR_DEPARTMENT C,
+					(					  				
+					 SELECT   E.EMPID,
+					         SUM (DECODE (E.AR_ITEM_NO,
+					                      14, DECODE (F.UNIT,
+					                                  'HOUR', E.QUANTITY / 8,
+					                                  'MINUTE', E.QUANTITY / 8 / 60,
+					                                  E.QUANTITY
+					                                 ),
+					                      0
+					                     )
+					             ) USED_HOLIDAY
+					    FROM AR_DETAIL E, AR_ITEM_PARAM F
+					   WHERE SUBSTR (E.AR_MONTH_STR, 1, 4) = #holidyDate#
+					         AND E.AR_ITEM_NO = F.AR_ITEM_NO
+					 GROUP BY E.EMPID) G,
+					 SY_CODE F
+			   WHERE A.EMPID = B.EMPID
+				 AND B.DEPTID = C.DEPTID
+				 AND A.HOLIDAY_DATE = #holidyDate#
+				 AND A.EMPID = G.EMPID(+)
+				 AND B.STATUS_CODE = F.CODE_ID
+		]]>
+
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+			 		 EXISTS ( SELECT *
+		  	 		  	        FROM AR_SUPERVISOR_INFO D
+							   WHERE B.DEPTID = D.SUPERVISED_DEPTID
+		 					     AND D.AR_SUPERVISOR_ID = #supervisor#
+		 	 		  	 	)
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="statusCode">
+			<![CDATA[
+			      	   B.STATUS_CODE = #statusCode:VARCHAR#   
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="deptID">
+			<![CDATA[
+			      	      EXISTS (
+						  SELECT     *
+	                     	FROM HR_DEPARTMENT B1
+	                     	WHERE B1.DEPTID= B.DEPTID
+	                 	START WITH B1.DEPTID = #deptID:VARCHAR#
+	                 	CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID
+	                )
+		    ]]>
+		</isNotEmpty>
+
+		<![CDATA[
+			ORDER BY A.EMPID
+		]]>
+	</select>
+
+	<!-- retrieve monthly attendance detail report -->
+	<select id="retrieveMonthlyAttDetailReport"
+		parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+ 		  		  SELECT G.EMPID,
+					     G.CHINESENAME,
+					     G.CHINESE_PINYIN,
+					     G.ENGLISHNAME,
+					     G.KOREANNAME,
+					     G.DEPTID,
+					     G.DEPTNAME,
+					     G.DEPT_EN_NAME,
+					     G.DEPT_KOR_NAME,
+					     G.JOIN_TYPE_NAME,
+					     G.JOIN_TYPE_EN_NAME,
+					     G.JOIN_TYPE_KOR_NAME,
+						 G.AR_MONTH_STR,
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),1,G.SHORT_NAME,'')) "1",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),2,G.SHORT_NAME,'')) "2", 
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),3,G.SHORT_NAME,'')) "3",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),4,G.SHORT_NAME,'')) "4",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),5,G.SHORT_NAME,'')) "5",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),6,G.SHORT_NAME,'')) "6",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),7,G.SHORT_NAME,'')) "7",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),8,G.SHORT_NAME,'')) "8",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),9,G.SHORT_NAME,'')) "9",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),10,G.SHORT_NAME,'')) "10",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),11,G.SHORT_NAME,'')) "11",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),12,G.SHORT_NAME,'')) "12",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),13,G.SHORT_NAME,'')) "13",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),14,G.SHORT_NAME,'')) "14",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),15,G.SHORT_NAME,'')) "15",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),16,G.SHORT_NAME,'')) "16",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),17,G.SHORT_NAME,'')) "17",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),18,G.SHORT_NAME,'')) "18",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),19,G.SHORT_NAME,'')) "19",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),20,G.SHORT_NAME,'')) "20",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),21,G.SHORT_NAME,'')) "21",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),22,G.SHORT_NAME,'')) "22",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),23,G.SHORT_NAME,'')) "23",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),24,G.SHORT_NAME,'')) "24",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),25,G.SHORT_NAME,'')) "25",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),26,G.SHORT_NAME,'')) "26",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),27,G.SHORT_NAME,'')) "27",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),28,G.SHORT_NAME,'')) "28",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),29,G.SHORT_NAME,'')) "29",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),30,G.SHORT_NAME,'')) "30",
+						 MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(G.AR_DATE_STR,'YYYY-MM-DD'),'DD')),31,G.SHORT_NAME,'')) "31"	
+				    FROM ( 					
+									SELECT D.EMPID,
+										   D.CHINESENAME,
+										   D.CHINESE_PINYIN,
+										   D.ENGLISHNAME,
+										   D.KOREANNAME,
+										   D.DEPTID,
+										   D.DEPTNAME,
+										   D.DEPT_EN_NAME,
+										   D.DEPT_KOR_NAME,
+										   D.JOIN_TYPE_NAME,
+										   D.JOIN_TYPE_EN_NAME,
+										   D.JOIN_TYPE_KOR_NAME,
+										   D.AR_MONTH_STR,
+										   D.AR_DATE_STR,
+										   RTRIM(LTRIM( MAX(SYS_CONNECT_BY_PATH(DECODE(D.ITEM_GROUP_CODE,'NormalGroup','','OverTimeGroup','',D.SHORT_NAME),',')) 
+										   		      KEEP (DENSE_RANK LAST ORDER BY CUR),','),',') SHORT_NAME
+									  FROM (		
+											SELECT A.EMPID,
+												   B.CHINESENAME,
+												   B.CHINESE_PINYIN,
+												   B.ENGLISHNAME,
+												   B.KOREANNAME,
+												   C.DEPTID,
+												   C.DEPTNAME,
+												   C.DEPT_EN_NAME,
+												   C.DEPT_KOR_NAME,
+												   F.CODE_NAME JOIN_TYPE_NAME,
+												   F.CODE_EN_NAME JOIN_TYPE_EN_NAME,
+												   F.CODE_KOR_NAME JOIN_TYPE_KOR_NAME,
+												   A.AR_ITEM_NO, 	   	 	
+												   A.SHIFT_NO,
+												   E.SHORT_NAME,
+												   E.ITEM_GROUP_CODE,
+												   A.AR_DATE_STR,
+												   A.AR_MONTH_STR,
+												   ROW_NUMBER() OVER(PARTITION BY A.EMPID,A.AR_DATE_STR ORDER BY A.EMPID,A.AR_DATE_STR) CUR,
+												   ROW_NUMBER() OVER(PARTITION BY A.EMPID,A.AR_DATE_STR ORDER BY A.EMPID,A.AR_DATE_STR) -1 PREV
+											  FROM AR_DETAIL A,
+											  	   AR_ITEM H,
+												   HR_EMPLOYEE B,
+												   HR_DEPARTMENT C,
+										           AR_ITEM E,
+										           SY_CODE F
+											 WHERE A.AR_MONTH_STR  = #arMonth#
+											   AND A.AR_ITEM_NO = H.ITEM_NO
+											   AND A.EMPID = B.EMPID(+)
+											   AND B.DEPTID = C.DEPTID(+)				         
+											   AND A.AR_ITEM_NO = E.ITEM_NO(+)
+											   AND B.JOIN_TYPE_CODE = F.CODE_ID(+)
+	       ]]>
+
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+			 		 EXISTS ( SELECT *
+		  	 		  	        FROM AR_SUPERVISOR_INFO D
+							   WHERE B.DEPTID = D.SUPERVISED_DEPTID
+		 					     AND D.AR_SUPERVISOR_ID = #supervisor#
+		 	 		  	 	)
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="EmpDivision">
+			<![CDATA[
+			      	   B.JOIN_TYPE_CODE = #EmpDivision:VARCHAR#   
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="deptID">
+			<![CDATA[
+			      	      EXISTS (
+						  SELECT     *
+	                     	FROM HR_DEPARTMENT B1
+	                     	WHERE B1.DEPTID= B.DEPTID
+	                 	START WITH B1.DEPTID = #deptID:VARCHAR#
+	                 	CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID
+	                )
+		    ]]>
+		</isNotEmpty>
+
+
+		<![CDATA[
+	       
+										  ORDER BY A.EMPID, A.AR_DATE_STR, CUR, A.AR_ITEM_NO
+											) D
+								   GROUP BY D.EMPID,D.CHINESENAME,CHINESE_PINYIN,ENGLISHNAME,KOREANNAME,
+								   		 	D.DEPTID,D.DEPTNAME,DEPT_EN_NAME,DEPT_KOR_NAME,D.JOIN_TYPE_NAME,
+											JOIN_TYPE_EN_NAME,JOIN_TYPE_KOR_NAME,D.AR_MONTH_STR,D.AR_DATE_STR
+						   CONNECT BY PRIOR CUR = PREV
+						   	  AND PRIOR D.EMPID = D.EMPID
+						AND PRIOR D.AR_DATE_STR = D.AR_DATE_STR
+								 START WITH CUR = 1
+						) G
+		 GROUP BY G.EMPID,G.CHINESENAME,CHINESE_PINYIN,ENGLISHNAME,KOREANNAME,
+		   		  G.DEPTID,G.DEPTNAME,DEPT_EN_NAME,DEPT_KOR_NAME,G.JOIN_TYPE_NAME,
+				  G.JOIN_TYPE_EN_NAME,JOIN_TYPE_KOR_NAME,G.AR_MONTH_STR
+		 ORDER BY G.DEPTID,G.EMPID
+			]]>
+	</select>
+
+
+
+
+
+	<select id="retrieveMonthlyConsumptioDis" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[
+						
+			SELECT  B.EMPID,B.chinesename,B.chinese_pinyin,B.koreanname,B.deptname,B.dept_en_name,B.deptid,
+				B.dept_kor_name,B.position_code,B.positonName,B.positionEnName,B.positionKorName,
+				decode(Breakfast,null,0,Breakfast)Breakfast, decode(Lunch,null,0,Lunch)Lunch,
+				decode(Dinner,null,0,Dinner)Dinner,decode(NightMeal,null,0,NightMeal)NightMeal,
+				decode(realBreakfast,null,0,realBreakfast)realBreakfast ,decode(realLunch,null,0,realLunch) realLunch,
+				decode(realDinner,null,0,realDinner) realDinner,decode(realNightMeal,null,0,realNightMeal) realNightMeal,
+				decode(Breakfast,null,0,Breakfast)-decode(realBreakfast,null,0,realBreakfast) diffBreakfast,
+				decode(Lunch,null,0,Lunch)-decode(realLunch,null,0,realLunch)   diffLunch,
+				decode(Dinner,null,0,Dinner)-decode(realDinner,null,0,realDinner) diffDinner,
+				decode(NightMeal,null,0,NightMeal)-decode(realNightMeal,null,0,realNightMeal) diffNightMeal
+				FROM ( SELECT ad.empid,
+				sum(decode(repast_type,'Breakfast',1,0))Breakfast,
+				sum(decode(repast_type,'Lunch',1,0))Lunch,
+				sum(decode(repast_type,'Dinner',1,0))Dinner,
+				sum(decode(repast_type,'NightMeal',1,0))NightMeal
+				FROM (
+		         select empid,max(shift_no) shift_no,ar_date_str,ar_month_str from ar_detail 
+		        where ar_month_str=#arMonth#
+		        group by empid,ar_date_str ,ar_month_str
+		        order by ar_date_str
+                 ) ad,ar_shift_eatery af
+				WHERE  af.shift_no=ad.shift_no
+				AND ad.shift_no<>26
+				AND ad.ar_month_str=#arMonth#  
+				group by ad.empid)A,
+				(
+				SELECT   hre.empid,hre.chinesename,hre.chinese_pinyin,hre.koreanname,hre.join_type_code,
+				hd.deptname,hd.dept_en_name,hd.dept_kor_name,hd.deptid,hd.parent_dept_id,hre.position_code,
+				sy.code_name positonName,sy.code_en_name positionEnName, sy.code_kor_name positionKorName
+				FROM hr_employee hre, hr_department hd,sy_code sy
+				WHERE hd.deptid(+)=hre.deptid 
+				and sy.code_id(+)=hre.position_code
+				AND (hre.date_left is null or hre.date_left>sysdate))B,
+				(
+				SELECT empid,  
+				sum(decode(repast_type,'RepastType05',1,0))realBreakfast,
+				sum(decode(repast_type,'RepastType15',1,0))realLunch,
+				sum(decode(repast_type,'RepastType20',1,0))realDinner,
+				sum(decode(repast_type,'RepastType30',1,0))realNightMeal
+				FROM(
+				SELECT  aec.empid,aer.card_no,r_time,repast_type,FROM_DATE,TO_DATE
+				FROM ar_emp_card  aec,ar_eatery_records aer
+				WHERE aec.card_no=aer.card_no
+				AND to_date(to_char(r_time,'yyyy-mm-dd'),'yyyy-mm-dd') BETWEEN FROM_DATE 
+				AND nvl(TO_DATE,to_date('9999-12-30','yyyy-mm-dd'))
+				AND to_date(to_char(r_time,'yyyy-mm-dd'),'yyyy-mm-dd') BETWEEN to_date(#arMonth#,'yyyy-mm')
+				AND add_months(to_date(#arMonth#,'yyyy-mm'),1)-1)C
+				GROUP BY empid)D
+				WHERE D.empid(+)=B.empid
+				AND   A.empid(+)=B.empid   
+	       ]]>
+		<isNotEmpty prepend="AND" property="EmpDivision">
+			<![CDATA[
+			      	   B.JOIN_TYPE_CODE = #EmpDivision:VARCHAR#   
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="deptID">
+			<![CDATA[
+			      	      EXISTS (
+						  SELECT     *
+	                     	FROM HR_DEPARTMENT B1
+	                     	WHERE B1.DEPTID= B.DEPTID
+	                 	START WITH B1.DEPTID = #deptID:VARCHAR#
+	                 	CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID
+	                )
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			 order by B.deptid desc,B.position_code 
+			  ]]>
+	</select>
+
+
+
+	<select id="retrieveVisitoridCardReport" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[
+		
+		SELECT visitorid,SY.CODE_NAME,SY.CODE_EN_NAME,SY.CODE_KOR_NAME ,
+				realBreakfast,realLunch,realDinner,realNightMeal,
+                to_char(begintime,'yyyy-mm-dd')begintime,
+                to_char(endtime,'yyyy-mm-dd')endtime,
+                VISITOR_AMONT
+				FROM 
+				(SELECT name visitorid,min(r_time)BEGINTIME,max(r_time)ENDTIME,  
+				sum(decode(repast_type,'RepastType05',1,0))realBreakfast,
+				sum(decode(repast_type,'RepastType15',1,0))realLunch,   
+				sum(decode(repast_type,'RepastType20',1,0))realDinner,
+				sum(decode(repast_type,'RepastType30',1,0))realNightMeal,
+				VISITOR_AMONT
+				FROM(
+				SELECT  avc.name,aer.card_no,r_time,repast_type,FROM_DATE,TO_DATE,VISITOR_AMONT
+				FROM ar_visit_card  avc,ar_eatery_records aer
+				WHERE avc.card_no(+)=aer.card_no 
+				AND avc.active=1
+				AND to_date(to_char(r_time,'yyyy-mm-dd'),'yyyy-mm-dd') BETWEEN FROM_DATE 
+				AND nvl(TO_DATE,to_date('9999-12-30','yyyy-mm-dd'))
+			    AND to_date(to_char(r_time,'yyyy-mm-dd'),'yyyy-mm-dd') BETWEEN to_date(#arMonth#,'yyyy-mm')
+				AND add_months(to_date(#arMonth#,'yyyy-mm'),1)-1)C
+				GROUP BY name,VISITOR_AMONT)D,SY_CODE SY
+				WHERE SY.CODE_ID(+)=D.visitorid 
+			
+			 union all
+          SELECT '--' as visitorid, '合计' as CODE_NAME,'Total' as CODE_EN_NAME,
+               '--' as CODE_KOR_NAME,
+				sum(realBreakfast)realBreakfast,
+				sum(realLunch)realLunch,
+				sum(realDinner)realDinner,
+				sum(realNightMeal)realNightMeal,
+        min(to_char(BEGINTIME,'yyyy-mm-dd')) as begintime,max(to_char(ENDTIME,'yyyy-mm-dd')) as endtime,
+        sum(VISITOR_AMONT) VISITOR_AMONT
+				FROM (
+    			SELECT name visitorid,min(r_time)BEGINTIME,max(r_time)ENDTIME,  
+    				sum(decode(repast_type,'RepastType05',1,0))realBreakfast,
+    				sum(decode(repast_type,'RepastType15',1,0))realLunch,
+    				sum(decode(repast_type,'RepastType20',1,0))realDinner,
+    				sum(decode(repast_type,'RepastType30',1,0))realNightMeal,
+    				VISITOR_AMONT
+    				FROM(
+    				SELECT  avc.name,aer.card_no,r_time,repast_type,FROM_DATE,TO_DATE,VISITOR_AMONT
+    				FROM ar_visit_card  avc,ar_eatery_records aer
+    				WHERE avc.card_no(+)=aer.card_no 
+    				AND avc.active=1
+    				AND to_date(to_char(r_time,'yyyy-mm-dd'),'yyyy-mm-dd') BETWEEN FROM_DATE 
+    				AND nvl(TO_DATE,to_date('9999-12-30','yyyy-mm-dd'))
+    			    AND to_date(to_char(r_time,'yyyy-mm-dd'),'yyyy-mm-dd') BETWEEN to_date(#arMonth#,'yyyy-mm')
+    				AND add_months(to_date(#arMonth#,'yyyy-mm'),1)-1)C
+    				GROUP BY name,VISITOR_AMONT
+         )                
+		
+	       ]]>
+
+	</select>
+
+
+	<select id="retrieveMonthlyeatryReport" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[
+      select get_parent_dept_name(B.deptid)dept, sum(realBreakfast) Breakfast,sum(realLunch) Lunch,
+      sum(realDinner) Dinner,sum(realNightMeal)NightMeal from  
+        (SELECT empid,  
+				sum(decode(repast_type,'RepastType05',1,0))realBreakfast,
+				sum(decode(repast_type,'RepastType15',1,0))realLunch,
+				sum(decode(repast_type,'RepastType20',1,0))realDinner,
+				sum(decode(repast_type,'RepastType30',1,0))realNightMeal
+				FROM(
+				SELECT  aec.empid,aer.card_no,r_time,repast_type,FROM_DATE,TO_DATE
+				FROM ar_emp_card  aec,ar_eatery_records aer
+				WHERE aec.card_no=aer.card_no
+				AND to_date(to_char(r_time,'yyyy-mm-dd'),'yyyy-mm-dd') BETWEEN FROM_DATE 
+				AND nvl(TO_DATE,to_date('9999-12-30','yyyy-mm-dd'))
+				AND to_date(to_char(r_time,'yyyy-mm-dd'),'yyyy-mm-dd') BETWEEN to_date(#arMonth#,'yyyy-mm')
+				AND add_months(to_date(#arMonth#,'yyyy-mm'),1)-1)C
+				GROUP BY empid)A,
+        (select empid,deptid from hr_employee)B
+        where A.empid=B.empid(+)
+        group by get_parent_dept_name(B.deptid)
+        union all
+       select '合计' as dept, sum(realBreakfast) Breakfast,sum(realLunch) Lunch,
+       sum(realDinner)Dinner,sum(realNightMeal)NightMeal from  
+        (SELECT empid,  
+				sum(decode(repast_type,'RepastType05',1,0))realBreakfast,
+				sum(decode(repast_type,'RepastType15',1,0))realLunch,
+				sum(decode(repast_type,'RepastType20',1,0))realDinner,
+				sum(decode(repast_type,'RepastType30',1,0))realNightMeal
+				FROM(
+				SELECT  aec.empid,aer.card_no,r_time,repast_type,FROM_DATE,TO_DATE
+				FROM ar_emp_card  aec,ar_eatery_records aer
+				WHERE aec.card_no=aer.card_no
+				AND to_date(to_char(r_time,'yyyy-mm-dd'),'yyyy-mm-dd') BETWEEN FROM_DATE 
+				AND nvl(TO_DATE,to_date('9999-12-30','yyyy-mm-dd'))
+				AND to_date(to_char(r_time,'yyyy-mm-dd'),'yyyy-mm-dd') BETWEEN to_date(#arMonth#,'yyyy-mm')
+				AND add_months(to_date(#arMonth#,'yyyy-mm'),1)-1)C
+				GROUP BY empid)A,
+           (select empid,deptid from hr_employee)B
+           where A.empid=B.empid(+)
+    
+	       ]]>
+
+	</select>
+
+
+
+	<select id="retrieveDailyOtReport" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[
+		
+			SELECT CHINESENAME,CHINESE_PINYIN,EMPID,DEPTNAME,DEPT_EN_NAME,DEPT_KOR_NAME,
+			JOIN_TYPE_CODE,CODE_NAME,CODE_EN_NAME,CODE_KOR_NAME,QUANTITY,RECODEMOUNT,DEPTTOTALOTMOUNT FROM
+			(SELECT  HRE.CHINESENAME ,HRE.CHINESE_PINYIN,AD.EMPID,HD.DEPTID,HD.DEPTNAME,
+			HD.DEPT_EN_NAME,HD.DEPT_KOR_NAME ,NVL(HRE.JOIN_TYPE_CODE,'EmpDivision1')JOIN_TYPE_CODE,SY.CODE_NAME,SY.CODE_EN_NAME ,SY.CODE_KOR_NAME,QUANTITY 
+			FROM  ( select empid ,sum(QUANTITY)QUANTITY from AR_DETAIL AD
+		      WHERE AD.AR_ITEM_NO IN(30,31,32,41)
+		      AND AD.AR_DATE_STR=TO_CHAR(TO_DATE(#CHECKDATE#,'YYYY/MM/DD'),'YYYY/MM/DD')
+		      AND QUANTITY>0
+		      GROUP BY EMPID         
+		        )AD,
+			HR_EMPLOYEE HRE,HR_DEPARTMENT HD,SY_CODE SY
+			WHERE HD.DEPTID(+)=HRE.DEPTID  
+			AND HRE.EMPID(+)=AD.EMPID
+			AND SY.CODE_ID(+)=HRE.JOIN_TYPE_CODE)A,
+			(SELECT COUNT(*) RECODEMOUNT ,SUM(QUANTITY)DEPTTOTALOTMOUNT,DEPTID FROM 
+			  (SELECT HD.DEPTID,QUANTITY 
+			  FROM AR_DETAIL AD,HR_EMPLOYEE HRE,HR_DEPARTMENT HD
+			  WHERE HD.DEPTID(+)=HRE.DEPTID  
+			  AND HRE.EMPID(+)=AD.EMPID
+			   AND QUANTITY>0
+			  AND AD.AR_ITEM_NO IN(30,31,32,41)  
+			  AND AD.AR_DATE_STR=to_char(to_date(#CHECKDATE#,'YYYY/MM/DD'),'YYYY/MM/DD')
+			   ]]>
+		<isNotEmpty prepend="AND" property="EmpDivision">
+			<![CDATA[
+			     NVL(JOIN_TYPE_CODE,'EmpDivision1')=#EmpDivision:VARCHAR#   
+		    ]]>
+		</isNotEmpty>
+
+		<![CDATA[    
+			    )GROUP BY DEPTID)B  
+			     WHERE A.DEPTID(+)=B.DEPTID
+			  ]]>
+		<isNotEmpty prepend="AND" property="EmpDivision">
+			<![CDATA[
+			     	 NVL(JOIN_TYPE_CODE,'EmpDivision1')= #EmpDivision:VARCHAR#   
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="deptID">
+			<![CDATA[
+			        EXISTS (
+								SELECT     *
+				                 FROM HR_DEPARTMENT B1
+				                   	WHERE B1.DEPTID= A.DEPTID
+				                 	START WITH B1.DEPTID =#deptID:VARCHAR#
+				                 	CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID)
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+				ORDER BY A.DEPTID DESC
+			  ]]>
+	</select>
+
+	<select id="retrieveOverTimeDailyReport" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[
+			
+				select B.EMPID,hre.chinesename,hre.chinese_pinyin,hd.deptname,hd.dept_en_name,hd.dept_kor_name,
+				hd.deptid,hre.join_type_code,sy.code_name emptypename,sy.code_en_name emptypeenname,sy.code_kor_name emptypekorname,
+				hre.position_code,sya.code_name positionname,sya.code_en_name positionenname,sya.code_kor_name positionkorname,
+				"1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17",
+				"18","19","20","21","22","23","24","25","26","27","28","29","30","31",
+				weekday,weekend,holiday,total FROM
+				(
+				select empid,
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),1,quantity,'')) "1",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),2,quantity,'')) "2",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),3,quantity,'')) "3",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),4,quantity,'')) "4",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),5,quantity,'')) "5",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),6,quantity,'')) "6",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),7,quantity,'')) "7",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),8,quantity,'')) "8",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),9,quantity,'') )"9",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),10,quantity,'')) "10",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),11,quantity,'')) "11",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),12,quantity,'')) "12",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),13,quantity,'')) "13",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),14,quantity,'')) "14",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),15,quantity,'')) "15",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),16,quantity,'')) "16",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),17,quantity,'')) "17",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),18,quantity,'')) "18",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),19,quantity,'')) "19",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),20,quantity,'')) "20",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),21,quantity,''))"21",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),22,quantity,'')) "22",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),23,quantity,'')) "23",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),24,quantity,'')) "24",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),25,quantity,'')) "25",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),26,quantity,'')) "26",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),27,quantity,'')) "27",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),28,quantity,'')) "28",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),29,quantity,'')) "29",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),30,quantity,'')) "30",
+				MAX(DECODE(TO_NUMBER(TO_CHAR(TO_DATE(A.AR_DATE_STR,'YYYY-MM-DD'),'DD')),31,quantity,''))"31"
+				from ar_detail A where ar_month_str=#arMonth#  and ar_item_no in (30,31,32,41) and quantity>0
+				group BY empid)B,                   
+				(
+				SELECT EMPID,sum(DECODE(ar_item_no,30,quantity,0))+sum(DECODE(ar_item_no,41,quantity,0)) weekday,
+				sum(DECODE(ar_item_no,31,quantity,0))  weekend,
+				sum(DECODE(ar_item_no,32,quantity,0))  holiday,
+				sum(quantity)total       
+				FROM  ar_detail 
+				where ar_month_str=#arMonth#  and ar_item_no in (30,31,32,41)
+				and quantity>0
+				group by empid )C,
+				hr_employee hre,
+				hr_department hd,
+				sy_code sy,
+				sy_code sya
+				WHERE B.EMPID=C.EMPID
+				and hre.empid(+)=B.EMPID
+				and sy.code_id(+)=hre.join_type_code
+				and hd.deptid(+)=hre.deptid
+                and sya.code_id(+)=hre.position_code
+			   ]]>
+		<isNotEmpty prepend="AND" property="EmpDivision">
+			<![CDATA[
+			     	 NVL(hre.JOIN_TYPE_CODE,'EmpDivision1')= #EmpDivision:VARCHAR#   
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="deptID">
+			<![CDATA[
+			        EXISTS (
+								SELECT     *
+				                 FROM HR_DEPARTMENT B1
+				                   	WHERE B1.DEPTID= hre.DEPTID
+				                 	START WITH B1.DEPTID =#deptID:VARCHAR#
+				                 	CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID)
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+				ORDER BY hre.DEPTID DESC,hre.position_code,hre.join_type_code,B.EMPID
+			  ]]>
+	</select>
+
+	<!-- retrieve date list -->
+	<select id="retrieveDateListForCalc" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[
+		
+			SELECT TO_CHAR(DDATE, 'YYYY/MM/DD') DATE_STR
+	          FROM AR_CALENDER
+	         WHERE DDATE BETWEEN TO_DATE (#startDate#, 'YYYY-MM-DD') AND TO_DATE (#endDate#, 'YYYY-MM-DD')
+	      ORDER BY DDATE
+	  	]]>
+	</select>
+
+	<!-- retrieve employee list -->
+	<select id="retrieveEmpListBySupervisor" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[
+			    SELECT A.empid AS EMPID, 
+			    	   A.chinesename AS NAME
+		          FROM HR_EMPLOYEE A, 
+		          	   AR_SUPERVISOR_INFO B
+		         WHERE A.deptid = B.supervised_deptid
+		           AND B.ar_supervisor_id = #supervisor:VARCHAR#
+		           AND (   A.date_left IS NULL
+		                   OR A.date_left > TO_DATE(#date_str:VARCHAR#, 'YYYY/MM/DD')
+		               )
+		           AND A.ACTIVITY = 1
+		      ORDER BY A.empid
+    	]]>
+	</select>
+
+	<!-- calculate attendance detail data  -->
+	<procedure id="calculateAttDetail" parameterClass="SimpleMap">
+		<![CDATA[
+			{call Ar_Detail_Calculate(#empId#,#date#,#message,jdbcType=VARCHAR,mode=OUT#) }
+		]]>
+	</procedure>
+
+	<!-- retrieve ar item detail -->
+	<select id="retrieveArItem" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[
+			   SELECT DISTINCT A.ITEM_NO,A.ITEM_ID, A.ITEM_NAME,A.ITEM_EN_NAME, 
+					  DECODE(B.UNIT,'MINUTE','m','HOUR','h','DAY','d') AS UNIT
+				        FROM AR_ITEM A,
+							 AR_ITEM_PARAM B
+					   WHERE A.ITEM_NO = B.AR_ITEM_NO
+					     AND B.CPNY_ID = #CPNY_ID#
+					     AND (A.CPNY_ID = #CPNY_ID# OR A.CPNY_ID IS NULL)
+				  ORDER BY A.ITEM_ID
+    	]]>
+	</select>
+
+	<!-- retrieve ar detailStatistics data -->
+	<select id="retrieveArDetailStatisticsData"
+		parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			select AR.EMPID,HR.CHINESENAME,HR.CHINESE_PINYIN,HR.DEPARTMENT,HR.DEPT_EN_NAME,HR.JOIN_TYPE,HR.JOIN_EN_TYPE
+			       $sqlContent_sum$
+			     FROM AR_DETAIL AR,HR_EMPLOYEE_V HR
+			    WHERE HR.deptid = #deptID#
+			      AND AR.EMPID = HR.empid(+)
+	    ]]>
+		<isNotEmpty prepend="AND" property="EmpDivision">
+			<![CDATA[
+			    HR.join_type_code = #EmpDivision# 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="detail_started">
+			<![CDATA[
+			    AR_DATE_STR BETWEEN TO_CHAR(TO_DATE(#detail_started#,'YYYY-MM-DD'),'YYYY/MM/DD') AND TO_CHAR(TO_DATE(#detail_end#,'YYYY-MM-DD'),'YYYY/MM/DD')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="arMonth">
+			<![CDATA[
+			    AR_MONTH_STR = #arMonth# 	 
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[ 		      
+			 GROUP BY AR.EMPID,HR.chinesename,HR.chinese_pinyin,HR.department,HR.dept_en_name,HR.join_type,HR.join_en_type
+			 UNION ALL
+			 select 'totalA','','',HR.department,HR.dept_en_name,'',''
+			     $sqlContent_sum$  
+			     FROM AR_DETAIL AR,HR_EMPLOYEE_V HR
+			    WHERE HR.deptid = #deptID#
+			      AND AR.EMPID = HR.empid(+)		   
+    	]]>
+		<isNotEmpty prepend="AND" property="EmpDivision">
+			<![CDATA[
+			    HR.join_type_code = #EmpDivision# 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="detail_started">
+			<![CDATA[
+			    AR_DATE_STR BETWEEN TO_CHAR(TO_DATE(#detail_started#,'YYYY-MM-DD'),'YYYY/MM/DD') AND TO_CHAR(TO_DATE(#detail_end#,'YYYY-MM-DD'),'YYYY/MM/DD')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="arMonth">
+			<![CDATA[
+			    AR_MONTH_STR = #arMonth#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			  GROUP BY HR.department,HR.dept_en_name
+			 UNION ALL
+			 select 'totalB',TO_CHAR(COUNT(DISTINCT AR.EMPID)),'','','','',''
+			     $sqlContent_count$  
+			     FROM AR_DETAIL AR,HR_EMPLOYEE_V HR
+			    WHERE HR.deptid = #deptID#
+			      AND AR.EMPID = HR.empid(+)		
+		]]>
+		<isNotEmpty prepend="AND" property="EmpDivision">
+			<![CDATA[
+			    HR.join_type_code = #EmpDivision# 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="detail_started">
+			<![CDATA[
+			    AR_DATE_STR BETWEEN TO_CHAR(TO_DATE(#detail_started#,'YYYY-MM-DD'),'YYYY/MM/DD') AND TO_CHAR(TO_DATE(#detail_end#,'YYYY-MM-DD'),'YYYY/MM/DD')	 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="arMonth">
+			<![CDATA[
+			    AR_MONTH_STR = #arMonth#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			  GROUP BY HR.deptid
+		 ]]>
+
+	</select>
+
+	<!-- retrieve ar detailStatistics data end -->
+	<select id="retrieveArDetailStatisticsData_end"
+		parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[ 		      
+			 select 'totalA' AS TOTAL,' ' AS EMP_COUNT
+			     $sqlContent_sum$  
+			     FROM AR_DETAIL AR,HR_EMPLOYEE_V HR
+			     WHERE AR.EMPID = HR.empid(+)
+			      AND HR.deptid IN (SELECT deptid FROM hr_department
+                			START WITH deptid = #deptID#
+                				CONNECT BY PRIOR deptid = parent_dept_id)		   
+    	]]>
+		<isNotEmpty prepend="AND" property="EmpDivision">
+			<![CDATA[
+			    HR.join_type_code = #EmpDivision# 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="detail_started">
+			<![CDATA[
+			    AR_DATE_STR BETWEEN TO_CHAR(TO_DATE(#detail_started#,'YYYY-MM-DD'),'YYYY/MM/DD') AND TO_CHAR(TO_DATE(#detail_end#,'YYYY-MM-DD'),'YYYY/MM/DD')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="arMonth">
+			<![CDATA[
+			    AR_MONTH_STR = #arMonth#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			 UNION ALL
+			 select 'totalB' AS TOTALB,TO_CHAR(COUNT(DISTINCT AR.EMPID))
+			     $sqlContent_count$  
+			     FROM AR_DETAIL AR,HR_EMPLOYEE_V HR
+			    WHERE AR.EMPID = HR.empid(+)
+			      AND HR.deptid IN (SELECT deptid FROM hr_department
+                			START WITH deptid = #deptID#
+                				CONNECT BY PRIOR deptid = parent_dept_id)		
+		]]>
+		<isNotEmpty prepend="AND" property="EmpDivision">
+			<![CDATA[
+			    HR.join_type_code = #EmpDivision# 
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="detail_started">
+			<![CDATA[
+			    AR_DATE_STR BETWEEN TO_CHAR(TO_DATE(#detail_started#,'YYYY-MM-DD'),'YYYY/MM/DD') AND TO_CHAR(TO_DATE(#detail_end#,'YYYY-MM-DD'),'YYYY/MM/DD')
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="arMonth">
+			<![CDATA[
+			    AR_MONTH_STR = #arMonth#
+		    ]]>
+		</isNotEmpty>
+
+	</select>
+
+	<!-- retrieve dept by deptid_advanced -->
+	<select id="retrieveDeptByDeptid_advanced"
+		parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			   SELECT  HD.DEPTID,
+				       HD.DEPTNAME,
+				       HD.DEPT_LEVEL,
+				       HD.DEPT_EN_NAME,
+				       HD.DEPT_KOR_NAME
+				  FROM HR_DEPARTMENT HD
+				 WHERE HD.DEPT_LEVEL = 3
+				   AND NVL(HD.DATE_ENDED,TO_DATE(#dateStarted#,'YYYY-MM-DD')) >= TO_DATE(#dateStarted#,'YYYY-MM-DD')
+				 START WITH DEPTID = #deptid_advanced#
+				CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+    	]]>
+	</select>
+
+	<!-- retrieve dailydetailStatistics head -->
+	<select id="retrieveArDailyDetailStatisticsData_head"
+		parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+		   SELECT COUNT(DISTINCT AD.EMPID) - COUNT(DECODE(AD.AR_ITEM_NO,36,1)) AS EMP_COUNT,
+			       COUNT(CASE WHEN (AD.AR_ITEM_NO = 35 AND AD.QUANTITY = 8) OR (AD.AR_ITEM_NO IN (31,32) AND AD.QUANTITY > 0) THEN AD.AR_ITEM_NO END) AS WORK_COUNT,
+             	   COUNT(DECODE(AD.AR_ITEM_NO,29,1))                AS ABSENCE,
+                   COUNT(DECODE(AD.AR_ITEM_NO,12,1))                AS INDUSTRIAL_INJURY,
+                   COUNT(DECODE(AD.AR_ITEM_NO,1,1))                 AS TARDINESS,
+                   COUNT(DECODE(AD.AR_ITEM_NO,2,1))                 AS TRUANCY,
+                   COUNT(CASE WHEN AD.AR_ITEM_NO = 25 AND AD.QUANTITY > 0 THEN AD.AR_ITEM_NO END ) AS CASUAL_LEAVE,     
+			       COUNT(CASE WHEN AD.AR_ITEM_NO = 4 AND AD.QUANTITY > 0 THEN AD.AR_ITEM_NO END ) AS SICK_LEAVE ,
+			       COUNT(CASE WHEN AD.AR_ITEM_NO IN (30,31,32,41) AND AD.QUANTITY > 0 THEN AD.AR_ITEM_NO END ) AS OVERTIME,
+			       COUNT(CASE WHEN AD.AR_ITEM_NO NOT IN (1,2,4,12,25,29,30,31,32,35,36,41) AND AD.QUANTITY > 0 THEN AD.AR_ITEM_NO END) AS OTHER
+			  FROM AR_DETAIL AD, HR_EMPLOYEE HR
+			 WHERE AD.EMPID = HR.EMPID
+			   AND AD.AR_DATE_STR = TO_CHAR(TO_DATE(#dateStarted#,'YYYY-MM-DD'),'YYYY/MM/DD')
+			   AND HR.DEPTID = #deptid#
+			   AND HR.DEPTID <> 'Z000000'
+    	]]>
+	</select>
+
+
+	<!-- retrieve dailydetailStatistics -->
+	<select id="retrieveArDailyDetailStatisticsData"
+		parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+		    SELECT COUNT(DISTINCT AD.EMPID) - COUNT(DECODE(AD.AR_ITEM_NO,36,1)) AS EMP_COUNT,
+			       COUNT(CASE WHEN (AD.AR_ITEM_NO = 35 AND AD.QUANTITY = 8) OR (AD.AR_ITEM_NO IN (31,32) AND AD.QUANTITY > 0) THEN AD.AR_ITEM_NO END) AS WORK_COUNT,
+             	   COUNT(DECODE(AD.AR_ITEM_NO,29,1))                AS ABSENCE,
+                   COUNT(DECODE(AD.AR_ITEM_NO,12,1))                AS INDUSTRIAL_INJURY,
+                   COUNT(DECODE(AD.AR_ITEM_NO,1,1))                 AS TARDINESS,
+                   COUNT(DECODE(AD.AR_ITEM_NO,2,1))                 AS TRUANCY,
+                   COUNT(CASE WHEN AD.AR_ITEM_NO = 25 AND AD.QUANTITY > 0 THEN AD.AR_ITEM_NO END ) AS CASUAL_LEAVE,     
+			       COUNT(CASE WHEN AD.AR_ITEM_NO = 4 AND AD.QUANTITY > 0 THEN AD.AR_ITEM_NO END ) AS SICK_LEAVE ,
+			       COUNT(CASE WHEN AD.AR_ITEM_NO IN (30,31,32,41) AND AD.QUANTITY > 0 THEN AD.AR_ITEM_NO END ) AS OVERTIME,
+			       COUNT(CASE WHEN AD.AR_ITEM_NO NOT IN (1,2,4,12,25,29,30,31,32,35,36,41) AND AD.QUANTITY > 0 THEN AD.AR_ITEM_NO END) AS OTHER
+			  FROM AR_DETAIL AD, HR_EMPLOYEE HR
+			 WHERE AD.EMPID = HR.EMPID
+			   AND AD.AR_DATE_STR = TO_CHAR(TO_DATE(#dateStarted#,'YYYY-MM-DD'),'YYYY/MM/DD')
+			   AND HR.DEPTID IN
+			   (
+			       SELECT DEPTID 
+			                FROM HR_DEPARTMENT 
+			                START WITH DEPTID = #deptid#
+			                CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+			   )
+			   AND HR.DEPTID <> 'Z000000'
+    	]]>
+	</select>
+
+	<select id="arBalanceList" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[
+			  SELECT TO_CHAR(PAY_YYMMDD,'YYYY-MM-DD') AS PAY_YYMMDD,
+			  		 PAY_EMPNO,
+			  		 HR.CHINESENAME,
+			  		 PAY_UGOTM,
+			  		 PAY_EXTTM,
+			  		 PAY_SUNTM,
+			  		 PAY_HOLTM,
+			  		 PAY_DAY,
+			  		 PAY_NIGHT,
+			  		 PAY_LATE,
+			  		 PAY_EARLY,
+			  		 case when to_number(pay_jia)=0 then '无休假'
+			              when to_number(pay_jia)=1 then '事假'
+			              when to_number(pay_jia)=2 then '病假'
+			              when to_number(pay_jia)=3 then '休假'
+			              when to_number(pay_jia)=4 then '旷工'
+			              when to_number(pay_jia)=5 then '病休1'
+			              when to_number(pay_jia)=6 then '病休2'
+			              when to_number(pay_jia)=7 then '工伤'
+			              when to_number(pay_jia)=8 then '产假'          
+			              when to_number(pay_jia)=10 then '休职'
+			              when to_number(pay_jia)=11 then '放假1'
+			              when to_number(pay_jia)=12 then '放假2'
+			              when to_number(pay_jia)=14 then '年假(半天)'
+			              when to_number(pay_jia)=15 then '年假'
+			              when to_number(pay_jia)=16 then '婚假'
+			              when to_number(pay_jia)=17 then '丧假'
+			              when to_number(pay_jia)=18 then '倒休'
+			         end AS PAY_JIA,
+        	  	     PAY_DEP,
+        	  	     PAY_DNM,
+        	  	     PAY_DEPCD,
+        	  	     PAY_DEPNM,
+        	  	     PAY_NIGHTBZH,
+        	  	     PAY_JIATM,
+        	  	     AR_MONTH 
+        	  	FROM AR_PAY_RESULT,HR_EMPLOYEE HR 
+        	   WHERE AR_MONTH = #AR_MONTH:VARCHAR#
+                 AND AR_PAY_RESULT.PAY_EMPNO = HR.EMPID
+                 AND (HR.DATE_LEFT IS NULL OR HR.DATE_LEFT >= ar_get_startdate_stattype(#AR_MONTH:VARCHAR#,HR.EMP_DIFF_CODE) )
+    	]]>
+	</select>
+
+	<!-- insert daily attendance to history table -->
+	<insert id="insertDailyAttToHistory" parameterClass="SimpleMap">
+		<![CDATA[	
+		
+		    INSERT INTO AR_DETAIL_HISTORY A
+			     SELECT *
+				   FROM AR_DETAIL B
+				  WHERE TO_DATE(B.AR_DATE_STR,'YYYY-MM-DD') < ADD_MONTHS(SYSDATE,-12)
+		 ]]>
+	</insert>
+
+	<!-- delete daily attendance -->
+	<delete id="deleteDatail" parameterClass="SimpleMap">
+		<![CDATA[	
+			  DELETE FROM AR_DETAIL
+			  		WHERE TO_DATE(AR_DATE_STR,'YYYY-MM-DD') < ADD_MONTHS(SYSDATE,-12)	 
+	  
+	  	]]>
+	</delete>
+
+	<!-- insert card record to history table -->
+	<insert id="insertRecordToHistory" parameterClass="SimpleMap">
+		<![CDATA[	
+		
+		    INSERT INTO AR_MAC_RECORDS_HISTORY A
+			     SELECT *
+				   FROM AR_MAC_RECORDS B
+				  WHERE B.R_TIME < ADD_MONTHS(SYSDATE,-2)
+		 ]]>
+	</insert>
+	
+	<!-- insert eatery card record to history table -->
+	<insert id="insertEateryRecordToHistory" parameterClass="SimpleMap">
+		<![CDATA[	
+		
+		    INSERT INTO AR_EATERY_RECORDS_HISTORY A
+			     SELECT *
+				   FROM AR_EATERY_RECORDS B
+				  WHERE B.R_TIME < ADD_MONTHS(SYSDATE,-2)
+		 ]]>
+	</insert>
+
+	<!-- delete card record -->
+	<delete id="deleteCardRecord" parameterClass="SimpleMap">
+		<![CDATA[	
+			   	  DELETE FROM AR_MAC_RECORDS
+				        WHERE R_TIME < ADD_MONTHS(SYSDATE,-2) 
+	  
+	  	]]>
+	</delete>
+	
+	
+	<!-- delete eatery card record -->
+	<delete id="deleteEateryCardRecord" parameterClass="SimpleMap">
+		<![CDATA[	
+			   	  DELETE FROM AR_EATERY_RECORDS
+				        WHERE R_TIME < ADD_MONTHS(SYSDATE,-2) 
+	  
+	  	]]>
+	</delete>
+
+	<!-- delete datail operation history -->
+	<delete id="deleteDetailOperation" parameterClass="SimpleMap">
+		<![CDATA[	
+			   	  DELETE FROM AR_DETAIL_BACK
+						WHERE TO_DATE(AR_DATE_STR,'YYYY-MM-DD') < ADD_MONTHS(SYSDATE,-2)
+	  
+	  	]]>
+	</delete>
+	<select id="kretrieveMonthlyStatusList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+		
+			   SELECT PA_MONTH_STR,
+					  ATT_MO_FLAG,
+					  PARAM_INITIAL_FLAG,
+					  CALC_FLAG,
+					  ATT_MO_LOCK_FLAG,
+					  CALC_LOCK_FLAG,
+					  PA_LOCK_FLAG,
+					  PA_OPEN_FLAG,
+					  LOCK_USER_ID,
+					  LOCK_DATE
+				 FROM KPA_PROGRESS A
+				 WHERE 1=1
+	  	]]>
+	  	
+	  	<isNotEmpty prepend="AND" property="PA_MONTH_STR">
+			<![CDATA[
+				  PA_MONTH_STR = #PA_MONTH_STR#
+			]]>
+		</isNotEmpty>		
+		
+	</select>
+	
+	<update id="updateArDetailFlag" parameterClass="SimpleMap">
+		<![CDATA[
+					UPDATE AR_DETAIL A
+						   SET A.AR_FLAG = 0
+						   WHERE  A.PK_NO = #PKNO:NUMERIC#
+						          and decode(a.ar_flag,'',-1,a.ar_flag) <> 1
+		]]>
+	</update>
+	
+	<!-- retrieve ar email list -->
+	<select id="getArEmail" parameterClass="SimpleMap"
+		resultClass="string">
+		<![CDATA[
+		    select h.email from hr_employee h where h.empid in(
+			select empid from ar_detail_email t where t.deptid = decode(#deptId#,'780S4300','780S4200','780S4400','780S4200',#deptId#) and t.flag = #flag#) and h.cpny_id = '78000000'
+	  	]]>
+	</select>
+	
+	
+	<!-- retrieve ar email list -->
+	<select id="getArDetailEmail" parameterClass="SimpleMap"
+		resultClass="string">
+		<![CDATA[
+		    select h.email from hr_employee h where h.empid in(
+			select empid from ar_detail_email t where t.deptid = decode(#deptId#,'780S4300','780S4200','780S4400','780S4200',#deptId#) and t.flag = #flag#) and h.cpny_id = '78000000'
+	  	]]>
+	</select>
+	
+	
+	<!-- delete ar ot datail operation history -->
+	<delete id="deleteArOtDetail" parameterClass="SimpleMap">
+		<![CDATA[	
+			   	  delete ar_detail a
+						 where (a.empid, a.ar_month_str) in
+						       (select distinct t.empid, t.ar_month_str from t_ar_ot_detial t)
+						   and a.ar_item_no in ('30', '31', '32')
+
+	  	]]>
+	</delete>
+	
+	<!-- delete ar ot datail operation history -->
+	<delete id="deleteTArOtDetail" parameterClass="SimpleMap">
+		<![CDATA[	
+			   	  delete t_ar_ot_detial where 1=1
+	  	]]>
+	</delete>
+	
+	
+	<!-- insert ar ot datail operation history -->
+	<delete id="insertArOtDetail" parameterClass="SimpleMap">
+		<![CDATA[	
+			   	  insert into ar_detail
+						  (pk_no,
+						   empid,
+						   ar_item_no,
+						   from_time,
+						   to_time,
+						   shift_no,
+						   ar_date_str,
+						   ar_month_str,
+						   quantity,
+						   lock_yn,
+						   date_type,
+						   unit,
+						   mod_date)
+						  select AR_DETAIL_SEQ.NEXTVAL,
+						         t.empid,
+						         t.ar_item_no,
+						         t.from_time,
+						         t.to_time,
+						         t.shift_no,
+						         t.ar_date_str,
+						         t.ar_month_str,
+						         t.quantity,
+						         t.lock_yn,
+						         t.date_type,
+						         t.unit,
+						         t.mod_date
+						    from t_ar_ot_detial t
+	  	]]>
+	</delete>
+	
+	
+	<!-- retrieve person detail -->
+	<select id="RetrieveAttDetailPerson" parameterClass="SimpleMap"
+		resultClass="ArDetail">
+		<![CDATA[
+		            SELECT B.PK_NO pkNo,
+	                       B.EMPID empID,
+	                       B.POST_CODE POSITION_CODE,
+	                       POSITION.CODE_NAME positioNname,
+	                       POSITION.CODE_EN_NAME enPositionName,
+	                       B.CHINESENAME empName,
+	                       B.CHINESE_PINYIN empPinyin,
+	                       B.ENGLISHNAME enEmpName,
+	                       B.DEPTID,
+	                       HR_DEPARTMENT.DEPTNAME deptName,
+	                       HR_DEPARTMENT.DEPT_EN_NAME enDept,
+	                       B.AR_DATE_STR ar_date_str,
+	                       B.DATE_TYPE date_type,
+	                       B.AR_MONTH_STR ar_month_str,
+	                       B.AR_ITEM_NO itemNo,
+	                       AR_ITEM.ITEM_NAME itemName,
+	                       AR_ITEM.ITEM_EN_NAME enItemName,
+	                       NVL(TO_CHAR(B.FROM_TIME,'YYYY-MM-DD HH24:MI:SS'),'') fromTime,
+	                       NVL(TO_CHAR(B.TO_TIME, 'YYYY-MM-DD HH24:MI:SS'),'') toTime,
+	                       B.SHIFT_NO shiftNo,
+	                       AR_SHIFT010.SHIFT_NAME shiftName,
+	                       AR_SHIFT010.SHIFT_EN_NAME enShiftName,
+	                       B.QUANTITY quantity,
+	                       B.UNIT unit,
+	                       UNIT.CODE_NAME unitName,
+	                       UNIT.CODE_EN_NAME unitEnName,
+	                       B.LOCK_YN isLock
+	  FROM (SELECT A.*, ROWNUM RNM
+          FROM (SELECT  * FROM  (
+                           select AR_DETAIL.pk_no,
+	                       AR_DETAIL.empid as personId,
+	                       HR_EMPLOYEE.empid,
+	                       AR_DETAIL.ar_item_no,
+	                       AR_DETAIL.from_time,
+	                       AR_DETAIL.to_time,
+	                       AR_DETAIL.shift_no,
+	                       AR_DETAIL.ar_date_str,
+	                       AR_DETAIL.ar_month_str,
+	                       AR_DETAIL.quantity,
+	                       AR_DETAIL.lock_yn,
+	                       AR_DETAIL.date_type,
+	                       AR_DETAIL.unit,
+	                       AR_DETAIL.mod_date,
+	                       AR_DETAIL.AR_FLAG,
+	                       AR_DETAIL.FLAG,
+	                       AR_DETAIL.REMARK,
+	                       HR_EMPLOYEE.EMP_DIFF_CODE,
+	                       HR_EMPLOYEE.POST_CODE,
+	                       HR_EMPLOYEE.DEPTID,
+	                       HR_EMPLOYEE.CHINESENAME,
+	                       HR_EMPLOYEE.CHINESE_PINYIN,
+	                       HR_EMPLOYEE.ENGLISHNAME
+	                  from $tableName$ AR_DETAIL, HR_EMPLOYEE
+	                 WHERE AR_DETAIL.AR_DATE_STR BETWEEN #sDate# AND #eDate#
+	                   AND AR_DETAIL.EMPID = HR_EMPLOYEE.PERSON_ID
+             ]]>
+	<isEqual property="cnpyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isNotEqual property="cnpyId" compareValue="60000000"><!-- OTHER -->
+					<include refid="OTHER_POST_GRADE_SQL"/>
+	</isNotEqual>
+	
+		
+		<isNotEmpty prepend="AND" property="condition">
+			<![CDATA[ 
+					(   HR_EMPLOYEE.EMPID LIKE '%' || #condition:VARCHAR# || '%'
+			          OR HR_EMPLOYEE.CHINESENAME LIKE '%' || #condition:VARCHAR# || '%'
+			         )
+				    
+			 ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="itemNo">
+			<![CDATA[ 
+						AR_DETAIL.AR_ITEM_NO = #itemNo:NUMERIC#
+					    
+				 ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+						(EXISTS ( SELECT *
+	                                FROM AR_SUPERVISOR_INFO J
+	                               WHERE AR_SUPERVISOR_ID = #supervisor:VARCHAR#
+	                                 AND HR_EMPLOYEE.DEPTID = J.SUPERVISED_DEPTID 						      
+						  )  OR AR_DETAIL.EMPID = #supervisor:VARCHAR#)
+				]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="sLength">
+			<isNotEmpty prepend="AND" property="eLength">
+				<![CDATA[ 
+							(AR_DETAIL.QUANTITY >= #sLength:NUMERIC# AND AR_DETAIL.QUANTITY <= #eLength:NUMERIC# )  
+					 ]]>
+			</isNotEmpty>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="sLength">
+			<isEmpty prepend="AND" property="eLength">
+				<![CDATA[ 
+							AR_DETAIL.QUANTITY = #sLength:NUMERIC# 
+					 ]]>
+			</isEmpty>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="eLength">
+			<isEmpty prepend="AND" property="sLength">
+				<![CDATA[ 
+							AR_DETAIL.QUANTITY = #eLength:NUMERIC#
+					 ]]>
+			</isEmpty>
+		</isNotEmpty>
+
+		<![CDATA[ 
+			    ) ORDER BY AR_DATE_STR,DEPTID,EMPID) A
+		 ]]>
+		<isNotEmpty prepend="WHERE" property="endRownum">
+			<![CDATA[
+			         ROWNUM <= #endRownum:NUMERIC#
+			]]>
+		</isNotEmpty>
+
+		<![CDATA[
+			        ) B,
+			       
+			       HR_DEPARTMENT,
+			       AR_SHIFT010,
+			       AR_ITEM,
+			       SY_CODE UNIT,
+			       SY_CODE POSITION
+			 WHERE 
+			       B.DEPTID = HR_DEPARTMENT.DEPTID
+			   AND B.SHIFT_NO = AR_SHIFT010.SHIFT_NO
+			   AND B.AR_ITEM_NO = AR_ITEM.ITEM_NO
+			   AND B.UNIT = UNIT.CODE_ID(+)
+			   AND B.POST_CODE = POSITION.CODE_ID(+)
+	   	 ]]>
+		<isNotEmpty prepend="AND" property="startRownum">
+			<![CDATA[
+	   	 		B.RNM > #startRownum:NUMERIC#
+	   	 	]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY B.RNM
+		]]>
+	</select>
+	
+	<!-- retrieve person detail count -->
+	<select id="RetrieveAttDetailPersonCnt" parameterClass="SimpleMap"
+		resultClass="int">
+		<![CDATA[	
+		  SELECT COUNT(*) CNT
+			FROM $tableName$ AR_DETAIL,
+		         HR_EMPLOYEE,		              
+		         AR_ITEM		        
+		   WHERE AR_DETAIL.EMPID = HR_EMPLOYEE.PERSON_ID		       
+		     AND AR_DETAIL.AR_ITEM_NO = AR_ITEM.ITEM_NO
+		     AND AR_DATE_STR BETWEEN #sDate# AND #eDate#		   
+		]]>
+	<isEqual property="cnpyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isNotEqual property="cnpyId" compareValue="60000000"><!-- OTHER -->
+					<include refid="OTHER_POST_GRADE_SQL"/>
+	</isNotEqual>
+
+		
+		<isNotEmpty prepend="AND" property="condition">
+			<![CDATA[ 
+				(   HR_EMPLOYEE.EMPID LIKE '%' || #condition:VARCHAR# || '%'
+		          OR HR_EMPLOYEE.CHINESENAME LIKE '%' || #condition:VARCHAR# || '%'
+		         )
+			    
+		 ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+						(EXISTS ( SELECT *
+	                                FROM AR_SUPERVISOR_INFO J
+	                               WHERE AR_SUPERVISOR_ID = #supervisor:VARCHAR#
+	                                 AND HR_EMPLOYEE.DEPTID = J.SUPERVISED_DEPTID 						      
+						  ) OR AR_DETAIL.EMPID = #supervisor:VARCHAR#)
+
+				]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="itemNo">
+			<![CDATA[ 
+						AR_DETAIL.AR_ITEM_NO = #itemNo:NUMERIC#
+					    
+				 ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="sLength">
+			<isNotEmpty prepend="AND" property="eLength">
+				<![CDATA[ 
+							(AR_DETAIL.QUANTITY >= #sLength:NUMERIC# AND AR_DETAIL.QUANTITY <= #eLength:NUMERIC# )  
+					 ]]>
+			</isNotEmpty>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="sLength">
+			<isEmpty prepend="AND" property="eLength">
+				<![CDATA[ 
+							AR_DETAIL.QUANTITY = #sLength:NUMERIC# 
+					 ]]>
+			</isEmpty>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="eLength">
+			<isEmpty prepend="AND" property="sLength">
+				<![CDATA[ 
+							AR_DETAIL.QUANTITY = #eLength:NUMERIC#
+					 ]]>
+			</isEmpty>
+		</isNotEmpty>
+	</select>
+	
+	
+	
+	<!-- inserti DiccToDiciEmployee operation  -->
+	<insert id="insertDiccToDiciEmployee" parameterClass="SimpleMap">
+		<![CDATA[	
+			   	INSERT INTO HR_EMPLOYEE
+						  (EMPID,
+						   DEPTID,
+						   CHINESENAME,
+						   DATE_LEFT,
+						   ACTIVITY,
+						   CALC_FLAG,
+						   EMP_DIFF_CODE,
+						   POST_GRADE_YEAR,
+						   PERSON_ID,
+						   UPDATE_DATE,
+						   CPNY_ID)
+						  SELECT H.EMPID,
+						         CASE hr_get_level_deptid(DEPTID,3)
+				                     WHEN '780M0000' THEN '590780M0'
+				                     WHEN '780M1000' THEN '590780M1'
+				                     WHEN '630K1000' THEN '590630K1'  
+			                     ELSE '590780M0' END AS DEPTID, 
+						         H.CHINESENAME,
+						         H.DATE_LEFT,
+						         '0' AS ACTIVITY,
+						         'N' AS CALC_FLAG,
+						         'C_12067_1354182' AS EMP_DIFF_CODE,
+						         '2007' AS POST_GRADE_YEAR,
+						         PERSON_ID_DICC_TO_DICI_SEQ.NEXTVAL AS PERSON_ID,
+						         sysdate,
+						         '59000000' AS CPNY_ID
+						    FROM HR_EMPLOYEE H
+						   WHERE H.DEPTID IN
+						         (SELECT D.DEPTID
+						            FROM HR_DEPARTMENT D
+						           WHERE D.ORG_TYPE <>'C_10001_1330508' 
+						           START WITH D.DEPTID IN( '780M0000','780M1000','630K1000')
+						          CONNECT BY PRIOR D.DEPTID = D.PARENT_DEPT_ID)
+						     AND H.DATE_LEFT IS NULL
+						     AND H.CPNY_ID IN ('78000000','63000000')
+						     AND H.EMPID NOT IN
+						         (SELECT HR.EMPID FROM HR_EMPLOYEE HR WHERE HR.CPNY_ID = '59000000' )
+	  	]]>
+	</insert>
+	
+	
+	<!-- inserti DiccToDiciAdmin operation  -->
+	<insert id="insertDiccToDiciAdmin" parameterClass="SimpleMap">
+		<![CDATA[	
+			    INSERT INTO SY_ADMIN
+				         (ADMINNO, ADMINID, USERNAME, SCREEN_GRANT_NO, ACTIVITY)
+				         SELECT SY_ADMIN_NO.NEXTVAL, H.PERSON_ID, H.EMPID, '198', 1
+				           FROM HR_EMPLOYEE H
+				          WHERE H.DEPTID IN ('590780M0','590780M1','590630K1')
+				            AND H.CPNY_ID = '59000000'
+				            AND H.PERSON_ID NOT IN (SELECT S.ADMINID FROM SY_ADMIN S)
+	  	]]>
+	</insert>
+	
+	<!-- delete DiccToDici  Employee operation history -->
+	<delete id="deleteDiccToDiciEmployee" parameterClass="SimpleMap">
+		<![CDATA[	
+			   	   DELETE HR_EMPLOYEE HR
+				    WHERE HR.CPNY_ID = '59000000'
+				    AND HR.WAGES_TYPE_CODE IS NULL 
+                    AND HR.UPDATED_BY IS NULL
+				    AND HR.EMPID IN
+				          (SELECT H.EMPID
+				             FROM HR_EMPLOYEE H
+				            WHERE H.DEPTID IN
+				                  (SELECT D.DEPTID
+				                     FROM HR_DEPARTMENT D
+				                    WHERE D.ORG_TYPE <>'C_10001_1330508'  
+				                    START WITH D.DEPTID IN ( '780M0000','780M1000','630K1000')
+				                   CONNECT BY PRIOR D.DEPTID = D.PARENT_DEPT_ID)
+				              AND (H.DATE_LEFT < SYSDATE)
+				              AND H.CPNY_ID IN ( '78000000','63000000')
+				              AND H.EMPID IN (SELECT HR.EMPID
+				                                FROM HR_EMPLOYEE HR
+				                               WHERE HR.CPNY_ID = '59000000'))
+
+	  	]]>
+	</delete>
+	
+	
+	
+	
+	
+</sqlMap>

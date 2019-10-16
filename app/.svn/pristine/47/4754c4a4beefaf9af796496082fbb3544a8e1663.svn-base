@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>公章审批</title>
+    <link href="../css/PublicStyle.css" rel="stylesheet" />
+    <link href="../css/wkd_main_wap.css" rel="stylesheet" />
+</head>
+
+<body>
+    <section id="list">
+
+    </section>
+    <script type="text/template" id="template">
+        <div class="rs_mainBox">
+            <div class="rsBoxMsg pt5">
+                <div class="rs_jbspBox" id="rs_jbspBox" AFFIRMNO="{{=it.data.list[0].AFFIRM_NO}}">
+                    <div class="rs_spList">
+                        <span>姓名</span><b>{{=it.data.list[0].CHINESENAME}}</b>
+                    </div>
+                    <div class="rs_spList">
+                        <span>部门</span><b>{{=it.data.list[0].APPLYDEPTNAME}}</b>
+                    </div>
+                    <div class="rs_spList">
+                        <span>使用日期</span><b>{{=it.data.list[0].USEDATE}}</b>
+                    </div>
+                    <div class="rs_spList">
+                        <span>起案号</span><b>{{=it.data.list[0].DRAFT_NO}}</b>
+                    </div>
+                    <div class="rs_spList">
+                        <span>使用章</span><b>{{=it.data.list[0].CODE_NAME}}</b>
+                    </div>
+                    <div class="rs_spList">
+                        <span>盖章文件的接收单位</span><b>{{=it.data.list[0].DEPTNAME}}</b>
+                    </div>
+                    <div class="rs_spList">
+                        <span>是否外借</span><b>{{=it.data.list[0].ISLEND}}</b>
+                    </div>
+                    <div class="rs_spList">
+                        <span>使用内容</span><b>{{=it.data.list[0].USEINFORMATION}}</b>
+                    </div>
+                    <div class="rs_spList">
+                        <span>份数</span><b>{{=it.data.list[0].USESHARES}}</b>
+                    </div>
+                    <div class="rs_spList">
+                        <span>归还日期</span><b>{{=it.data.list[0].RETURNDATE}}</b>
+                    </div>
+                    <div class="rs_spList">
+                        <span>备注</span><b>{{=it.data.list[0].NOTE}}</b>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{? it.data.list[0].affirmList && it.data.list[0].affirmList.length > 0}}
+        <div class="rs_mainBox pt0">
+            <div class="rsBoxMsg pt5">
+                <div class="rs_cjqk">
+                    <h1>裁决情况</h1> {{ for(var i = 0; i
+                    < it.data.list[0].affirmList.length;i++) { }} <div class="rs_tkMsg">
+                        <span class="{{=it.data.list[0].affirmList[i].AFFIRM_FLAG== 0 ? 'ws' : 'tg'}}">
+                          {{=it.data.list[0].affirmList[i].AFFIRM_FLAG == 1 ? "通过" : (it.data.list[0].affirmList[i].AFFIRM_FLAG == 2 ? "否决" : "未审")}}</span>
+                        <h1>{{=it.data.list[0].affirmList[i].CHINESENAME}}
+                          {{=it.data.list[0].affirmList[i].AFFIRM_FLAG== 0 ? "" : it.data.list[0].affirmList[i].UPDATE_DATE}}</h1>
+                          {{? it.data.list[0].affirmList[i].AFFIRM_FLAG != 0 }}
+                        <p>意见：{{=it.data.list[0].affirmList[i].AFFIRMORIDEA}} </p> {{?}}
+                </div>
+                {{ } }}
+            </div>
+        </div>
+        </div>
+        {{?}}
+    </script>
+</body>
+
+</html>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/common.js"></script>
+<script type="text/javascript" src="../script/remotedb.js"></script>
+<script type="text/javascript" src="../script/doT.min.js"></script>
+
+<script type="text/javascript">
+    apiready = function() {
+        loginState();
+        var pageParam = api.pageParam;
+        frameInit(pageParam);
+    };
+
+    function frameInit(pageParam) {
+        if (!pageParam) {
+            pageError();
+        } else {
+            dataInit(pageParam);
+        }
+    }
+
+
+    function dataInit(pageParam) {
+        fnPost('applyInfo', {
+            body: JSON.stringify({
+                applyNo: pageParam.DOCUMENTNO,
+                applyType: "seal",
+                content: "sealApplyInfo",
+                currentPage: 0,
+                key: ""
+            })
+        }, true, function(ret, err) {
+            if (ret && ret.resultCode == 200) {
+                if (ret.data && ret.data.list && ret.data.list.length > 0) {
+                    jbList(ret);
+                } else {
+                    pageError();
+                }
+            } else {
+                api.toast({
+                    msg: '网络不佳，请重试',
+                    duration: 2000,
+                    location: 'bottom'
+                });
+            }
+        });
+    }
+
+    function jbList(data_) {
+        var list = $api.byId('list');
+        var tempFn = doT.template($api.byId('template').innerHTML);
+        var resultHTML = tempFn(data_);
+        $api.html(list, resultHTML);
+        api.parseTapmode();
+    }
+
+</script>

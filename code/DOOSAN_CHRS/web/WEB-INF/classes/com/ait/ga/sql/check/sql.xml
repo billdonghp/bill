@@ -1,0 +1,1067 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="ga.check">
+
+	<!-- retrieve BankAccount list -->
+	<select id="retrieveBankAccountList" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[	
+		   SELECT A.SEQ_NO,
+    		     S.CODE_ID,
+     		    S.CODE_NAME,
+     		    A.ACCOUNT,
+     		    A.NOTE,
+    		     B.CHINESENAME CREATE_BY,
+      		   TO_CHAR(A.ENTRY_DATE, 'YYYY-MM-DD') ENTRY_DATE,
+     		    A.ACTIVITY
+  		  FROM GA_BANK_ACCOUNT A, HR_EMPLOYEE B, SY_CODE S
+		   WHERE A.ACTIVITY = 1
+  		   AND A.CREATE_BY = B.PERSON_ID
+  		   AND A.BANK_ID = S.CODE_ID
+  		   AND A.CPNY_ID = #cpnyId:VARCHAR#
+  		   ORDER BY A.SEQ_NO
+	  ]]>
+	</select>
+
+	<!-- retrieve BankAccount list count-->
+	<select id="retrieveBankAccountListCnt" parameterClass="SimpleMap"
+		resultClass="int">
+		<![CDATA[	
+		   SELECT  COUNT(*) CNT
+			  FROM GA_BANK_ACCOUNT A,
+			  	   HR_EMPLOYEE B
+			 WHERE A.ACTIVITY = 1
+			   AND A.CREATE_BY = B.PERSON_ID
+			   AND A.CPNY_ID = #cpnyId:VARCHAR#
+	  ]]>
+	</select>
+
+	
+	<insert id="insertCheckBank" parameterClass="SimpleMap">
+		<![CDATA[	
+			INSERT INTO GA_BANK_ACCOUNT A
+  			(SEQ_NO,
+  			 BANK_ID,
+  			 ACCOUNT,
+  			 ENTRY_DATE,
+   			CREATE_DATE,
+   			NOTE,
+  			 CREATE_BY,
+   			CPNY_ID,
+   			ACTIVITY)
+			VALUES
+  			(GA_CHECK_BANK_SEQ.NEXTVAL,
+   			 #CHECKBANK_TYPE:VARCHAR#,
+  			 #ACCOUNT:VARCHAR#,
+  			 TO_DATE(#ENTRY_DATE:VARCHAR#,'YYYY-MM-DD'),
+  			 SYSDATE,
+  			 #NOTE:VARCHAR#,
+  			 #adminId:VARCHAR#,
+  			 #cpnyId:VARCHAR#,
+  			 1)
+	  ]]>
+	</insert>
+	 	<!-- update CheckBank data -->
+	<update id="updateCheckBank" parameterClass="SimpleMap">
+		<![CDATA[
+			   UPDATE GA_BANK_ACCOUNT A
+   			    SET UPDATE_DATE = SYSDATE,
+         		    UPDATED_BY  = #adminId:VARCHAR#,
+          		    ACTIVITY    = #ACTIVITY:NUMERIC#
+   			     WHERE A.SEQ_NO = #SEQ_NO:NUMERIC#
+	 	]]>
+	</update>
+
+	
+	<insert id="insertCheckAccount" parameterClass="SimpleMap">
+		<![CDATA[	
+			INSERT INTO GA_CHECK_ACCOUNT A
+  			      (SEQ_NO,
+   			      BANK_ID,
+   			      ACCOUNT,
+     			  CHECK_TYPE,
+      			  CHECK_ACCOUNT,
+      			  ENTRY_DATE,
+      			  NOTE,
+       			  CREATE_DATE,
+      			  CREATE_BY,
+       			  CPNY_ID,
+      			  ACTIVITY)
+      			VALUES
+      			  (GA_CHECK_ACCOUNT_SEQ.NEXTVAL,
+        			  #CHECKBANK_TYPE:VARCHAR#,
+        			  #ACCOUNT:VARCHAR#,
+        			  #CHECK_TYPE:VARCHAR#,
+         			  #CHECKACCOUNT:VARCHAR#,
+         			  TO_DATE(#ENTRY_DATE:VARCHAR#,'YYYY-MM-DD'),
+         			  #NOTE:VARCHAR#,
+         			  SYSDATE,
+         			  #adminId:VARCHAR#,
+         			  #cpnyId:VARCHAR#,
+         			  #ACTIVITY:VARCHAR#)
+	  ]]>
+	</insert>
+		<!-- retrieve retrieveCheckAccountColumn list -->
+	<select id="retrieveCheckAccountColumn" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[	
+		     SELECT A.ACCOUNT
+   		        FROM GA_BANK_ACCOUNT A
+      		   WHERE A.ACTIVITY = 1
+         ]]>
+       <isNotEmpty prepend="AND" property="COLUMN_ID">
+                A.BANK_ID=#COLUMN_ID#
+		</isNotEmpty>
+	 <![CDATA[
+         ORDER BY A.SEQ_NO
+		]]>
+	</select>
+	
+		<!-- retrieve BankAccount list -->
+	<select id="retrieveCheckAccountList" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[	
+		    SELECT A.SEQ_NO,
+             A.BANK_ID,
+             S.CODE_NAME BANKNAME,
+             A.ACCOUNT,
+             Y.CODE_NAME CHECK_TYPE,
+             A.CHECK_ACCOUNT,
+             A.NOTE,
+             B.CHINESENAME CREATE_BY,
+             TO_CHAR(A.ENTRY_DATE, 'YYYY-MM-DD') ENTRY_DATE,
+             DECODE( A.ACTIVITY,0,'未使用',1,'已使用',2,'作废',3,'使用中' ) ACTIVITY
+        FROM GA_CHECK_ACCOUNT A, HR_EMPLOYEE B, SY_CODE S ,SY_CODE Y
+       WHERE A.CREATE_BY = B.PERSON_ID
+         AND A.BANK_ID = S.CODE_ID
+         AND A.CHECK_TYPE = Y.CODE_ID
+         AND A.CPNY_ID = #cpnyId:VARCHAR#     
+        ]]>
+
+    <isNotEmpty prepend="AND" property="CHECKBANK_TYPE">
+      <![CDATA[
+            A.BANK_ID = #CHECKBANK_TYPE:VARCHAR#
+        ]]>
+    </isNotEmpty>
+
+<!-- 新添加 -->
+
+ <isNotEqual prepend="" property="cheType" compareValue="5">  <!-- 全部 -->
+   <isEqual prepend="AND" property="cheType" compareValue="0"> <!-- 未使用 -->
+    <![CDATA[
+         A.ACTIVITY=0
+  ]]>
+  </isEqual>
+  <isEqual prepend="AND" property="cheType" compareValue="1"> <!-- 已使用 -->
+    <![CDATA[
+         A.ACTIVITY =1
+  ]]>
+  </isEqual>
+  <isEqual prepend="AND" property="cheType" compareValue="2"> <!-- 作废 -->
+    <![CDATA[
+         A.ACTIVITY =2
+  ]]>
+  </isEqual>
+   <isEqual prepend="AND" property="cheType" compareValue="3"> <!-- 使用中 -->
+    <![CDATA[
+         A.ACTIVITY =3
+  ]]>
+  </isEqual>
+  
+ </isNotEqual>
+ 
+ 
+    <isNotEmpty prepend="AND" property="startDate">
+
+      <isNotEmpty prepend="" property="endDate">
+        <![CDATA[
+            TO_CHAR(A.ENTRY_DATE,'YYYY-MM-DD') BETWEEN #startDate:VARCHAR# AND #endDate:VARCHAR#
+        ]]>
+      </isNotEmpty>
+
+    </isNotEmpty>
+
+    <![CDATA[
+         ORDER BY A.SEQ_NO
+	  ]]>
+	</select>
+
+	<!-- retrieve BankAccount list count-->
+	<select id="retrieveCheckAccountListCnt" parameterClass="SimpleMap"
+		resultClass="int">
+		<![CDATA[	
+		     SELECT  COUNT(*) CNT
+			  FROM GA_CHECK_ACCOUNT A,
+			  	   HR_EMPLOYEE B
+			 WHERE A.CREATE_BY = B.PERSON_ID
+			   AND A.CPNY_ID = #cpnyId:VARCHAR#
+	 ]]>
+
+    <isNotEmpty prepend="AND" property="CHECKBANK_TYPE">
+      <![CDATA[
+            A.BANK_ID = #CHECKBANK_TYPE:VARCHAR#
+        ]]>
+    </isNotEmpty>
+
+<!-- 新添加 -->
+
+ <isNotEqual prepend="" property="cheType" compareValue="5">  <!-- 全部 -->
+   <isEqual prepend="AND" property="cheType" compareValue="0"> <!-- 未使用 -->
+    <![CDATA[
+         A.ACTIVITY=0
+  ]]>
+  </isEqual>
+  <isEqual prepend="AND" property="cheType" compareValue="1"> <!-- 已使用 -->
+    <![CDATA[
+         A.ACTIVITY =1
+  ]]>
+  </isEqual>
+  <isEqual prepend="AND" property="cheType" compareValue="2"> <!-- 作废 -->
+    <![CDATA[
+         A.ACTIVITY =2
+  ]]>
+  </isEqual>
+   <isEqual prepend="AND" property="cheType" compareValue="3"> <!-- 使用中 -->
+    <![CDATA[
+         A.ACTIVITY =3
+  ]]>
+  </isEqual>
+  
+ </isNotEqual>
+ 
+    <isNotEmpty prepend="AND" property="startDate">
+
+      <isNotEmpty prepend="" property="endDate">
+        <![CDATA[
+            TO_CHAR(A.ENTRY_DATE,'YYYY-MM-DD') BETWEEN #startDate:VARCHAR# AND #endDate:VARCHAR#
+        ]]>
+      </isNotEmpty>
+
+    </isNotEmpty>
+	</select>
+	
+	
+	 	<!-- deleteCheckAccount data -->
+	<delete id="deleteCheckAccount" parameterClass="SimpleMap">
+		<![CDATA[
+			   DELETE GA_CHECK_ACCOUNT A WHERE A.SEQ_NO = #SEQ_NO:NUMERIC#
+	 	]]>
+	</delete>
+	
+<!-- retrieve BankAccount list -->
+	<select id="retrieveUpCheckAccount" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[	
+		    SELECT A.SEQ_NO,
+             S.CODE_ID,
+             S.CODE_NAME BANKNAME,
+             A.ACCOUNT,
+             A.CHECK_TYPE,
+             A.CHECK_ACCOUNT,
+             A.NOTE,
+             B.CHINESENAME CREATE_BY,
+             TO_CHAR(A.ENTRY_DATE, 'YYYY-MM-DD') ENTRY_DATE,
+             A.ACTIVITY
+        FROM GA_CHECK_ACCOUNT A, HR_EMPLOYEE B, SY_CODE S
+       WHERE A.CREATE_BY = B.PERSON_ID
+         AND A.BANK_ID = S.CODE_ID
+         AND A.CPNY_ID = #cpnyId:VARCHAR#
+         AND A.SEQ_NO = #SEQ_NO:NUMERIC#
+	  ]]>
+	</select>
+	
+	<update id="updateSaveCheckAccount" parameterClass="SimpleMap">
+		<![CDATA[
+			   UPDATE GA_CHECK_ACCOUNT
+   			     SET CHECK_TYPE    = #CHECK_TYPE:VARCHAR#,
+        			    CHECK_ACCOUNT = #CHECKACCOUNT:VARCHAR#,
+         			    NOTE          = #NOTE:VARCHAR#,
+         			    ACTIVITY      = #ACTIVITY:VARCHAR#,
+         			    UPDATED_BY    = #adminId:VARCHAR#,
+         			    UPDATE_DATE   = SYSDATE
+    			   WHERE SEQ_NO = #SEQ_NO:NUMERIC#
+	 	]]>
+	</update>
+	<select id="getCheckAccount" parameterClass="SimpleMap"
+		resultClass="string">
+		<![CDATA[	
+		    SELECT NVL(MIN(A.CHECK_ACCOUNT), 0) MINACCOUNT
+		     FROM GA_CHECK_ACCOUNT A
+   		        WHERE A.ACTIVITY = 0 
+   		          AND A.CPNY_ID = #cpnyId:VARCHAR#
+   		          AND A.BANK_ID = #CHECKBANK_TYPE:NUMERIC#
+   		          AND A.ACCOUNT = #ACCOUNT:NUMERIC#
+   		          AND A.CHECK_TYPE = #CHECK_TYPE:NUMERIC#
+	  ]]>
+	</select>
+	
+	<update id="updateCheckAccount" parameterClass="SimpleMap">
+		<![CDATA[
+			   UPDATE GA_CHECK_ACCOUNT
+                  SET  ACTIVITY      = 3,
+                     UPDATED_BY    = #adminId:VARCHAR#,
+                     UPDATE_DATE   = SYSDATE
+    			   WHERE CHECK_ACCOUNT = #result:VARCHAR#
+	 	]]>
+	</update>
+	
+   <insert id="addcheckApplication" parameterClass="SimpleMap">
+		<![CDATA[	
+           INSERT INTO GA_CHECK_APPLICATION( 
+                APPLY_NO,
+                APPLYER,
+                APPLYER_DEPT,
+                APPLY_DATE,
+                JINE,
+                CHECKBANK_TYPE,
+                ACCOUNT,
+                CHECK_TYPE,
+                CHECKACCOUNT,
+                QIANACCOUNT,
+                PZACCOUNT,
+                PZDATE,
+                SKALLNAME,
+                NOTE,
+                CPNY_ID,
+                ACTIVE,
+                CREATE_DATE
+                )VALUES
+                (
+                #applyNo:NUMERIC#,
+                #adminId:VARCHAR#,
+                #deptid:VARCHAR#,
+                TO_DATE(#createDate:VARCHAR#,'YYYY-MM-DD'),
+                #jine:VARCHAR#,
+                #bankNameId:VARCHAR#,
+                #account:VARCHAR#,
+                #checkType:VARCHAR#,
+                #checkAccount:VARCHAR#,
+                #qiAnAccount:VARCHAR#,
+                #pzAccount:VARCHAR#,
+                TO_DATE(#pzDate:VARCHAR#,'YYYY-MM-DD'),
+                #skallName:VARCHAR#,
+                #note:VARCHAR#,
+                #cpnyId:VARCHAR#,
+                '0' ,
+                SYSDATE  
+                )
+	  ]]>
+	</insert>
+	
+   <insert id="addAffirmListForCheckApply" parameterClass="SimpleMap">
+		<![CDATA[	
+         insert into GA_CHECK_APPLY_AFFIRM( 
+            GA_AFFIRM_NO,
+            APPLY_NO,
+            AFFIRM_FLAG,
+            AFFIRM_LEVEL,
+            AFFIRMOR_ID,
+            CREATE_DATE,
+            CREATED_BY,  
+            ACTIVITY,
+            APPLY_TYPE
+            )values
+            (
+            GA_CHECK_APPLY_AFFIRM_SEQ.nextval,
+            #applyNo:NUMERIC#,
+            0,
+            #affirmorLevel:NUMERIC#,
+            #affirmorId:VARCHAR#,
+            SYSDATE,
+            #adminId:VARCHAR#,
+            1,
+            'CHECK_APPLICATION'
+            )
+	  ]]>
+	</insert>
+	
+	
+	<select id="checkAffirmInfoListNumber" parameterClass="SimpleMap" resultClass="int">
+    <![CDATA[  
+    select count(*)
+        from GA_CHECK_APPLICATION t,       
+             hr_employee hr
+       where t.APPLYER = hr.person_id(+)
+         and t.cpny_id =#cpnyId:VARCHAR#
+                          ]]>
+  <isNotEmpty prepend="AND" property="adminId">
+    <![CDATA[
+      ( EXISTS ( SELECT SAD.ADMIN_DEPTID
+           FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+          WHERE SAD.ADMIN_NO = SA.ADMINNO
+            AND SA.ADMINID = #adminId:VARCHAR#
+            AND SAD.ADMIN_DEPTID = t.APPLYER_DEPT  
+         ) OR  t.APPLYER = #adminId:VARCHAR# )
+    ]]>
+  </isNotEmpty>
+    
+  <isNotEqual prepend="" property="qryType" compareValue="3">
+   <isEqual prepend="AND" property="qryType" compareValue="0"> <!-- 未通过的 -->
+    <![CDATA[
+         t.active<2   and t.isconfirm=0
+  ]]>
+  </isEqual>
+  <isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+    <![CDATA[
+         t.active=1   and t.isconfirm=1
+  ]]>
+  </isEqual>
+  <isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 决裁否决的 -->
+    <![CDATA[
+          (t.active=2   or  t.isconfirm=2)
+  ]]>
+  </isEqual>
+ </isNotEqual>
+  <isNotEmpty prepend="AND" property="key">
+    <![CDATA[       
+     (hr.Chinesename LIKE  '%'||#key:VARCHAR# || '%' or hr.empid  LIKE  '%'||#key:VARCHAR# || '%' or t.applyer  LIKE  '%'||#key:VARCHAR# || '%'  )
+    ]]>  
+  </isNotEmpty>  
+  <isNotEmpty prepend="AND" property="deptid">
+    <![CDATA[       
+     t.applyer_dept=#deptid:VARCHAR#
+    ]]>  
+  </isNotEmpty>  
+  <isNotEmpty prepend="AND" property="startDate">
+    <![CDATA[       
+     t.Apply_Date >=to_date(#startDate:VARCHAR#,'yyyy-mm-dd') 
+    ]]>  
+  </isNotEmpty>
+  <isNotEmpty prepend="AND" property="endDate">
+    <![CDATA[       
+    t.Apply_Date <=to_date(#endDate:VARCHAR#,'yyyy-mm-dd') 
+    ]]>  
+  </isNotEmpty>
+</select>
+
+<select id="checkAffirmInfoList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[  
+  select t.apply_no,
+           apply.chinesename applyer,
+           t.APPLYER APPLYERID,
+           de.deptname applyer_dept,
+           to_char(t.APPLY_DATE, 'YYYY-MM-DD') APPLY_DATE,
+           t.Jine,
+           s.code_name bankName,
+           t.account,
+           se.code_name checkType,
+           t.checkaccount,
+           t.qianaccount,
+           t.pzaccount,
+           to_char(t.pzdate, 'YYYY-MM-DD') pzdate,
+           t.skallname,
+           t.note,
+           t.cpny_id,
+           t.active,
+           t.isconfirm,
+           confirm.chinesename  confirmor,
+           t.confirmor_idea,
+           AFFIRM.AFFIRM_FLAG firstAffirmFlag
+          
+      from GA_CHECK_APPLICATION t,
+           hr_employee hr,
+           hr_employee apply,
+           hr_employee confirm,
+           sy_code s,
+           sy_code se,
+           hr_department de,
+           (SELECT apply_no,
+           affirm_flag,
+           affirm_level
+      FROM GA_CHECK_APPLY_AFFIRM
+     WHERE affirm_level=1) AFFIRM
+     where t.confirmor=confirm.person_id(+)
+       and t.applyer = hr.person_id(+)
+       and t.applyer = apply.person_id(+)
+       and t.applyer_dept = de.deptid(+) 
+       and s.code_id = t.checkbank_type
+       and se.code_id = t.check_type
+       and t.cpny_id = #cpnyId:VARCHAR#
+       AND T.APPLY_NO = AFFIRM.APPLY_NO     
+
+                          ]]>
+                          
+  <isNotEmpty prepend="AND" property="adminId">
+    <![CDATA[
+      ( EXISTS ( SELECT SAD.ADMIN_DEPTID
+           FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+          WHERE SAD.ADMIN_NO = SA.ADMINNO
+            AND SA.ADMINID = #adminId:VARCHAR#
+            AND SAD.ADMIN_DEPTID = t.APPLYER_DEPT  
+         ) OR   t.APPLYER = #adminId:VARCHAR# )
+    ]]>
+  </isNotEmpty>
+    
+    
+  <isNotEqual prepend="" property="qryType" compareValue="3">
+   <isEqual prepend="AND" property="qryType" compareValue="0"> <!-- 未通过的 -->
+    <![CDATA[
+         t.active<2   and t.isconfirm=0
+  ]]>
+  </isEqual>
+  <isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+    <![CDATA[
+         t.active=1   and t.isconfirm=1
+  ]]>
+  </isEqual>
+  <isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 决裁否决的 -->
+    <![CDATA[
+          (t.active=2   or  t.isconfirm=2)
+  ]]>
+  </isEqual>
+ </isNotEqual>
+  <isNotEmpty prepend="AND" property="key">
+    <![CDATA[       
+     (hr.Chinesename LIKE  '%'||#key:VARCHAR# || '%' or hr.empid  LIKE  '%'||#key:VARCHAR# || '%' or t.applyer  LIKE  '%'||#key:VARCHAR# || '%'  )
+    ]]>  
+  </isNotEmpty>  
+  <isNotEmpty prepend="AND" property="deptid">
+    <![CDATA[       
+     t.applyer_dept=#deptid:VARCHAR#
+    ]]>  
+  </isNotEmpty>  
+  <isNotEmpty prepend="AND" property="startDate">
+    <![CDATA[       
+     t.APPLY_DATE >=to_date(#startDate:VARCHAR#,'yyyy-mm-dd') 
+    ]]>  
+  </isNotEmpty>
+  <isNotEmpty prepend="AND" property="endDate">
+    <![CDATA[       
+    t.APPLY_DATE <=to_date(#endDate:VARCHAR#,'yyyy-mm-dd') 
+    ]]>  
+  </isNotEmpty>
+  <![CDATA[  
+   order by t.APPLY_DATE desc
+  ]]>  
+</select>
+
+<select id="checkAffirmorList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[  
+    select t.ga_affirm_no,
+         t.affirm_flag,
+         t.affirm_level,
+         t.affirmor_id,
+         hr.chinesename affirmor_name,
+         t.apply_no,
+         hr.email,
+         t.affirmor_idea        
+    from GA_CHECK_APPLY_AFFIRM t,
+         hr_employee hr        
+   where t.affirmor_id = hr.person_id
+     and t.apply_no = #applyNo:VARCHAR#
+   order by t.affirm_level
+    ]]>
+</select>
+
+<select id="checkAffirmListNumber" parameterClass="SimpleMap" resultClass="int">
+    <![CDATA[	
+        select count(*)
+        
+          from GA_CHECK_APPLICATION t,hr_employee hr,
+          (SELECT GA_CHECK_APPLY_AFFIRM.*,
+       UP_AFFIRM.AFFIRMOR_ID UP_AFFIRMOR_ID,
+       UP_AFFIRM.AFFIRM_FLAG UP_AFFIRM_FLAG,
+       CASE
+         WHEN GA_CHECK_APPLY_AFFIRM.AFFIRM_LEVEL = MAX_AFFIRM.MAX_LEVEL THEN
+          1
+         ELSE
+          0
+       END AS MAX_LEVEL_FLAG
+  FROM (SELECT GA_CHECK_APPLY_AFFIRM.*,
+               GA_CHECK_APPLY_AFFIRM.AFFIRM_LEVEL - 1 UP_LEVEL
+          FROM GA_CHECK_APPLY_AFFIRM) GA_CHECK_APPLY_AFFIRM,
+       (SELECT GA_CHECK_APPLY_AFFIRM.APPLY_NO,
+               GA_CHECK_APPLY_AFFIRM.AFFIRM_LEVEL,
+               GA_CHECK_APPLY_AFFIRM.AFFIRMOR_ID,
+               GA_CHECK_APPLY_AFFIRM.AFFIRM_FLAG
+          FROM GA_CHECK_APPLY_AFFIRM) UP_AFFIRM,
+       (SELECT GA_CHECK_APPLY_AFFIRM.APPLY_NO,
+               MAX(GA_CHECK_APPLY_AFFIRM.AFFIRM_LEVEL) MAX_LEVEL
+          FROM GA_CHECK_APPLY_AFFIRM
+         GROUP BY GA_CHECK_APPLY_AFFIRM.APPLY_NO) MAX_AFFIRM
+
+ WHERE GA_CHECK_APPLY_AFFIRM.APPLY_NO = UP_AFFIRM.APPLY_NO(+)
+   AND GA_CHECK_APPLY_AFFIRM.UP_LEVEL = UP_AFFIRM.AFFIRM_LEVEL(+)
+   AND GA_CHECK_APPLY_AFFIRM.APPLY_NO = MAX_AFFIRM.APPLY_NO(+)
+   and GA_CHECK_APPLY_AFFIRM.AFFIRMOR_ID = #adminId:VARCHAR#
+ ) AFFIRM
+          where t.cpny_id=#cpnyId:VARCHAR#
+                and NVL(AFFIRM.UP_AFFIRM_FLAG,1)=1
+                 and t.APPLYER=hr.person_id(+)
+                AND T.APPLY_NO=AFFIRM.APPLY_NO
+
+   ]]>
+ <isNotEqual prepend="" property="qryType" compareValue="3">
+   <isEqual prepend="AND" property="qryType" compareValue="0"> <!-- 未决裁过的 -->
+    <![CDATA[
+         AFFIRM.AFFIRM_FLAG=0
+  ]]>
+  </isEqual>
+  <isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+    <![CDATA[
+         AFFIRM.AFFIRM_FLAG =1
+  ]]>
+  </isEqual>
+  <isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 决裁否决的 -->
+    <![CDATA[
+         AFFIRM.AFFIRM_FLAG =2
+  ]]>
+  </isEqual>
+ </isNotEqual>
+  <isNotEmpty prepend="AND" property="key">
+    <![CDATA[       
+     (hr.Chinesename LIKE  '%'||#key:VARCHAR# || '%' or hr.empid  LIKE  '%'||#key:VARCHAR# || '%' or t.APPLYER  LIKE  '%'||#key:VARCHAR# || '%'  )
+    ]]>  
+  </isNotEmpty>  
+  <isNotEmpty prepend="AND" property="deptid">
+    <![CDATA[       
+     t.applyer_dept=#deptid:VARCHAR#
+    ]]>  
+  </isNotEmpty>  
+  <isNotEmpty prepend="AND" property="startDate">
+    <![CDATA[       
+     to_date(to_char(t.apply_date,'yyyy-mm-dd'),'yyyy-mm-dd') >=to_date(#startDate:VARCHAR#,'yyyy-mm-dd') 
+    ]]>  
+  </isNotEmpty>
+  <isNotEmpty prepend="AND" property="endDate">
+    <![CDATA[       
+    to_date(to_char(t.apply_date,'yyyy-mm-dd'),'yyyy-mm-dd') <=to_date(#endDate:VARCHAR#,'yyyy-mm-dd') 
+    ]]>  
+  </isNotEmpty>
+</select>
+
+<select id="checkAffirmList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[      
+       select t.apply_no,
+               hr.chinesename applyer,
+               t.APPLYER APPLYERID,
+               de.deptname applyer_dept,
+               to_char(t.APPLY_DATE, 'YYYY-MM-DD') APPLY_DATE,
+               t.Jine, s.code_name bankName,
+               t.account,
+               se.code_name checkType,
+               t.checkaccount,
+               t.qianaccount,
+               t.pzaccount,
+               to_char(t.pzdate, 'YYYY-MM-DD') pzdate,
+               t.skallname,
+               t.note,
+               t.cpny_id,
+               hr.email ,
+               t.active,
+               AFFIRM.GA_AFFIRM_NO,
+               AFFIRM.AFFIRM_FLAG,
+               NVL(AFFIRM.AFFIRMOR_IDEA,'') AFFIRMOR_IDEA,
+               AFFIRM.AFFIRM_LEVEL,
+               AFFIRM.AFFIRMOR_ID,
+               NVL(AFFIRM.UP_AFFIRM_FLAG,1) UP_AFFIRM_FLAG,
+               AFFIRM.MAX_AFFIRM_FLAG
+        
+          from GA_CHECK_APPLICATION t,hr_employee hr,hr_department de, sy_code s, sy_code se,
+          (SELECT GA_CHECK_APPLY_AFFIRM.*,
+       UP_AFFIRM.AFFIRMOR_ID UP_AFFIRMOR_ID,
+       UP_AFFIRM.AFFIRM_FLAG UP_AFFIRM_FLAG,
+       CASE
+         WHEN GA_CHECK_APPLY_AFFIRM.AFFIRM_LEVEL = MAX_AFFIRM.MAX_LEVEL THEN
+          1
+         ELSE
+          0
+       END AS MAX_AFFIRM_FLAG
+  FROM (SELECT GA_CHECK_APPLY_AFFIRM.*,
+               GA_CHECK_APPLY_AFFIRM.AFFIRM_LEVEL - 1 UP_LEVEL
+          FROM GA_CHECK_APPLY_AFFIRM) GA_CHECK_APPLY_AFFIRM,
+       (SELECT GA_CHECK_APPLY_AFFIRM.APPLY_NO,
+               GA_CHECK_APPLY_AFFIRM.AFFIRM_LEVEL,
+               GA_CHECK_APPLY_AFFIRM.AFFIRMOR_ID,
+               GA_CHECK_APPLY_AFFIRM.AFFIRM_FLAG
+          FROM GA_CHECK_APPLY_AFFIRM) UP_AFFIRM,
+       (SELECT GA_CHECK_APPLY_AFFIRM.APPLY_NO,
+               MAX(GA_CHECK_APPLY_AFFIRM.AFFIRM_LEVEL) MAX_LEVEL
+          FROM GA_CHECK_APPLY_AFFIRM
+         GROUP BY GA_CHECK_APPLY_AFFIRM.APPLY_NO) MAX_AFFIRM
+
+ WHERE GA_CHECK_APPLY_AFFIRM.APPLY_NO = UP_AFFIRM.APPLY_NO(+)
+   AND GA_CHECK_APPLY_AFFIRM.UP_LEVEL = UP_AFFIRM.AFFIRM_LEVEL(+)
+   AND GA_CHECK_APPLY_AFFIRM.APPLY_NO = MAX_AFFIRM.APPLY_NO(+)
+   and GA_CHECK_APPLY_AFFIRM.AFFIRMOR_ID = #adminId:VARCHAR#
+ ) AFFIRM
+          where t.APPLYER=hr.person_id(+)
+                and t.applyer_dept=de.deptid(+)
+                and s.code_id = t.checkbank_type
+                and se.code_id = t.check_type
+                and t.cpny_id=#cpnyId:VARCHAR#
+                and NVL(AFFIRM.UP_AFFIRM_FLAG,1)=1
+                AND T.APPLY_NO=AFFIRM.APPLY_NO
+    
+   ]]>
+ <isNotEqual prepend="" property="qryType" compareValue="3">
+   <isEqual prepend="AND" property="qryType" compareValue="0"> <!-- 未决裁过的 -->
+    <![CDATA[
+         AFFIRM.AFFIRM_FLAG=0
+  ]]>
+  </isEqual>
+  <isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+    <![CDATA[
+         AFFIRM.AFFIRM_FLAG =1
+  ]]>
+  </isEqual>
+  <isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 决裁否决的 -->
+    <![CDATA[
+         AFFIRM.AFFIRM_FLAG =2
+  ]]>
+  </isEqual>
+ </isNotEqual>
+  <isNotEmpty prepend="AND" property="key">
+    <![CDATA[       
+     (hr.Chinesename LIKE  '%'||#key:VARCHAR# || '%' or hr.empid  LIKE  '%'||#key:VARCHAR# || '%' or t.APPLYER  LIKE  '%'||#key:VARCHAR# || '%'  )
+    ]]>  
+  </isNotEmpty>  
+  <isNotEmpty prepend="AND" property="deptid">
+    <![CDATA[       
+     t.applyer_dept=#deptid:VARCHAR#
+    ]]>  
+  </isNotEmpty>  
+  <isNotEmpty prepend="AND" property="startDate">
+    <![CDATA[       
+     to_date(to_char(t.apply_date,'yyyy-mm-dd'),'yyyy-mm-dd') >=to_date(#startDate:VARCHAR#,'yyyy-mm-dd') 
+    ]]>  
+  </isNotEmpty>
+  <isNotEmpty prepend="AND" property="endDate">
+    <![CDATA[       
+    to_date(to_char(t.apply_date,'yyyy-mm-dd'),'yyyy-mm-dd') <=to_date(#endDate:VARCHAR#,'yyyy-mm-dd') 
+    ]]>  
+  </isNotEmpty>
+  <![CDATA[  
+     order by t.apply_date desc
+    ]]>
+</select>
+
+ <select id="getupcheckaffrimemail"  parameterClass="SimpleMap" resultClass="string">
+  select  hr.email
+     from GA_CHECK_APPLY_AFFIRM t, hr_employee hr
+     where t.apply_no =#applyNo:NUMERIC#
+     and t.affirmor_id = hr.person_id(+)
+     and t.affirm_level = (select t.affirm_level
+                           from GA_CHECK_APPLY_AFFIRM t
+                           where t.ga_affirm_no = #affirmNo:NUMERIC#)+1
+  
+  </select>
+  
+  <update id="oingCheckAffirm" parameterClass="SimpleMap">
+  
+    update GA_CHECK_APPLY_AFFIRM t
+      set t.affirm_flag=#affirmFlag:NUMERIC#,
+      t.update_date=SYSDATE,
+      t.updated_by=#adminId:VARCHAR#,
+      t.affirmor_idea=#affirmorIdea:VARCHAR#
+      where t.ga_affirm_no=#affirmNo:NUMERIC#  
+  </update>
+  
+  	<update id="updateCheckApplyInfo" parameterClass="SimpleMap">
+	
+	 update GA_CHECK_APPLICATION t
+        set t.active=#affirmFlag:NUMERIC#
+	 where t.apply_no=#applyNo:NUMERIC#	
+	</update>
+	
+	 <update id="updateCheckInfo" parameterClass="SimpleMap">
+	
+	 update GA_CHECK_ACCOUNT t
+        set t.ACTIVITY=0,
+            t.UPDATE_DATE = SYSDATE,
+            t.UPDATED_BY = #adminId:VARCHAR#	
+	 where t.CHECK_ACCOUNT=#checkAccount:VARCHAR#	
+	</update>
+	
+	<select id="getCheckConfirmListNumber" parameterClass="SimpleMap" resultClass="int">
+    <![CDATA[  
+    select count(*) from GA_CHECK_APPLICATION t, hr_employee hr
+         where t.APPLYER = hr.person_id(+)
+           and t.active=1
+           and EXISTS (SELECT SAD.ADMIN_DEPTID
+                  FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+                 WHERE SAD.ADMIN_NO = SA.ADMINNO
+                   AND SA.ADMINID = #adminId:VARCHAR#
+                     AND SAD.ADMIN_DEPTID = t.applyer_dept
+                   )
+                          ]]>
+                          <!-- 修改上名的sql语句      AND SAD.ADMIN_DEPTID = t.applyer_dept -->
+  <isNotEqual prepend="" property="qryType" compareValue="3">
+   <isEqual prepend="AND" property="qryType" compareValue="0"> <!-- 未决裁过的 -->
+    <![CDATA[
+         T.isconfirm=0
+  ]]>
+  </isEqual>
+  <isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+    <![CDATA[
+         T.isconfirm =1
+  ]]>
+  </isEqual>
+  <isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 决裁否决的 -->
+    <![CDATA[
+         T.isconfirm =2
+  ]]>
+  </isEqual>
+ </isNotEqual>
+  
+  <isNotEmpty prepend="AND" property="key">
+    <![CDATA[   
+     (T.NOTE LIKE  '%'||#key:VARCHAR# || '%')
+    ]]>  
+  </isNotEmpty>  
+  <isNotEmpty prepend="AND" property="deptid">
+    <![CDATA[       
+     t.applyer_dept=#deptid:VARCHAR#
+    ]]>  
+  </isNotEmpty>  
+  <isNotEmpty prepend="AND" property="startDate">
+    <![CDATA[       
+     t.apply_date >=to_date(#startDate:VARCHAR#,'yyyy-mm-dd') 
+    ]]>  
+  </isNotEmpty>
+  <isNotEmpty prepend="AND" property="endDate">
+    <![CDATA[       
+    t.apply_date <=to_date(#endDate:VARCHAR#,'yyyy-mm-dd')+1  
+    ]]>  
+  </isNotEmpty>
+  
+  <isNotEmpty prepend="AND" property="cpnyId">
+		<![CDATA[		   
+		 t.cpny_id=#cpnyId:VARCHAR#
+		]]>	
+	</isNotEmpty>
+  
+</select>
+
+<select id="getCheckConfirmList" parameterClass="SimpleMap" resultClass="SimpleMap">
+  <![CDATA[  
+    select t.apply_no,
+           de.deptname applyer_dept,
+           hr.chinesename applyer,
+           t.APPLYER APPLYERID,
+           de.deptname applyer_dept,
+           to_char(t.APPLY_DATE, 'YYYY-MM-DD') APPLY_DATE,
+           t.Jine, 
+           s.code_name bankName,
+           t.account,
+           se.code_name checkType,
+           t.checkaccount,
+           t.qianaccount,
+           t.pzaccount,
+           to_char(t.pzdate, 'YYYY-MM-DD') pzdate,
+           t.skallname,
+           t.note,
+           t.apply_date,
+           t.cpny_id,
+           t.active,  
+           t.isconfirm,
+           NVL(t.confirmor_idea,'') confirmor_idea
+      from GA_CHECK_APPLICATION t,
+           hr_employee hr,
+           hr_department de,
+           sy_code s, 
+           sy_code se          
+     where t.APPLYER = hr.person_id(+)
+       and t.applyer_dept = de.deptid(+) 
+       and s.code_id = t.checkbank_type
+       and se.code_id = t.check_type 
+       and t.active=1     
+       and EXISTS (SELECT SAD.ADMIN_DEPTID
+                  FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+                 WHERE SAD.ADMIN_NO = SA.ADMINNO
+                   AND SA.ADMINID = #adminId:VARCHAR#
+                   AND SAD.ADMIN_DEPTID = t.applyer_dept
+                )  
+
+                          ]]>
+                          <!-- 修改  AND SAD.ADMIN_DEPTID = t.applyer_dept 上面的sql语句   -->
+                          <!-- 切记一定要删除掉 -->
+  <isNotEqual prepend="" property="qryType" compareValue="3">
+   <isEqual prepend="AND" property="qryType" compareValue="0"> <!-- 未决裁过的 -->
+    <![CDATA[
+         T.isconfirm=0
+  ]]>
+  </isEqual>
+  <isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁通过的 -->
+    <![CDATA[
+         T.isconfirm =1
+  ]]>
+  </isEqual>
+  <isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 决裁否决的 -->
+    <![CDATA[
+         T.isconfirm =2
+  ]]>
+  </isEqual>
+ </isNotEqual>
+  <isNotEmpty prepend="AND" property="key">
+    <![CDATA[       
+     (T.NOTE LIKE  '%'||#key:VARCHAR# || '%')
+    ]]>  
+  </isNotEmpty>  
+  <isNotEmpty prepend="AND" property="deptid">
+    <![CDATA[       
+     t.applyer_dept=#deptid:VARCHAR#
+    ]]>  
+  </isNotEmpty>  
+  <isNotEmpty prepend="AND" property="startDate">
+    <![CDATA[       
+     t.apply_date >=to_date(#startDate:VARCHAR#,'yyyy-mm-dd') 
+    ]]>  
+  </isNotEmpty>
+  <isNotEmpty prepend="AND" property="endDate">
+    <![CDATA[       
+    t.apply_date <=to_date(#endDate:VARCHAR#,'yyyy-mm-dd')+1 
+    ]]>  
+  </isNotEmpty>
+  <isNotEmpty prepend="AND" property="cpnyId">
+		<![CDATA[		   
+		 t.cpny_id=#cpnyId:VARCHAR#
+		]]>	
+	</isNotEmpty>
+  
+  
+  <![CDATA[  
+   order by t.apply_date desc
+  ]]>  
+</select>
+
+  <update id="oingCheckConfirm" parameterClass="SimpleMap">
+    update GA_CHECK_APPLICATION t
+        set t.isconfirm=#Flag:VARCHAR#,
+        t.confirmor=#adminId:VARCHAR#,
+        t.confirmdate=SYSDATE,
+        t.confirmor_idea=#confirmorIdea:VARCHAR#
+   where t.apply_no=#applyNo:NUMERIC#     
+  </update>
+  
+  <update id="oingUpdateCheckAccount" parameterClass="SimpleMap">
+		<![CDATA[
+			   UPDATE GA_CHECK_ACCOUNT
+                  SET  ACTIVITY      = #Flag:NUMERIC#,
+                     UPDATED_BY    = #adminId:VARCHAR#,
+                     UPDATE_DATE   = SYSDATE
+    			   WHERE CHECK_ACCOUNT = #checkAccount:VARCHAR#
+	 	]]>
+	</update>
+	
+  <select id="checkAccountBalanceList" parameterClass="SimpleMap"
+    resultClass="SimpleMap">
+    <![CDATA[  
+select BANK_NAME,
+       ACCOUNT,
+       CHECK_TYPE,
+       SUM(DECODE(ff, '期初数据', NUMS, 0)) AS QICHU_NUM,
+       SUM(DECODE(ff, '本期购入', NUMS, 0)) AS IN_NUM,
+       SUM(DECODE(ff, '本期使用', NUMS, 0)) AS USE_NUM,
+       SUM(DECODE(ff, '本期作废', NUMS, 0)) AS INVALID_NUM,
+       SUM(DECODE(ff, '结余', NUMS, 0)) AS JIEYU_NUM
+  From (           
+        SELECT W.BANK_NAME,
+                W.ACCOUNT,
+                W.CHECK_TYPE,
+                DECODE(COUNT(A.SEQ_NO), null, 0, COUNT(A.SEQ_NO)) NUMS,
+                '期初数据' ff
+          FROM (SELECT distinct GA_GET_BANKNAME(A.BANK_ID) BANK_NAME,
+                                 A.ACCOUNT,
+                                 GA_GET_BANKNAME(A.CHECK_TYPE) CHECK_TYPE,
+                                 A.BANK_ID BANK_IDS,
+                                 A.CHECK_TYPE CHECK_TYPES
+                   FROM GA_CHECK_ACCOUNT A WHERE A.CPNY_ID = #cpnyId:VARCHAR#) W
+          LEFT JOIN GA_CHECK_ACCOUNT A on A.BANK_ID = W.BANK_IDS
+                                      AND A.ACCOUNT = W.ACCOUNT
+                                      AND A.CHECK_TYPE = W.CHECK_TYPES
+                                      AND A.CPNY_ID = #cpnyId:VARCHAR#
+                                      AND A.ACTIVITY in (0, 3) 
+                                      AND TO_CHAR(A.ENTRY_DATE, 'YYYY-MM-DD') < #startDate:VARCHAR# 
+         GROUP BY W.BANK_NAME, W.ACCOUNT, W.CHECK_TYPE
+        
+        UNION ALL
+        SELECT W.BANK_NAME,
+               W.ACCOUNT,
+               W.CHECK_TYPE,
+               DECODE(COUNT(A.SEQ_NO), null, 0, COUNT(A.SEQ_NO)) NUMS,
+               '本期购入' ff
+          FROM (SELECT distinct GA_GET_BANKNAME(A.BANK_ID) BANK_NAME,
+                                A.ACCOUNT,
+                                GA_GET_BANKNAME(A.CHECK_TYPE) CHECK_TYPE,
+                                A.BANK_ID BANK_IDS,
+                                A.CHECK_TYPE CHECK_TYPES
+                  FROM GA_CHECK_ACCOUNT A WHERE A.CPNY_ID = #cpnyId:VARCHAR#) W
+          LEFT JOIN GA_CHECK_ACCOUNT A on A.BANK_ID = W.BANK_IDS
+                                      AND A.ACCOUNT = W.ACCOUNT
+                                      AND A.CHECK_TYPE = W.CHECK_TYPES
+                                      AND A.CPNY_ID = #cpnyId:VARCHAR#
+                                      AND TO_CHAR(A.ENTRY_DATE, 'YYYY-MM-DD') BETWEEN
+                                          #startDate:VARCHAR# AND #endDate:VARCHAR#
+         GROUP BY W.BANK_NAME, W.ACCOUNT, W.CHECK_TYPE
+        
+        UNION ALL
+        SELECT W.BANK_NAME,
+               W.ACCOUNT,
+               W.CHECK_TYPE,
+               DECODE(COUNT(A.SEQ_NO), null, 0, COUNT(A.SEQ_NO)) NUMS,
+               '本期使用' ff
+          FROM (SELECT distinct GA_GET_BANKNAME(A.BANK_ID) BANK_NAME,
+                                A.ACCOUNT,
+                                GA_GET_BANKNAME(A.CHECK_TYPE) CHECK_TYPE,
+                                A.BANK_ID BANK_IDS,
+                                A.CHECK_TYPE CHECK_TYPES
+                  FROM GA_CHECK_ACCOUNT A WHERE A.CPNY_ID = #cpnyId:VARCHAR#) W
+          LEFT JOIN GA_CHECK_ACCOUNT A on A.BANK_ID = W.BANK_IDS
+                                      AND A.ACCOUNT = W.ACCOUNT
+                                      AND A.CHECK_TYPE = W.CHECK_TYPES
+                                      AND A.CPNY_ID = #cpnyId:VARCHAR#
+                                      AND A.ACTIVITY = 1
+                                      AND TO_CHAR(A.ENTRY_DATE, 'YYYY-MM-DD') BETWEEN
+                                          #startDate:VARCHAR# AND #endDate:VARCHAR#
+         GROUP BY W.BANK_NAME, W.ACCOUNT, W.CHECK_TYPE
+        
+        UNION ALL  
+        SELECT W.BANK_NAME,
+               W.ACCOUNT,
+               W.CHECK_TYPE,
+               DECODE(COUNT(A.SEQ_NO), null, 0, COUNT(A.SEQ_NO)) NUMS,
+               '本期作废' ff
+          FROM (SELECT distinct GA_GET_BANKNAME(A.BANK_ID) BANK_NAME,
+                                A.ACCOUNT,
+                                GA_GET_BANKNAME(A.CHECK_TYPE) CHECK_TYPE,
+                                A.BANK_ID BANK_IDS,
+                                A.CHECK_TYPE CHECK_TYPES
+                  FROM GA_CHECK_ACCOUNT A WHERE A.CPNY_ID = #cpnyId:VARCHAR#) W
+          LEFT JOIN GA_CHECK_ACCOUNT A on A.BANK_ID = W.BANK_IDS
+                                      AND A.ACCOUNT = W.ACCOUNT
+                                      AND A.CHECK_TYPE = W.CHECK_TYPES
+                                      AND A.CPNY_ID = #cpnyId:VARCHAR#
+                                      AND A.ACTIVITY = 2
+                                      AND TO_CHAR(A.ENTRY_DATE, 'YYYY-MM-DD') BETWEEN
+                                          #startDate:VARCHAR# AND #endDate:VARCHAR#
+         GROUP BY W.BANK_NAME, W.ACCOUNT, W.CHECK_TYPE
+        
+        UNION ALL
+        SELECT W.BANK_NAME,
+               W.ACCOUNT,
+               W.CHECK_TYPE,
+               DECODE(COUNT(A.SEQ_NO), null, 0, COUNT(A.SEQ_NO)) NUMS,
+               '结余' ff
+          FROM (SELECT distinct GA_GET_BANKNAME(A.BANK_ID) BANK_NAME,
+                                A.ACCOUNT,
+                                GA_GET_BANKNAME(A.CHECK_TYPE) CHECK_TYPE,
+                                A.BANK_ID BANK_IDS,
+                                A.CHECK_TYPE CHECK_TYPES
+                  FROM GA_CHECK_ACCOUNT A WHERE A.CPNY_ID = #cpnyId:VARCHAR#) W
+          LEFT JOIN GA_CHECK_ACCOUNT A on A.BANK_ID = W.BANK_IDS
+                                      AND A.ACCOUNT = W.ACCOUNT
+                                      AND A.CHECK_TYPE = W.CHECK_TYPES
+                                      AND A.CPNY_ID = #cpnyId:VARCHAR#
+                                      AND A.ACTIVITY in (0, 3)
+                                      AND TO_CHAR(A.ENTRY_DATE, 'YYYY-MM-DD') BETWEEN
+                                          #startDate:VARCHAR# AND #endDate:VARCHAR#
+         GROUP BY W.BANK_NAME, W.ACCOUNT, W.CHECK_TYPE) a
+
+ GROUP BY BANK_NAME, ACCOUNT, CHECK_TYPE
+ 
+ ORDER BY BANK_NAME    
+        ]]>
+	</select>
+</sqlMap>

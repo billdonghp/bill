@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="kpa.dshr">
+
+	<!-- check DSHR table -->
+	<select id="checkDsHrTable" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+				SELECT COUNT(T.TABLE_NAME) FROM ALL_TABLES T WHERE T.TABLE_NAME = #TABLE_NAME:VARCHAR# AND T.OWNER = 'DICCHRIF'
+		]]>
+		
+	</select>
+	
+	<!-- create DSHR table -->
+	<update id="createDsHrTable" parameterClass="SimpleMap" >
+		<![CDATA[
+				CREATE TABLE $TABLE_NAME$
+				(
+					  PA_MONTH      CHAR(6),
+					  EMPID         VARCHAR2(20)
+				)
+				tablespace TS_DG_T
+			      pctfree 10
+			      initrans 1
+			       maxtrans 255
+			    storage
+			    (
+				    initial 64K
+				    next 1M
+				    minextents 1
+				    maxextents unlimited
+				    pctincrease 0
+			   )
+		]]>
+		
+	</update>
+
+	
+	<!-- retrieve DSHR COLUMN NAMES -->
+	<select id="retrieveDsHrColumns" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			     SELECT T.COLUMN_NAME FROM ALL_TAB_COLUMNS T WHERE T.TABLE_NAME = #TABLE_NAME:VARCHAR# AND T.OWNER = 'DICCHRIF'
+		]]>
+		
+	</select>
+	
+	<!-- insert DSHR columns -->
+	<update id="alertDsHrColumns" parameterClass="SimpleMap" >
+		<![CDATA[
+			     $ALTERSQL$
+		]]>
+		
+	</update>
+	
+	<!-- insert data to DSHR -->
+	<insert id="insertDsHrDatas" parameterClass="SimpleMap" >
+		<![CDATA[
+			     INSERT INTO $TABLE_NAME$ ($column$) VALUES ($data$)
+		]]>
+		
+	</insert>
+	
+	<!-- delete data to DSHR -->
+	<insert id="deleteDsHrDatas" parameterClass="SimpleMap" >
+		<![CDATA[
+			     DELETE $TABLE_NAME$ WHERE PA_MONTH = #PA_MONTH:VARCHAR#
+		]]>
+		
+	</insert>
+	
+</sqlMap>

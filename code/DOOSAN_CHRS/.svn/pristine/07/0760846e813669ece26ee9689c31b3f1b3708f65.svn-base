@@ -1,0 +1,852 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="pa.bonus">
+
+	<!-- pa bonus param item list -->
+	<select id="retrievePaBonusParamList" parameterClass="SimpleMap" resultClass="SimpleMap">
+
+		<![CDATA[	
+			SELECT T.PARAM_NO,T.PARAM_ID,T.PARAM_NAME,T.ORDER_NO,T.DESCR,T.CPNY_ID, NVL(SY.CODE_NAME,'公共') AS CPNY_NAME
+			  FROM PA_BONUS_PARAM_ITEM T,SY_CODE SY
+			 WHERE T.CPNY_ID = SY.CODE_ID(+)
+			   AND NVL(T.CPNY_ID,#CPNY_ID:VARCHAR#) = #CPNY_ID:VARCHAR# 
+			 
+		]]>
+	
+		<isNotEmpty prepend="AND" property="key">
+			<![CDATA[ 
+					((T.PARAM_ID LIKE '%' || UPPER(#key:VARCHAR#) || '%' OR T.PARAM_NAME LIKE '%' || #key:VARCHAR# || '%'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PARAM_ID">
+			<![CDATA[ 
+					T.PARAM_ID = #PARAM_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PARAM_NO">
+			<![CDATA[ 
+					T.PARAM_NO = #PARAM_NO:NUMERIC#
+			]]>
+		</isNotEmpty>
+		
+		<![CDATA[
+			ORDER BY T.ORDER_NO
+		]]>
+	
+	</select>
+	
+	<!-- pa bonus param item list count -->
+	<select id="retrievePaBonusParamListCnt" parameterClass="SimpleMap" resultClass="int">
+
+		<![CDATA[	
+			SELECT COUNT(*)
+			  FROM PA_BONUS_PARAM_ITEM T
+			 WHERE NVL(T.CPNY_ID,#CPNY_ID:VARCHAR#) = #CPNY_ID:VARCHAR#  
+		]]>
+		
+		<isNotEmpty prepend="AND" property="key">
+			<![CDATA[ 
+					((T.PARAM_ID LIKE '%' || UPPER(#key:VARCHAR#) || '%' OR T.PARAM_NAME LIKE '%' || #key:VARCHAR# || '%'))
+			]]>
+		</isNotEmpty>
+	
+	</select>
+	
+	<!-- pa bonus param item configure list -->
+	<select id="retrievePaBonusParamConfigureList" parameterClass="SimpleMap" resultClass="SimpleMap">
+
+		<![CDATA[	
+			SELECT A.CONFIGURE_NO,
+			       A.DISTINCT_FIELD,
+			       B.FIELD_NAME,
+			       A.DISTINCT_FIELD_2ND,
+			       C.FIELD_NAME AS FIELD_NAME2,
+			       A.PA_MONTH_STR,
+			       A.DEFAULT_VAL,
+			       A.DATA_TYPE,
+			       D.CODE_NAME AS DATA_TYPE_NAME,
+			       A.GENERATE_TYPE_CODE,
+			       E.CODE_NAME AS GENERATE_TYPE,
+			       A.CPNY_ID,
+			       NVL(F.CODE_NAME,'公共') AS CPNY_NAME,
+			       A.STAT_TYPE_CODE,
+       			   H.CODE_NAME AS STAT_TYPE,
+       			   A.PARAM_NO,
+       			   G.PARAM_ID,
+       			   G.PARAM_NAME
+			  FROM PA_BONUS_PARAM_ITEM_CONFIGURE A,
+			       PA_DISTINCT_LIST        B,
+			       PA_DISTINCT_LIST        C,
+			       SY_CODE                 D,
+			       SY_CODE                 E,
+			       SY_CODE                 F,
+			       PA_BONUS_PARAM_ITEM           G,
+			       SY_CODE                 H
+			 WHERE A.PARAM_NO = G.PARAM_NO
+			   AND A.DISTINCT_FIELD = B.DISTINCT_FIELD
+			   AND A.DISTINCT_FIELD_2ND = C.DISTINCT_FIELD(+)
+			   AND A.DATA_TYPE = D.CODE_ID(+)
+			   AND A.GENERATE_TYPE_CODE = E.CODE_ID(+)
+			   AND A.CPNY_ID = F.CODE_ID(+)
+			   AND A.STAT_TYPE_CODE = H.CODE_ID(+)
+			   AND A.CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+	
+		<isNotEmpty prepend="AND" property="PARAM_ID">
+			<![CDATA[ 
+					G.PARAM_ID = #PARAM_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PA_MONTH_STR">
+			<![CDATA[ 
+					A.PA_MONTH_STR = #PA_MONTH_STR:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CONFIGURE_NO">
+			<![CDATA[ 
+					A.CONFIGURE_NO = #CONFIGURE_NO:NUMERIC#
+			]]>
+		</isNotEmpty>
+	
+		<![CDATA[
+			ORDER BY A.PA_MONTH_STR,A.STAT_TYPE_CODE
+		]]>
+	
+	</select>
+	
+	<!-- pa bonus param item configure list count -->
+	<select id="retrievePaBonusParamConfigureListCnt" parameterClass="SimpleMap" resultClass="int">
+
+		<![CDATA[	
+			SELECT COUNT(*)
+			  FROM PA_BONUS_PARAM_ITEM_CONFIGURE A,
+			       PA_BONUS_PARAM_ITEM           G
+			 WHERE A.PARAM_NO = G.PARAM_NO
+			   AND A.CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+	
+		<isNotEmpty prepend="AND" property="PARAM_ID">
+			<![CDATA[ 
+					G.PARAM_ID = #PARAM_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PA_MONTH_STR">
+			<![CDATA[ 
+					A.PA_MONTH_STR = #PA_MONTH_STR:VARCHAR#
+			]]>
+		</isNotEmpty>
+	
+	</select>
+	
+	<!-- delete pa bonus param item -->
+	<delete id="deletePaBonusParamConfigure" parameterClass="SimpleMap">
+
+		<![CDATA[	
+			DELETE PA_BONUS_PARAM_ITEM_CONFIGURE T
+			 WHERE T.CONFIGURE_NO = #CONFIGURE_NO:NUMERIC#
+		]]>
+		
+	</delete>
+	
+	<!-- delete pa bonus param data -->
+	<delete id="deletePaBonusParamData" parameterClass="SimpleMap">
+
+		<![CDATA[	
+			DELETE PA_BONUS_PARAM_DATA T
+			 WHERE T.PARAM_NO = #CONFIGURE_NO:NUMERIC#
+		]]>
+		
+	</delete>
+	
+	
+	<!-- insert pa bonus param item -->
+	<insert id="insertPaBonusParamConfigure" parameterClass="SimpleMap">
+
+		<![CDATA[	
+			INSERT INTO PA_BONUS_PARAM_ITEM_CONFIGURE T (
+			   		PARAM_NO,
+					CONFIGURE_NO,
+					DISTINCT_FIELD,
+					DISTINCT_FIELD_2ND, 
+					PA_MONTH_STR, 
+					DATA_TYPE,
+					GENERATE_TYPE_CODE, 
+					DEFAULT_VAL,
+					STAT_TYPE_CODE,
+					CPNY_ID
+					) VALUES(
+					#PARAM_NO:NUMERIC#,
+					PA_BONUS_PARAM_ITEM_CONFIG_SEQ.NEXTVAL,
+					#DISTINCT_FIELD:VARCHAR#,
+					#DISTINCT_FIELD_2ND:VARCHAR#,
+					#PA_MONTH_STR:VARCHAR#,
+					#DATA_TYPE:VARCHAR#,
+					#GENERATE_TYPE_CODE:VARCHAR#,
+					#DEFAULT_VAL:VARCHAR#,
+					#STAT_TYPE_CODE:VARCHAR#,
+					#CPNY_ID:VARCHAR#
+					)
+		]]>
+		
+	</insert>
+	
+	<!-- validate update pa bonus param item -->
+	<select id="validateUpdatePaBonusParamConfigure" parameterClass="SimpleMap" resultClass="int">
+
+		<![CDATA[	
+			SELECT COUNT(*) 
+			  FROM PA_BONUS_PARAM_ITEM_CONFIGURE T 
+			 WHERE T.CONFIGURE_NO <> #CONFIGURE_NO:NUMERIC#
+			   AND T.PARAM_NO = #PARAM_NO:PARAM_NO#
+			   AND T.STAT_TYPE_CODE = #STAT_TYPE_CODE:VARCHAR#
+			   AND T.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND T.PA_MONTH_STR = #PA_MONTH_STR:VARCHAR#
+		]]>
+		
+	</select>
+	
+	
+	<!-- update pa bonus param item -->
+	<update id="updatePaBonusParamConfigure" parameterClass="SimpleMap">
+
+		<![CDATA[	
+			UPDATE PA_BONUS_PARAM_ITEM_CONFIGURE T
+				SET
+					DISTINCT_FIELD = #DISTINCT_FIELD:VARCHAR#,
+					DISTINCT_FIELD_2ND = #DISTINCT_FIELD_2ND:VARCHAR#,
+					DATA_TYPE = #DATA_TYPE:VARCHAR#,
+					GENERATE_TYPE_CODE = #GENERATE_TYPE_CODE:VARCHAR#,
+					DEFAULT_VAL = #DEFAULT_VAL:VARCHAR#,
+					STAT_TYPE_CODE = #STAT_TYPE_CODE:VARCHAR#
+
+			 WHERE T.CONFIGURE_NO = #CONFIGURE_NO:NUMERIC#
+		]]>
+		
+	</update>
+	
+	<!-- validate add pa bonus param item -->
+	<select id="validateAddPaBonusParamConfigure" parameterClass="SimpleMap" resultClass="int">
+
+		<![CDATA[	
+			SELECT COUNT(*) 
+			  FROM PA_BONUS_PARAM_ITEM_CONFIGURE T 
+			 WHERE T.PARAM_NO = #PARAM_NO:PARAM_NO#
+			   AND T.STAT_TYPE_CODE = #STAT_TYPE_CODE:VARCHAR#
+			   AND T.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND T.PA_MONTH_STR = #PA_MONTH_STR:VARCHAR#
+		]]>
+		
+	</select>
+	
+	<!-- retrieve RetrievePaBonus_paramList -->
+	<select id="RetrievePaBonus_paramList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			    SELECT A.PARAM_NO,
+			    	   B.CONFIGURE_NO,
+				       A.PARAM_NAME,
+				       A.PARAM_ID,
+				       B.DISTINCT_FIELD,
+				       B.DISTINCT_FIELD_2ND,
+				       B.DATA_TYPE,
+				       A.DESCR,
+				       PD.FIELD_NAME AS DISTINCT_NAME,
+				       DECODE(B.DISTINCT_FIELD,
+				              'PERSON_ID',
+				              PD3.FIELD_NAME,
+				              NVL(PD2.FIELD_NAME, '')) AS DISTINCT_NAME_2ND,
+				       B.STAT_TYPE_CODE,
+				       STAT_TYPE.CODE_NAME AS STAT_TYPE_NAME,
+				       B.CPNY_ID,
+				       B.PA_MONTH_STR,
+				       B.GENERATE_TYPE_CODE,
+				       B.DEFAULT_VAL
+				  FROM PA_BONUS_PARAM_ITEM A,
+				       PA_BONUS_PARAM_ITEM_CONFIGURE B,
+				       PA_DISTINCT_LIST PD,
+				       PA_DISTINCT_LIST PD2,
+				       (SELECT T.FIELD_NAME
+				          FROM PA_DISTINCT_LIST T
+				         WHERE T.DISTINCT_FIELD = 'CHINESENAME') PD3,
+				       SY_CODE STAT_TYPE
+				 WHERE A.PARAM_NO = B.PARAM_NO
+				   AND B.DISTINCT_FIELD = PD.DISTINCT_FIELD
+				   AND B.DISTINCT_FIELD_2ND = PD2.DISTINCT_FIELD(+)
+				   AND B.STAT_TYPE_CODE = STAT_TYPE.CODE_ID(+)
+				   AND (B.CPNY_ID = #cpnyId:VARCHAR# OR B.CPNY_ID IS NULL)
+				   AND B.PA_MONTH_STR = #pamonth:VARCHAR#
+		]]>
+		
+		<isNotEmpty prepend="AND" property="configureNo">
+		<![CDATA[	 
+		 	B.CONFIGURE_NO = #configureNo:NUMERIC#
+	    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="statTypeCode">
+		<![CDATA[	 
+		 	B.STAT_TYPE_CODE = #statTypeCode:VARCHAR#
+	    ]]>
+		</isNotEmpty>
+		
+		<isEmpty property="param_no">
+			<isEmpty prepend="" property="statTypeCode">
+				<isNotEqual prepend="AND" property="cpnyId" compareValue="59000000">
+		   			  <![CDATA[	 
+						 	B.STAT_TYPE_CODE = 'C_12067_1330306'
+					  ]]>
+		        </isNotEqual>
+		        <isEqual prepend="AND" property="cpnyId" compareValue="59000000">
+		   			  <![CDATA[	 
+						 	B.STAT_TYPE_CODE = 'C_12067_1354182'
+					  ]]>
+		        </isEqual>
+			</isEmpty>
+
+			
+		</isEmpty>
+
+		<![CDATA[	     
+			   ORDER BY A.ORDER_NO
+		]]>	
+		
+	</select>
+	
+	<!-- retrieve ValidatePaBonusParamItemId -->
+	<select id="ValidatePaBonusParamItemId" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+			     SELECT COUNT(PB.PARAM_NO)
+			       FROM PA_BONUS_PARAM_ITEM PB
+                  WHERE (PB.PARAM_ID = #param_id:VARCHAR# 
+                     OR PB.PARAM_NAME = #param_name:VARCHAR# 
+                     OR INSTR(PB.PARAM_NAME,#param_name:VARCHAR#) = 1 
+                     OR INSTR(#param_name:VARCHAR#,PB.PARAM_NAME) = 1
+                     ) 
+                    AND PB.STAT_TYPE_CODE = #statTypeCode:VARCHAR#
+		]]>	
+		<isNotEmpty prepend="AND" property="param_no">
+			<![CDATA[	 
+			 	PB.PARAM_NO <> #param_no:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		
+	</select>
+	
+	<!-- insert Pa Bonus Param Item -->
+	<insert id="insertPaBonusParam" parameterClass="SimpleMap">
+		<![CDATA[
+			     INSERT INTO PA_BONUS_PARAM_ITEM PB 
+			      			   (PARAM_NO, PARAM_NAME, 
+			      			    DISTINCT_FIELD, DISTINCT_FIELD_2ND, 
+			      			    DATA_TYPE, DESCR, 
+			      			    PARAM_ID, STAT_TYPE_CODE,
+			      			    ORDER_NO,CPNY_ID)
+			     		VALUES (PA_BONUS_PARAM_ITEM_SEQ.NEXTVAL, #param_name:VARCHAR#, 
+			     				#distinct_field:VARCHAR#, #distinct_field_2nd:VARCHAR#, 
+			     				#data_type:VARCHAR#, #descr:VARCHAR#, 
+			     				#param_id:VARCHAR#, #statTypeCode:VARCHAR#,
+			     				(SELECT NVL(MAX(PA.ORDER_NO),2000) + 1 FROM PA_BONUS_PARAM_ITEM PA),#cpnyId:VARCHAR# )
+		]]>	
+		
+	</insert>
+	
+	<!-- update Pa Bonus Param Item -->
+	<update id="updatePaBonusParam" parameterClass="SimpleMap">
+		<![CDATA[
+			     UPDATE PA_BONUS_PARAM_ITEM PB SET  
+			     		 PARAM_NAME = #param_name:VARCHAR#,
+			     		 DISTINCT_FIELD = #distinct_field:VARCHAR#, 
+			     		 DISTINCT_FIELD_2ND = #distinct_field_2nd:VARCHAR#, 
+			     		 DATA_TYPE = #data_type:VARCHAR#, 
+			     		 DESCR = #descr:VARCHAR#, 
+			     		 PARAM_ID = #param_id:VARCHAR# ,
+			     		 STAT_TYPE_CODE = #statTypeCode:VARCHAR#
+			       WHERE PARAM_NO = #param_no:NUMERIC# 
+		]]>	
+		
+	</update>
+	
+	<!-- delete pa bonus param -->
+	<delete id="deletePaBonusParam" parameterClass="SimpleMap" >
+		<![CDATA[
+				   DELETE PA_BONUS_PARAM_ITEM PB WHERE PB.PARAM_NO = #param_no:NUMERIC# 
+		]]>
+	</delete>
+	
+	<!-- delete pa bonus param date -->
+	<delete id="deletePaBonusParamDate" parameterClass="SimpleMap" >
+		<![CDATA[
+				   DELETE PA_BONUS_PARAM_DATA PB WHERE PB.PARAM_NO = #param_no:NUMERIC# 
+		]]>
+	</delete>
+
+	<!-- retrieve RetrievePaBonusParamDataList -->
+	<select id="RetrievePaBonusParamDataList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			     SELECT PB.PARAM_DATA_NO,
+				        PB.PARAM_NO,
+				        PB.FIELD1_VALUE,
+				        PB.RETURN_VALUE,
+				        PB.FIELD2_VALUE,
+				        PB.START_MONTH,
+				        PB.SD_ED_VALUE,
+				        PB.END_MONTH,
+				        HR.EMPID,
+				        HR.CHINESENAME, 
+				        HR.EMPID, 
+				        HR.CHINESENAME
+				   FROM PA_BONUS_PARAM_DATA PB, HR_EMPLOYEE HR
+				  WHERE PB.FIELD1_VALUE = HR.PERSON_ID(+)
+				       AND PB.CPNY_ID=#cpnyId:VARCHAR#
+				   
+		]]>
+		
+		<isNotEmpty prepend="AND" property="configureNo">
+		<![CDATA[	 
+		 	PB.PARAM_NO = #configureNo:NUMERIC#
+	    ]]>
+	    </isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[	 
+		 	 EXISTS ( SELECT HD.DEPTID FROM HR_DEPARTMENT HD WHERE HD.DEPTID = HR.DEPTID START WITH DEPTID = #deptid:VARCHAR#
+				                CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+				    )
+	    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="key">
+		<![CDATA[	 
+		 	(
+		          UPPER(HR.EMPID) LIKE '%' || UPPER(#key:VARCHAR#) || '%'
+		       OR HR.CHINESENAME LIKE '%' || #key:VARCHAR# || '%'
+		       OR UPPER(HR.CHINESE_PINYIN) LIKE '%' || UPPER(#key:VARCHAR#) || '%'
+		       
+		    )
+	    ]]>
+		</isNotEmpty>
+		
+		<![CDATA[	 
+		 	 ORDER BY HR.EMPID
+	    ]]>
+		
+	</select>
+	
+	<!-- call PR_BONUS_PARAM_LIST  -->
+	<procedure id="callPrBonusParamList" parameterClass="SimpleMap" >
+		<![CDATA[				 
+			{call Pr_Param_List(#configureNo:VARCHAR#,#cpnyId:VARCHAR#,'bonus')}
+		]]>
+	</procedure>
+	
+	<!-- retrieve Retrieve Pa Bonus Param Data List -->
+	<select id="RetrievePaBonusParamDataForInsertList" parameterClass="SimpleMap" resultClass="SimpleMap" >
+		<![CDATA[
+			SELECT P.FIELD1,P.FIELD2 ,HR.EMPID 
+			  FROM PA_PARAM_DATA_LIST P,HR_EMPLOYEE HR 
+			 WHERE P.FIELD1 = HR.PERSON_ID
+			   AND P.CPNY_ID = #cpnyId:VARCHAR#
+		]]>
+		
+		<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[	 
+		 	 EXISTS ( SELECT HD.DEPTID FROM HR_DEPARTMENT HD WHERE HD.DEPTID = HR.DEPTID START WITH DEPTID = #deptid:VARCHAR#
+				                CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+				    )
+	    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="key">
+		<![CDATA[	 
+		 	(
+		          UPPER(HR.EMPID) LIKE '%' || UPPER(#key:VARCHAR#) || '%'
+		       OR HR.CHINESENAME LIKE '%' || #key:VARCHAR# || '%'
+		       OR UPPER(HR.CHINESE_PINYIN) LIKE '%' || UPPER(#key:VARCHAR#) || '%'
+		       
+		    )
+	    ]]>
+		</isNotEmpty>
+		
+		<![CDATA[	 
+		 	 ORDER BY HR.EMPID
+	    ]]>
+		
+	</select>
+	
+	<!-- insert Pa Bonus Param item -->
+	<insert id="insertPrBonusParamData" parameterClass="SimpleMap" >
+		<![CDATA[
+			INSERT INTO 
+				PA_BONUS_PARAM_DATA (
+					PARAM_DATA_NO,
+					PARAM_NO,
+					FIELD1_VALUE,
+					RETURN_VALUE,
+					FIELD2_VALUE,
+					START_MONTH,
+					END_MONTH,
+					SD_ED_VALUE,
+					CPNY_ID
+				)
+				VALUES(
+					PA_BONUS_PARAM_DATA_SEQ.NEXTVAL,
+					#param_no:NUMERIC#,
+					#field1:VARCHAR#,
+					#return_value:VARCHAR#,
+					#field2:VARCHAR#,
+					#startMonth:VARCHAR#,
+					#endMonth:VARCHAR#,
+					#sdEdValue:VARCHAR#,
+					#cpnyId:VARCHAR#
+				)
+			
+		]]>
+	</insert>
+	
+	<!-- retrieve Retrieve Pa Bonus Param Data List -->
+	<update id="updatePrBonusParamData" parameterClass="SimpleMap" >
+		<![CDATA[
+			UPDATE
+				PA_BONUS_PARAM_DATA SET 
+					RETURN_VALUE = #return_value:VARCHAR#,
+					START_MONTH = #startMonth:VARCHAR#,
+					END_MONTH = #endMonth:VARCHAR#,
+					SD_ED_VALUE = #sdEdValue:VARCHAR#
+			WHERE PARAM_DATA_NO = #param_data_no:NUMERIC#
+		]]>
+	</update>
+	
+	<!-- delete Pa Bonus Param Data -->
+	<delete id="deletePrBonusParamData" parameterClass="SimpleMap" >
+		<![CDATA[
+			DELETE PA_BONUS_PARAM_DATA 
+		]]>	
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="configureNo">
+				PARAM_NO = #configureNo:NUMERIC#
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="param_data_no">
+				PARAM_DATA_NO = #param_data_no:NUMERIC#
+			</isNotEmpty>
+		</dynamic>
+	</delete>
+	
+	<!-- retrieve PaBonusItemList -->
+	<select id="RetrievePaBonusItemList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			     SELECT PB.ITEM_NO,
+				        PB.ITEM_NAME,
+				        PB.ITEM_TYPE,
+				        ITEM_TYPE_CODE.CODE_NAME AS ITEM_TYPE_NAME,
+				        PB.ITEM_ID,
+				        PB.DESCR,
+				        PB.CALCU_ORDER,
+				        PB.PRICISION,
+				        PB.CARRY_BIT,
+				        PB.DATATYPE,
+				        DATA_TYPE_CODE.CODE_NAME AS DATATYPE_NAME,
+				        PB.CPNY_ID,
+                        NVL(CPNY.CODE_NAME,'公共') CPNYNAME,
+                        PB.SUM_MAINTAIN_FLAG
+				   FROM PA_BONUS_ITEM PB , 
+				   		SY_CODE ITEM_TYPE_CODE ,
+				   		SY_CODE DATA_TYPE_CODE,
+				   		SY_CODE CPNY
+				  WHERE PB.ITEM_TYPE= ITEM_TYPE_CODE.CODE_ID(+)
+				    AND PB.DATATYPE= DATA_TYPE_CODE.CODE_ID(+)
+				    AND PB.CPNY_ID=CPNY.CODE_ID(+)
+				    AND (PB.CPNY_ID=#cpnyId:VARCHAR# OR PB.CPNY_ID IS NULL)
+		]]>
+		
+
+		<isNotEmpty prepend="AND" property="item_no">
+			PB.ITEM_NO = #item_no:NUMERIC# 
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="search">
+			(PB.ITEM_NAME LIKE '%' ||  #search:VARCHAR# || '%' OR PB.ITEM_ID LIKE '%' || UPPER(#search:VARCHAR#) || '%')
+		</isNotEmpty>
+
+		<![CDATA[	     
+			   ORDER BY PB.CALCU_ORDER
+		]]>	
+		
+	</select>
+	
+	<!-- retrieve PaBonusItemListCnt -->
+	<select id="RetrievePaBonusItemListCnt" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+			     SELECT COUNT(PB.ITEM_NO)
+				   FROM PA_BONUS_ITEM PB , 
+				   		SY_CODE ITEM_TYPE_CODE ,
+				   		SY_CODE DATA_TYPE_CODE,
+				   		SY_CODE CPNY
+				  WHERE PB.ITEM_TYPE= ITEM_TYPE_CODE.CODE_ID(+)
+				    AND PB.DATATYPE= DATA_TYPE_CODE.CODE_ID(+)
+				     AND PB.CPNY_ID=CPNY.CODE_ID(+)
+				    AND (PB.CPNY_ID=#cpnyId:VARCHAR# OR PB.CPNY_ID IS NULL)
+		]]>
+		
+		<isNotEmpty prepend="AND" property="search">
+			(PB.ITEM_NAME LIKE '%' ||  #search:VARCHAR# || '%' OR PB.ITEM_ID LIKE '%' || UPPER(#search:VARCHAR#) || '%')
+		</isNotEmpty>
+
+		
+	</select>
+	
+	<!-- Validate Pa Bonus Item Id -->
+	<select id="ValidatePaBonusItemId" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+			     SELECT COUNT(PB.ITEM_NO)
+			       FROM PA_BONUS_ITEM PB
+                  WHERE (PB.ITEM_ID = #item_id:VARCHAR#
+                     OR PB.ITEM_NAME = #item_name:VARCHAR# 
+                     OR INSTR(PB.ITEM_NAME, #item_name:VARCHAR#) = 1 
+                     OR INSTR(#item_name:VARCHAR#, PB.ITEM_NAME) = 1)
+		]]>	
+		<isNotEmpty prepend="AND" property="item_no">
+			<![CDATA[	 
+			 	PB.ITEM_NO <> #item_no:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		
+	</select>
+	
+	<!-- insert Pa Bonus item -->
+	<insert id="insertPaBonusItem" parameterClass="SimpleMap" >
+		<![CDATA[
+			INSERT INTO 
+				PA_BONUS_ITEM (
+					ITEM_NO ,
+					ITEM_NAME ,
+					DESCR ,
+					DATATYPE ,
+					CALCU_ORDER ,
+					ITEM_TYPE ,
+					PRICISION ,
+					CARRY_BIT ,
+					ITEM_ID,
+					CPNY_ID,
+					SUM_MAINTAIN_FLAG
+				)
+				VALUES(
+					PA_BONUS_ITEM_SEQ.NEXTVAL,
+					#item_name:VARCHAR#,
+					#descr:VARCHAR#,
+					#datatype:VARCHAR#,
+					NVL((SELECT MAX(CALCU_ORDER) FROM PA_BONUS_ITEM),3000) + 1,
+					#item_type:VARCHAR#,
+					#pricision:NUMERIC#,
+					#carry_bit:NUMERIC#,
+					#item_id:VARCHAR#,
+					#cpnyId:VARCHAR#,
+					#sumMainTainFlag:NUMERIC#
+				)
+			
+		]]>
+	</insert>
+	
+	<!-- update Pa Bonus item -->
+	<update id="updatePaBonusItem" parameterClass="SimpleMap" >
+		<![CDATA[
+			UPDATE PA_BONUS_ITEM SET
+					ITEM_NAME = #item_name:VARCHAR#,
+					DESCR = #descr:VARCHAR#,
+					DATATYPE = #datatype:VARCHAR#,
+					ITEM_TYPE = #item_type:VARCHAR#,
+					PRICISION = #pricision:NUMERIC#,
+					CARRY_BIT = #carry_bit:NUMERIC# ,
+					ITEM_ID = #item_id:VARCHAR#,
+					SUM_MAINTAIN_FLAG = #sumMainTainFlag:NUMERIC#
+				WHERE ITEM_NO = #item_no:NUMERIC#		
+		]]>
+	</update>
+	
+	<!-- delete pa bonus item -->
+	<delete id="deletePaBonusItem" parameterClass="SimpleMap" >
+		<![CDATA[
+				   DELETE PA_BONUS_ITEM PB WHERE PB.ITEM_NO = #item_no:NUMERIC# 
+		]]>
+	</delete>
+	
+	<!-- delete pa bonus formular date -->
+	<delete id="deletePaBonusFormular" parameterClass="SimpleMap" >
+		<![CDATA[
+				   DELETE PA_BONUS_FORMULAR PB
+		]]>
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="item_no">
+				PB.PA_ITEM_NO = #item_no:NUMERIC# 
+			</isNotEmpty>
+			
+			<isNotEmpty prepend="AND" property="formular_no">
+				PB.FORMULAR_NO = #formular_no:NUMERIC# 
+			</isNotEmpty>
+		</dynamic>
+	</delete>
+	
+	<!-- retrieve PaBonusFormularList -->
+	<select id="RetrievePaBonusFormularList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			     SELECT PB.FORMULAR_NO,
+				        PB.PA_ITEM_NO,
+				        PB.CONDITION,
+				        PB.FORMULAR,
+				        PB.CONDITION_SEQ,
+				        PB.CONDITION_CN,
+				        PB.FORMULAR_CN
+				   FROM PA_BONUS_FORMULAR PB
+				   WHERE PB.CPNY_ID=#cpnyId:VARCHAR#
+		]]>		
+			<isNotEmpty prepend="AND" property="pa_item_no">
+				PB.PA_ITEM_NO = #pa_item_no:NUMERIC# 
+			</isNotEmpty>
+			
+			<isNotEmpty prepend="AND" property="formular_no">
+				PB.FORMULAR_NO = #formular_no:NUMERIC# 
+			</isNotEmpty>		
+
+		<![CDATA[	     
+			   ORDER BY PB.CONDITION_SEQ DESC
+		]]>	
+		
+	</select>
+	
+	<!-- insert Pa Bonus formular -->
+	<insert id="insertPaBonusFormular" parameterClass="SimpleMap" >
+		<![CDATA[
+			INSERT INTO 
+				PA_BONUS_FORMULAR (
+					FORMULAR_NO,
+					PA_ITEM_NO,
+					CONDITION,
+					FORMULAR,
+					CONDITION_SEQ,
+					CONDITION_CN,
+					FORMULAR_CN,
+					CPNY_ID
+				)
+				VALUES(
+					PA_BONUS_FORMULAR_SEQ.NEXTVAL,
+					#pa_item_no:NUMERIC#,
+					#condition:VARCHAR#,
+					#formular:VARCHAR#,
+					NVL((SELECT MAX(CONDITION_SEQ) FROM PA_BONUS_FORMULAR WHERE PA_ITEM_NO = #pa_item_no:NUMERIC# AND CPNY_ID = #cpnyId:VARCHAR#),0) + 1,
+					#condition_cn:VARCHAR#,
+					#formular_cn:VARCHAR#,
+					#cpnyId:VARCHAR#
+				)
+			
+		]]>
+	</insert>
+	
+	<!-- update Pa Bonus formular -->
+	<insert id="updatePaBonusFormular" parameterClass="SimpleMap" >
+		<![CDATA[
+			UPDATE 
+				PA_BONUS_FORMULAR SET
+					CONDITION = #condition:VARCHAR#,
+					FORMULAR = #formular:VARCHAR#,
+					CONDITION_CN = #condition_cn:VARCHAR#,
+					FORMULAR_CN = #formular_cn:VARCHAR#
+				WHERE FORMULAR_NO = #formular_no:NUMERIC#
+		]]>
+	</insert>
+	
+	<!--retrieve Pa Bonus item calcu_order -->
+	<select id="RetrievePaBonusItemCaluOrder" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+			     SELECT CALCU_ORDER
+     	  		FROM PA_BONUS_ITEM
+    		   WHERE ITEM_NO = #item_no:NUMERIC#
+		]]>
+		
+	</select>
+	
+	<!-- update Pa Bonus item calcu_order do up data -->
+	<select id="UpdatePaBonusItemCaluOrderUpData" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			     SELECT A.ITEM_NO, A.CALCU_ORDER, B.ITEM_NO AS ITEM_NO_OLD, B.CALCU_ORDER AS CALCU_ORDER_OLD
+				   FROM (SELECT ITEM_NO, CALCU_ORDER FROM PA_BONUS_ITEM WHERE ITEM_NO = #item_no:NUMERIC#) A,
+				        (SELECT ITEM_NO, CALCU_ORDER FROM PA_BONUS_ITEM ) B
+				  WHERE A.CALCU_ORDER > B.CALCU_ORDER
+				  ORDER BY B.CALCU_ORDER DESC
+		]]>
+	</select>
+	
+	<!-- update Pa Bonus item calcu_order do down date -->
+	<select id="UpdatePaBonusItemCaluOrderDownData" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			     SELECT A.ITEM_NO, A.CALCU_ORDER, B.ITEM_NO AS ITEM_NO_OLD, B.CALCU_ORDER AS CALCU_ORDER_OLD
+				   FROM (SELECT ITEM_NO, CALCU_ORDER FROM PA_BONUS_ITEM WHERE ITEM_NO = #item_no:NUMERIC#) A,
+				        (SELECT ITEM_NO, CALCU_ORDER FROM PA_BONUS_ITEM ) B
+				  WHERE A.CALCU_ORDER < B.CALCU_ORDER
+				  ORDER BY B.CALCU_ORDER 
+		]]>
+	</select>
+	
+	<!-- update Pa Bonus item calcu_order do -->
+	<update id="UpdatePaBonusItemCaluOrder" parameterClass="SimpleMap" >
+		<![CDATA[
+			     UPDATE PA_BONUS_ITEM SET CALCU_ORDER = #calcu_order:NUMERIC#
+       					WHERE ITEM_NO = #item_no:NUMERIC#
+		]]>
+	</update>
+	
+	
+	<!-- call PA_BONUS_CONFIRM -->
+	<procedure id="callPaBonusConfirm" parameterClass="SimpleMap" >
+		<![CDATA[
+			{call PA_BONUS_CONFIRM(#message,jdbcType=VARCHAR,mode=OUT#)}
+		]]>
+		
+	</procedure>
+	
+	 <!-- retrieve export pa bonus Param Data  -->
+	 <select id="retrieveExportPaBonusParamDataList" parameterClass="SimpleMap" resultClass="SimpleMap" >
+		<![CDATA[	
+			     SELECT PA_BONUS_PARAM_DATA.FIELD1_VALUE PERSON_ID,
+			            HR.EMPID,
+			     		HR.CHINESENAME,
+			     		HD.DEPTNAME,
+                		PARAM_DATA_NO,
+                		PARAM_NO,
+                		FIELD1_VALUE ,
+                		FIELD2_VALUE ,
+                		RETURN_VALUE ,
+                		START_MONTH ,
+                		END_MONTH ,
+                		SD_ED_VALUE
+                   FROM PA_BONUS_PARAM_DATA,
+                   		HR_EMPLOYEE HR,
+                   		HR_DEPARTMENT HD
+                  WHERE PARAM_NO = #configureNo:NUMERIC# 
+                  	AND FIELD1_VALUE = HR.PERSON_ID(+)
+                  	AND HR.DEPTID = HD.DEPTID
+                  	AND PA_BONUS_PARAM_DATA.CPNY_ID=#cpnyId:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="deptid">
+			<![CDATA[				
+				 EXISTS( SELECT HD.DEPTID FROM HR_DEPARTMENT HD WHERE HR.DEPTID = HD.DEPTID  START WITH DEPTID = #deptid:VARCHAR2# CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID ) 
+		  ]]>	 
+	   </isNotEmpty>
+	   <isNotEmpty prepend="AND" property="key">
+			<![CDATA[				
+				 (HR.CHINESENAME LIKE '%' || #key:VARCHAR2# || '%' OR UPPER(HR.EMPID) LIKE '%' || UPPER(#key:VARCHAR2#) || '%' OR UPPER(HR.CHINESE_PINYIN) LIKE '%' || UPPER(#key:VARCHAR2#) || '%')
+		  ]]>	 
+	   </isNotEmpty>	        
+	 </select>
+	 
+	 <!-- call PR_BONUS_PARAM_Initial  -->
+	<procedure id="callPrBonusParamInitial" parameterClass="SimpleMap" >
+		<![CDATA[
+			{call Pr_Bonus_Param_Initial(#pamonth:VARCHAR#,#statTypeCode:VARCHAR#,#cpnyId:VARCHAR#)}
+		]]>
+	</procedure>
+	
+</sqlMap>

@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="ga.visit">
+	<!-- emp record list -->
+	<select id="empAllList" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[
+			  SELECT  HR_EMPLOYEE.EMPID,HR_EMPLOYEE.CHINESENAME,HR_DEPARTMENT.DEPTNAME
+				 FROM HR_EMPLOYEE,HR_DEPARTMENT
+				 WHERE HR_EMPLOYEE.DEPTID = HR_DEPARTMENT.DEPTID
+				   AND HR_EMPLOYEE.ACTIVITY = 1
+	  	]]>
+
+		<isNotEmpty prepend="AND" property="CONDITION">
+			<![CDATA[
+		 		 (	
+					HR_EMPLOYEE.CHINESENAME 		LIKE #CONDITION:VARCHAR#||'%'
+					OR HR_EMPLOYEE.EMPID 			LIKE #CONDITION:VARCHAR#||'%'
+					OR HR_DEPARTMENT.DEPTNAME		LIKE #CONDITION:VARCHAR#||'%'
+				)	 		  	 	
+	    ]]>
+		</isNotEmpty>
+
+		<![CDATA[
+			ORDER BY HR_DEPARTMENT.DEPTID
+		]]>
+	</select>
+
+
+	<!-- visit record list -->
+	<select id="visitRecordList" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[
+			  SELECT  ID,VISITOR_NAME,VISITOR_COMPANY,VISITOR_IDCARD,VISITOR_AUTO,VISITED_EMPID,VISITED_NAME,VISIT_REASON,
+			  		  TO_CHAR(IN_TIME,'YYYY-MM-DD HH24:MI:SS') AS IN_TIME,TO_CHAR(OUT_TIME,'YYYY-MM-DD HH24:MI:SS') AS OUT_TIME,
+			  		  OUT_CONFIRM,OUT_CARDID,BRIEF,OPERATION_USER
+				 FROM GA_VISIT
+				 WHERE 1=1
+	  	]]>
+
+		<isNotEmpty prepend="AND" property="in_time">
+			<![CDATA[
+		 		 (	
+					IN_TIME >= TO_DATE(#in_time#,'YYYY-MM-DD HH24:MI:SS')
+				)	 		  	 	
+	    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="visitor_name">
+			<![CDATA[
+		 		 (	
+					VISITOR_NAME LIKE #visitor_name#||'%'
+				)	 		  	 	
+	    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="visited_name">
+			<![CDATA[
+		 		 (	
+					VISITED_NAME LIKE #visited_name#||'%'
+				)	 		  	 	
+	    ]]>
+		</isNotEmpty>
+
+		<![CDATA[
+			ORDER BY OUT_TIME DESC,IN_TIME DESC
+		]]>
+	</select>
+
+	<!-- visit records -->
+	<select id="visitRecordListCount" parameterClass="SimpleMap"
+		resultClass="int">
+		<![CDATA[
+			  SELECT  COUNT(*)
+				 FROM GA_VISIT
+	  	]]>
+	</select>
+
+	<insert id="visitRecordAdd" parameterClass="SimpleMap">
+		<![CDATA[	
+	
+	
+	 	INSERT INTO GA_VISIT
+					( ID,
+					  VISITOR_NAME,
+					  VISITOR_COMPANY,
+					  VISITOR_IDCARD,
+					  VISITOR_AUTO,
+					  VISITED_EMPID,
+					  VISITED_NAME,
+					  VISIT_REASON,
+					  IN_TIME,
+					  INSERT_USER,
+					  INSERT_TIME
+					  )
+			 VALUES( GA_VISIT_SEQ.NEXTVAL,
+			  		 #VISITOR_NAME#,
+			  		 #VISITOR_COMPANY#,
+			  		 #VISITOR_IDCARD#,
+			  		 #VISITOR_AUTO#,
+			  		 #VISITED_EMPID#,
+			  		 #VISITED_NAME#,
+			  		 #VISIT_REASON#,
+					 TO_DATE(#IN_TIME#,'YYYY-MM-DD HH24:MI:SS'),
+					 #INSERT_USER#,
+					 TO_DATE(#INSERT_TIME#,'YYYY-MM-DD HH24:MI:SS'))
+	  ]]>
+	</insert>
+
+	<update id="visitRecordUpdate" parameterClass="SimpleMap">
+		<![CDATA[
+		  UPDATE GA_VISIT
+		     SET VISITOR_NAME    = #VISITOR_NAME#,
+			 	 VISITOR_COMPANY = #VISITOR_COMPANY#,
+				 VISITOR_IDCARD = VISITOR_IDCARD,
+				 VISITOR_AUTO = #VISITOR_AUTO#,
+				 VISITED_EMPID = #VISITED_EMPID#,
+				 VISITED_NAME = #VISITED_NAME#,
+				 VISIT_REASON = #VISIT_REASON#,
+				 IN_TIME = TO_DATE(#IN_TIME#,'YYYY-MM-DD HH24:MI:SS'),
+				 OUT_TIME = TO_DATE(#OUT_TIME#,'YYYY-MM-DD HH24:MI:SS'),
+				 OUT_CONFIRM = #OUT_CONFIRM#,
+				 OUT_CARDID = #OUT_CARDID#,
+				 BRIEF = #BRIEF#,
+				 UPDATE_USER = #UPDATE_USER#,
+				 UPDATE_TIME = SYSDATE,
+				 OPERATION_USER = #OPERATION_USER# 
+		   WHERE ID = #ID# 
+ 	]]>
+	</update>
+
+	<select id="cardApplicationCount" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+			SELECT count(*) 
+			  FROM ga_card_application gca, 
+			  	   hr_department hrd , 
+             	   sy_code s              	 
+			  where gca.card_det=hrd.deptid(+) 		      
+		        and gca.active=1
+		        and s.code_id = gca.card_food_type		        
+	  	]]>
+	  	<isNotEmpty prepend="AND" property="deptID">
+			<![CDATA[
+		 		 gca.card_det = #deptID:VARCHAR#
+	   	 	]]>
+		</isNotEmpty>
+	  	<isNotEmpty prepend="AND" property="CardId">
+			<![CDATA[
+				gca.card_no = #CardId:VARCHAR#
+	   	 	]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CardNo">
+			<![CDATA[
+				gca.card_no_id = #CardNo:VARCHAR#
+	   	 	]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="startDate">
+			<![CDATA[
+				 #startDate:VARCHAR# <= to_char(gca.create_date,'yyyy-mm-dd')
+	   	 	]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="endDate">
+			<![CDATA[
+				 #endDate:VARCHAR# >= to_char(gca.create_date,'yyyy-mm-dd')
+	   	 	]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="cardStatus">
+			<![CDATA[
+				 gca.eatery_card_status = #cardStatus:VARCHAR#
+	   	 	]]>
+		</isNotEmpty>
+	    <isEmpty prepend="AND" property="cardStatus">
+	    <![CDATA[
+		  (gca.eatery_card_status = 'Not_Issue' or gca.eatery_card_status = 'Not_Return')		
+		]]>
+		</isEmpty>
+	</select>
+
+	<select id="cardApplication" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[
+		 		SELECT gca.card_used,
+				       gca.card_member,
+				       gca.card_det,
+				       hrd.deptname,
+				       hr.chinesename card_dicc,
+				       gca.card_startdate,
+				       gca.card_endoridate,
+				       gca.card_enddate,
+				       gca.remark,
+				       gca.card_id,
+				       gca.create_date,
+				       gca.active,
+				       gca.eatery_card_status,
+                       s1.code_name as eatery_card_status_name,
+				       gca.card_jobtitle,
+				       gca.card_company,
+				       gca.card_no,
+				       gca.card_no_id,
+				       gca.card_eat_type,
+				       s.code_name as card_food_type
+				  FROM ga_card_application        gca,
+				       hr_department              hrd,
+				       sy_code                    s,				      
+                       sy_code                    s1,
+                       hr_employee                hr
+				 where gca.card_det = hrd.deptid(+)				   
+				   and gca.active = 1
+				   and s.code_id = gca.card_food_type
+           		   and s1.code_id = gca.eatery_card_status  
+           		   and gca.card_dicc=hr.person_id(+)         		   
+           
+	  	]]>
+	  	<isNotEmpty prepend="AND" property="deptID">
+			<![CDATA[
+		 		 gca.card_det = #deptID:VARCHAR#
+	   	 	]]>
+		</isNotEmpty>
+	  	<isNotEmpty prepend="AND" property="CardId">
+			<![CDATA[
+				gca.card_no = #CardId:VARCHAR#
+	   	 	]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="CardNo">
+			<![CDATA[
+				gca.card_no_id = #CardNo:VARCHAR#
+	   	 	]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="startDate">
+			<![CDATA[
+				 #startDate:VARCHAR# <= to_char(gca.create_date,'yyyy-mm-dd')
+	   	 	]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="endDate">
+			<![CDATA[
+				 #endDate:VARCHAR# >= to_char(gca.create_date,'yyyy-mm-dd')
+	   	 	]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="cardStatus">
+			<![CDATA[
+				 gca.eatery_card_status = #cardStatus:VARCHAR#
+	   	 	]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="cardStatus">
+	    <![CDATA[
+		   (gca.eatery_card_status = 'Not_Issue' or gca.eatery_card_status = 'Not_Return')		
+		]]>
+		</isEmpty>
+			<![CDATA[
+				 order by gca.create_date desc,s1.orderno
+	   	 	]]>
+	</select>
+
+	<select id="getAllCardStatus" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			  	select * from sy_code s where s.parent_code = 'eatery_card_status'
+	  	]]>
+	</select>
+	
+	<select id="getCardEndDate" resultClass="SimpleMap">
+		<![CDATA[
+			  	SELECT gca.card_id, gca.card_enddate
+				  FROM ga_card_application gca, hr_department hrd, sy_code s
+				 where gca.card_det = hrd.deptid(+)
+				   and gca.active = 1
+				   and s.code_id = gca.card_food_type
+				   and gca.eatery_card_status = 'Delivered'
+                   and gca.card_enddate=to_char(SYSDATE,'YYYY-MM-DD')
+	  	]]>
+	</select>
+	
+	<update id="updateCardStatus" parameterClass="SimpleMap">
+		<![CDATA[
+		  		update ga_card_application t set 
+		  				t.eatery_card_status = 'Not_Return',
+		  		 		t.card_status_update_by = #loginEmpId:VARCHAR#,
+		  		 		t.card_status_update_date = SYSDATE
+		  		where t.card_id =#cardId:NUMERIC#
+ 		]]>
+	</update>
+	
+	<select id="getFirstAffirmEmail" parameterClass="SimpleMap" resultClass="SimpleMap" >
+		<![CDATA[
+			  	SELECT * FROM (
+			 	SELECT SY_AFFIRM_RELATION_TB.AFFIRMOR_ID,
+			       HR_AFFIRMOR.CHINESENAME AFFIRMOR_NAME,
+			       HR_AFFIRMOR.Chinese_Pinyin,
+			       HR_AFFIRMOR.KOREANNAME,
+			       SY_AFFIRM_RELATION_TB.AFFIRM_LEVEL,
+       			   HR_EMPLOYEE.EMAIL
+			  FROM SY_AFFIRM_RELATION_TB, HR_EMPLOYEE, HR_EMPLOYEE HR_AFFIRMOR
+			 WHERE SY_AFFIRM_RELATION_TB.AFFIRM_OBJECT = HR_EMPLOYEE.EMPID
+			   AND SY_AFFIRM_RELATION_TB.AFFIRMOR_ID = HR_AFFIRMOR.EMPID
+			   AND SY_AFFIRM_RELATION_TB.AFFIRM_TYPE_ID = 'CARD_APPLICATION'
+			   AND HR_EMPLOYEE.EMPID = #adminId:VARCHAR#
+			 ORDER BY AFFIRM_LEVEL
+			  				)
+				WHERE ROWNUM = 1
+	  	]]>
+	</select>
+	
+	<select id="getFirstAffirmEmail1" parameterClass="SimpleMap" resultClass="SimpleMap" >
+		<![CDATA[
+			  	SELECT * FROM (
+			 	SELECT SY_AFFIRM_RELATION_TB.AFFIRMOR_ID,
+			        HR_AFFIRMOR.CHINESENAME AFFIRMOR_NAME,
+			        HR_AFFIRMOR.Chinese_Pinyin,
+			        HR_AFFIRMOR.KOREANNAME,
+			        SY_AFFIRM_RELATION_TB.AFFIRM_LEVEL,
+       				HR_EMPLOYEE.EMAIL
+			   FROM SY_AFFIRM_RELATION_TB, HR_EMPLOYEE, HR_EMPLOYEE HR_AFFIRMOR
+			  WHERE SY_AFFIRM_RELATION_TB.AFFIRM_OBJECT = HR_EMPLOYEE.DEPTID
+			    AND SY_AFFIRM_RELATION_TB.AFFIRMOR_ID = HR_AFFIRMOR.EMPID
+			    AND SY_AFFIRM_RELATION_TB.AFFIRM_TYPE_ID = 'CARD_APPLICATION'
+			    AND HR_EMPLOYEE.EMPID = #adminId:VARCHAR#
+			  ORDER BY AFFIRM_LEVEL
+			  				)
+				WHERE ROWNUM = 1
+	  	]]>
+	</select>
+	<insert id="AddMaintenance" parameterClass="SimpleMap">
+	<![CDATA[
+		insert into GA_TROUBLE_MANGER (ID,DRIVER,STARTDATE,STATE,SITE,CAUSE,USERSCOUNT,DEPTNAME,ESTABLISH,IN_NAME,
+		O_NAME,IN_SEX,O_SEX,IN_JOB,O_JOB,IN_ADDER,O_ADDER,IN_DEL,O_DEL,
+		IN_COM,O_COM,IN_YEAR,O_YEAR,IN_NUM,O_NUM,IN_DRIVERNUM,O_DRIVERNUM,MOME,cpny_id) 
+		values (GA_TROUBLE_MANGER_SEQ.NEXTVAL,#DRIVER:varchar#,to_DATE(#START:DATE#,'YYYY-MM-DD HH24:MI'),#STATE:VARCHAR#,#SITE:VARCHAR#,#CAUSE:VARCHAR#,#USERSCOUNT:VARCHAR#,#DEPTNAME:VARCHAR#,#ESTABLISH:VARCHAR#,#IN_NAME:VARCHAR#,
+		#O_NAME:VARCHAR#,#IN_SEX:VARCHAR#,#O_SEX:VARCHAR#,#IN_JOB:VARCHAR#,#O_JOB:VARCHAR#,#IN_ADDER:VARCHAR#,#O_ADDER:VARCHAR#,#IN_DEL:VARCHAR#,#O_DEL:VARCHAR#,
+		#IN_COM:VARCHAR#,#O_COM:VARCHAR#,#IN_YEAR:VARCHAR#,#O_YEAR:VARCHAR#,#IN_NUM:VARCHAR#,#O_NUM:VARCHAR#,#IN_DRIVERNUM:VARCHAR#,#O_DRIVERNUM:VARCHAR#,#MOME:VARCHAR#,#cpny_id:varchar#)
+	
+	]]>
+	</insert>
+	<update id="UpdatevoitureManger" parameterClass="SimpleMap">
+		<![CDATA[
+		update GA_TROUBLE_MANGER set DRIVER = #DRIVER:varchar#, STARTDATE = to_DATE(#START:DATE#,'YYYY-MM-DD HH24:MI'),STATE = #STATE:VARCHAR#,SITE = #SITE:VARCHAR#,
+		CAUSE = #CAUSE:VARCHAR#,USERSCOUNT = #USERSCOUNT:number#,DEPTNAME = #DEPTNAME:VARCHAR#,ESTABLISH = #ESTABLISH:VARCHAR#,IN_NAME = #IN_NAME:VARCHAR#,
+		O_NAME = #O_NAME:VARCHAR#,IN_SEX = #IN_SEX:VARCHAR#,O_SEX = #O_SEX:VARCHAR#,IN_JOB = #IN_JOB:VARCHAR#,O_JOB = #O_JOB:VARCHAR#,IN_ADDER = #IN_ADDER:VARCHAR#,
+		O_ADDER = #O_ADDER:VARCHAR#,IN_DEL = #IN_DEL:VARCHAR#,O_DEL = #O_DEL:VARCHAR#,IN_COM = #IN_COM:VARCHAR#,O_COM = #O_COM:VARCHAR#,IN_YEAR = #IN_YEAR:VARCHAR#,
+		O_YEAR = #O_YEAR:VARCHAR#,IN_NUM = #IN_NUM:VARCHAR#,O_NUM = #O_NUM:VARCHAR#,IN_DRIVERNUM = #IN_DRIVERNUM:VARCHAR#,O_DRIVERNUM = #O_DRIVERNUM:VARCHAR#,
+		MOME = #MOME:VARCHAR# where ID=#id:varchar#
+	]]>
+	</update>
+	
+	<select id="troubleManger" parameterClass="SimpleMap" resultClass="SimpleMap" >
+	<![CDATA[
+		 select ID,to_char(STARTDATE,'YYYY-MM-DD HH24:MI') as STARTDATE,STATE,SITE,CAUSE from GA_TROUBLE_MANGER where cpny_id=#cpny_id:varchar#
+	  	]]>
+	</select>
+	
+	<select id="troubleMangerInt" parameterClass="SimpleMap" resultClass="int" >
+	<![CDATA[
+		 select count(*) from GA_TROUBLE_MANGER where cpny_id=#cpny_id:varchar#
+	  	]]>
+	</select>
+	<select id="UpdateViewVoitureManger" parameterClass="SimpleMap" resultClass="SimpleMap" >
+		<![CDATA[
+		 select r.ID,r.DRIVER,r.USERSCOUNT,r.DEPTNAME,r.DEPTNAME,to_char(r.STARTDATE,'YYYY-MM-DDHH24:MI') as STARTDATE,
+		        r.SITE,r.CAUSE,r.STATE,r.ESTABLISH,r.IN_NAME,r.O_NAME,r.IN_SEX,r.O_SEX,r.IN_JOB,r.O_JOB,r.IN_ADDER,r.O_ADDER,r.IN_DEL,
+		        r.O_DEL,r.IN_COM,r.O_COM,r.IN_YEAR,r.O_YEAR,r.IN_NUM,r.O_NUM,r.IN_DRIVERNUM,r.O_DRIVERNUM,r.IN_PHO,
+		        r.O_PHO,r.MOME,r.FILE1,t.deptname AS deptname1 from GA_TROUBLE_MANGER r,hr_department t where ID=#id:varchar#
+	  	]]>
+	</select>
+</sqlMap>

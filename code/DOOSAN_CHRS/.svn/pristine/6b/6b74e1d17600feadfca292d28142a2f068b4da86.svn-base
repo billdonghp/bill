@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<navigation-mapper>
+	<!--   登录认证   -->
+	<operation name="checkLogin">
+		<command>com.ait.api.cmd.CheckLoginCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<!--   工人登录认证   -->
+	<operation name="checkLoginForWorker">
+		<command>com.ait.api.cmd.CheckLoginForWorkerCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<!--   获取徽章   -->
+	<operation name="badges">
+		<command>com.ait.api.cmd.BadgesCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<!--   修改密码   -->
+	<operation name="modifyPassword">
+		<command>com.ait.api.cmd.ModifyPasswordCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<!--   重置密码   -->
+	<operation name="resetPassword">
+		<command>com.ait.api.cmd.ResetPasswordCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<!--   获取账号信息  -->
+	<operation name="getLoginInfo">
+		<command>com.ait.api.cmd.GetLoginInfoCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<!--   获取代码信息  -->
+	<operation name="getCodeInfo">
+		<command>com.ait.api.cmd.GetCodeInfoCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<!--   申请信息查询   -->
+	<operation name="applyInfo">
+		<command>com.ait.api.cmd.ApplyInfoCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<!--   申请处理   -->
+	<operation name="applySeal">
+		<command>com.ait.api.cmd.ApplySealCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<!--  快件申请处理   -->
+	<operation name="applyExpress">
+		<command>com.ait.api.cmd.ApplyExpressCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<!--   审批信息查询   -->
+	<operation name="affirmInfo">
+		<command>com.ait.api.cmd.AffirmInfoCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<!--   审批信息查询   -->
+	<operation name="affirmEvsDept">
+		<command>com.ait.api.cmd.AffirmEvsDeptCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<!--   申请处理   -->
+	<operation name="affirm">
+		<command>com.ait.api.cmd.AffirmCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<!--   工资信息查询   -->
+	<operation name="paInfo">
+		<command>com.ait.api.cmd.PaInfoCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<!--   获取用户信息   -->
+	<operation name="userInfo">
+		<command>com.ait.api.cmd.UserInfoCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<!--   获取用户列表   -->
+	<operation name="searchEmployeeCmd">
+		<command>com.ait.api.cmd.SearchEmployeeCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<!--   获取快递信息   -->
+	<operation name="orderTraces">
+		<command>com.ait.api.cmd.OrderTracesCmd</command>
+		<return-url></return-url>
+	</operation>
+</navigation-mapper>

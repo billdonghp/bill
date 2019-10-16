@@ -1,0 +1,845 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="kpa.report">
+	
+	<!-- retrieve pa detail dept list -->
+	<select id="retrievePaDetail_DeptList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			     SELECT HD.DEPTID, HD.DEPTNAME, HD.DEPT_EN_NAME, HD.DEPT_LEVEL,HD.DEPT_KOR_NAME 
+			       FROM HR_DEPARTMENT HD 
+				  WHERE NVL(HD.DATE_CREATED,TO_DATE('2007-01-01','YYYY-MM-DD')) <= ADD_MONTHS(TO_DATE(#PaMonth#,'YYYYMM'),1) -1  
+				    AND NVL(HD.DATE_ENDED,  TO_DATE('9999-01-01','YYYY-MM-DD')) >= TO_DATE(#PaMonth#,'YYYYMM')  
+				    AND HD.DEPT_LEVEL = #level#
+		     START WITH DEPTID = #dept# CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+		]]>	
+	
+	</select>
+	
+	<!-- retrieve pa detail dept list by parent_dept_id-->
+	<select id="retrievePaDetail_DeptList_parent_dept_id" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			     SELECT HD.DEPTID, HD.DEPTNAME, HD.DEPT_EN_NAME, HD.DEPT_LEVEL,HD.DEPT_KOR_NAME 
+			       FROM HR_DEPARTMENT HD 
+				  WHERE NVL(HD.DATE_CREATED,TO_DATE('2007-01-01','YYYY-MM-DD')) <= ADD_MONTHS(TO_DATE(#PaMonth#,'YYYYMM'),1) -1  
+				    AND NVL(HD.DATE_ENDED,  TO_DATE('9999-01-01','YYYY-MM-DD')) >= TO_DATE(#PaMonth#,'YYYYMM')  
+				    AND HD.PARENT_DEPT_ID = #dept# 
+		]]>	
+	
+	</select>
+	
+	<!-- retrieve pa detail section dept list -->
+	<select id="retrievePaDetail_DeptList_section" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			     SELECT HD.DEPTID, HD.DEPTNAME, HD.DEPT_EN_NAME, HD.DEPT_LEVEL,HD.DEPT_KOR_NAME 
+			       FROM HR_DEPARTMENT HD 
+				  WHERE NVL(HD.DATE_CREATED,TO_DATE('2007-01-01','YYYY-MM-DD')) <= ADD_MONTHS(TO_DATE(#PaMonth#,'YYYYMM'),1) -1  
+				    AND NVL(HD.DATE_ENDED,  TO_DATE('9999-01-01','YYYY-MM-DD')) >= TO_DATE(#PaMonth#,'YYYYMM')  
+				    AND HD.DEPT_LEVEL < 5 
+		     START WITH DEPTID = #dept# CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+		]]>	
+	
+	</select>
+	
+
+	<!-- retrieve report pa detail month list -->
+	<select id="RetrievePaDetailMonth" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			    SELECT PA_MONTH,
+               		   DEPTID,
+				       DEPARTMENT AS DEPTNAME,
+				       DEPT_EN_NAME,
+				       EMPID,
+				       CHINESENAME,
+				       PINYINNAME AS CHINESE_PINYIN,
+				       JOIN_TYPE AS JOIN_TYPE_NAME,
+				       JOIN_TYPE_EN_NAME,
+				       POST,
+				       POST_EN_NAME AS ENGLISHPOST,
+				       POST_GRADE,  
+				       POST_GRADE_EN_NAME,  
+				       STANDARD_WAGE,
+				       BASE_PAY,
+				       POST_ALLOWANCE,
+				       QUALITY_ALLOWANCE,
+				       SPECIAL_ALLOWANCE,
+				       SUBSIDY_ALLOWANCE,    
+				       DUTY_ALLOWANCE,
+				       BIZ_TRIP_ALLOWANCE,
+				       VARIABLE_PAY,
+				       WEEKDAY_OT_PAY,
+				       WEEKEND_OT_PAY,    
+				       HOLIDY_OT_PAY,
+					   OT_PAY_TOTAIL,	
+				       BEFORE_TAXABLE_PLUS,
+				       TARDINESS_TRUANCY_DEDUCT,
+				       ABSENTEEISM_DEDUCT,
+				       CONVERT_ABSENT_DEDUCT,   
+				       CARD_MISS_DEDUCT,
+				       CASUAL_LEAVE_DEDUCT,
+				       COMPASSIONATE_DEDUCT,
+				       UNPAID_LEAVE_DEDUCT,
+				       SICK_LEAVE_DEDUCT,
+				       SWAP_DEDUCT,
+				       INDUSTRY_INJURY_DEDUCT,
+					   MARRIAGE_LEAVE_DEDUCT,
+					   ABSENT_DEDUCT_TOTAL,
+					   BEREFT_LEAVE_DEDUCT,
+				       BEFORE_TAXABLE_DEDUCT,
+				       SALARY_PAYABLE,
+				       PER_RETIRE_INS,
+				       PER_MEDICARE_INS,
+				       PER_UNEMPLOY_INS,
+				       PER_INS_APPEND_DEDUCT,
+				       PER_INS_TOTAL,
+				       PRE_TAX_PAY,
+				       INCOME_TAX,
+				       AFTER_TAXABLE_DEDUCT,
+					   AFTER_TAXABLE_PLUS,
+				       NET_PAY
+				  FROM KPA_HISTORY
+				 WHERE PA_MONTH = #PaMonth#
+		]]>
+		<isEqual prepend="AND" property="condition" compareValue="all">
+		<![CDATA[
+				   DEPTID IN ( SELECT DEPTID FROM HR_DEPARTMENT START WITH DEPTID = #dept#
+				   					CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID)
+		]]>
+		</isEqual>
+		
+		<isEqual prepend="AND" property="condition" compareValue="self">
+		<![CDATA[
+				   DEPTID = #dept#
+		]]>
+		</isEqual>
+		
+		<isNotEmpty prepend="AND" property="empDivision">
+		<![CDATA[
+		 		 Join_Type_Code =  #empDivision#
+	    ]]>
+		</isNotEmpty>
+		
+		<![CDATA[
+		 		 ORDER BY PA_MONTH,DEPTID,EMPID
+	    ]]>		
+			
+	</select>
+	
+	<!-- retrieve report pa detail month sum list -->
+	<select id="RetrievePaDetailMonth_SUM" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+            SELECT '' AS PA_MONTH,
+                   '' AS DEPTID,
+		  '$dept_cn$' AS DEPTNAME,
+	      '$dept_en$' AS DEPT_EN_NAME,
+			       '' AS EMPID,
+			       '' AS CHINESENAME,
+			       '' AS CHINESE_PINYIN,
+			       '' AS JOIN_TYPE_NAME,
+			       '' AS JOIN_TYPE_EN_NAME,
+			       '' AS POST,
+			       '' AS ENGLISHPOST,
+		           '' AS POST_GRADE,  
+	               '' AS POST_GRADE_EN_NAME,  
+			       SUM(STANDARD_WAGE) AS STANDARD_WAGE,
+			       SUM(BASE_PAY) AS BASE_PAY,
+			       SUM(POST_ALLOWANCE) AS POST_ALLOWANCE,
+			       SUM(QUALITY_ALLOWANCE) AS QUALITY_ALLOWANCE,
+			       SUM(SPECIAL_ALLOWANCE) AS SPECIAL_ALLOWANCE,
+			       SUM(SUBSIDY_ALLOWANCE) AS SUBSIDY_ALLOWANCE,    
+			       SUM(DUTY_ALLOWANCE) AS DUTY_ALLOWANCE,
+			       SUM(BIZ_TRIP_ALLOWANCE) AS BIZ_TRIP_ALLOWANCE,
+			       SUM(VARIABLE_PAY) AS VARIABLE_PAY,
+			       SUM(WEEKDAY_OT_PAY) AS WEEKDAY_OT_PAY,
+			       SUM(WEEKEND_OT_PAY) AS WEEKEND_OT_PAY,    
+			       SUM(HOLIDY_OT_PAY) AS HOLIDY_OT_PAY,
+				   SUM(OT_PAY_TOTAIL) AS OT_PAY_TOTAIL,	
+			       SUM(BEFORE_TAXABLE_PLUS) AS BEFORE_TAXABLE_PLUS,
+			       SUM(TARDINESS_TRUANCY_DEDUCT) AS TARDINESS_TRUANCY_DEDUCT,
+			       SUM(ABSENTEEISM_DEDUCT) AS ABSENTEEISM_DEDUCT,
+			       SUM(CONVERT_ABSENT_DEDUCT) AS CONVERT_ABSENT_DEDUCT,   
+			       SUM(CARD_MISS_DEDUCT) AS CARD_MISS_DEDUCT,
+			       SUM(CASUAL_LEAVE_DEDUCT) AS CASUAL_LEAVE_DEDUCT,
+			       SUM(COMPASSIONATE_DEDUCT) AS COMPASSIONATE_DEDUCT,
+			       SUM(UNPAID_LEAVE_DEDUCT) AS UNPAID_LEAVE_DEDUCT,
+			       SUM(SICK_LEAVE_DEDUCT) AS SICK_LEAVE_DEDUCT,
+			       SUM(SWAP_DEDUCT) AS SWAP_DEDUCT,
+			       SUM(INDUSTRY_INJURY_DEDUCT) AS INDUSTRY_INJURY_DEDUCT,
+				   SUM(MARRIAGE_LEAVE_DEDUCT) AS MARRIAGE_LEAVE_DEDUCT,
+				   SUM(ABSENT_DEDUCT_TOTAL) AS ABSENT_DEDUCT_TOTAL,
+				   SUM(BEREFT_LEAVE_DEDUCT) AS BEREFT_LEAVE_DEDUCT,
+			       SUM(BEFORE_TAXABLE_DEDUCT) AS BEFORE_TAXABLE_DEDUCT,
+			       SUM(SALARY_PAYABLE) AS SALARY_PAYABLE,
+			       SUM(PER_RETIRE_INS) AS PER_RETIRE_INS,
+			       SUM(PER_MEDICARE_INS) AS PER_MEDICARE_INS,
+			       SUM(PER_UNEMPLOY_INS) AS PER_UNEMPLOY_INS,
+			       SUM(PER_INS_APPEND_DEDUCT) AS PER_INS_APPEND_DEDUCT,
+			       SUM(PER_INS_TOTAL) AS PER_INS_TOTAL,
+			       SUM(PRE_TAX_PAY) AS PRE_TAX_PAY,
+			       SUM(INCOME_TAX) AS INCOME_TAX,
+			       SUM(AFTER_TAXABLE_DEDUCT) AS AFTER_TAXABLE_DEDUCT,
+				   SUM(AFTER_TAXABLE_PLUS) AS AFTER_TAXABLE_PLUS,
+			       SUM(NET_PAY) AS NET_PAY
+			  FROM KPA_HISTORY
+			 WHERE PA_MONTH = #PaMonth#
+		]]>
+		<isEqual prepend="AND" property="condition" compareValue="all">
+		<![CDATA[
+				   DEPTID IN ( SELECT DEPTID FROM HR_DEPARTMENT START WITH DEPTID = #dept#
+				   					CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID)
+		]]>
+		</isEqual>
+		
+		<isEqual prepend="AND" property="condition" compareValue="self">
+		<![CDATA[
+				   DEPTID = #dept#
+		]]>
+		</isEqual>
+		
+		<isNotEmpty prepend="AND" property="empDivision">
+		<![CDATA[
+		 		 Join_Type_Code =  #empDivision#
+	    ]]>
+		</isNotEmpty>
+			
+	</select>
+	
+	<select id="retrieveInsDetailMonth" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			select DEPARTMENT AS DEPTNAME, 
+				   DEPT_EN_NAME,EMPID ,
+				   CHINESENAME,PINYINNAME AS CHINESE_PINYIN,
+				   POST,POST_EN_NAME AS ENGLISHPOST,
+				   JOIN_TYPE AS JOIN_TYPE_NAME,
+				   JOIN_TYPE_EN_NAME,
+				   WORK_AREA,
+				   WORK_AREA_EN_NAME,
+				   INSURANCE_BASE,
+				   PER_RETIRE_INS,
+				   PER_MEDICARE_INS,
+				   PER_UNEMPLOY_INS,
+				   PER_INS_APPEND_DEDUCT,
+				   PER_INS_TOTAL,
+				   CPY_RETIRE_INS,
+				   CPY_MEDICARE_INS,
+				   CPY_UNEMPLOY_INS,
+				   CPY_WORK_INJURY_INS,
+				   CPY_CHILDBIRTH_INS,
+				   CPY_INS_APPEND_DEDUCT,
+				   CPY_INS_TOTAL,
+				   PER_INS_TOTAL+CPY_INS_TOTAL INSTOTAL
+				from kpa_history 
+			   where pa_month=#PaMonth#
+				 AND INSURANCE_BASE > 0
+			]]>
+		
+		<isNotEmpty prepend="AND" property="empDivision">  
+		<![CDATA[
+		 		 join_type_code =  #empDivision#
+	    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="work_area_emp">
+		<![CDATA[
+		 		 work_area_id =  #work_area_emp#
+	    ]]>
+		</isNotEmpty>
+	  
+				<isEqual prepend="AND" property="condition" compareValue="all">
+		<![CDATA[
+				   EXISTS (
+							SELECT * 
+				                   FROM HR_DEPARTMENT B1
+				                  WHERE B1.DEPTID=pa_history.DEPTID
+				             START WITH B1.DEPTID =#dept#
+				             CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID)
+		]]>
+		</isEqual>
+		<isEqual prepend="AND" property="condition" compareValue="self">
+		<![CDATA[
+				   DEPTID = #dept#
+		]]>
+		</isEqual>
+		
+		<![CDATA[
+		 		ORDER BY DEPTID DESC,POST,pa_history.EMPID
+	    ]]>		
+			
+	</select>
+	
+	
+	<select id="retrieveInsDetailMonth_SUM" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+		select 
+	      '$dept_cn$' AS DEPTNAME,
+	      '$dept_en$' AS DEPT_EN_NAME,
+				   '' AS EMPID ,
+				   '' AS CHINESENAME,
+				   '' AS CHINESE_PINYIN,
+				   '' AS POST,
+				   '' AS ENGLISHPOST,
+				   '' AS JOIN_TYPE_NAME,
+				   '' AS JOIN_TYPE_EN_NAME,
+				   '' AS WORK_AREA,
+				   '' AS WORK_AREA_EN_NAME,
+				   SUM(INSURANCE_BASE) AS INSURANCE_BASE,
+				   SUM(PER_RETIRE_INS) AS PER_RETIRE_INS,
+				   SUM(PER_MEDICARE_INS) AS PER_MEDICARE_INS,
+				   SUM(PER_UNEMPLOY_INS) AS PER_UNEMPLOY_INS,
+				   SUM(PER_INS_APPEND_DEDUCT) AS PER_INS_APPEND_DEDUCT,
+				   SUM(PER_INS_TOTAL) AS PER_INS_TOTAL,
+				   SUM(CPY_RETIRE_INS) AS CPY_RETIRE_INS,
+				   SUM(CPY_MEDICARE_INS) AS CPY_MEDICARE_INS,
+				   SUM(CPY_UNEMPLOY_INS) AS CPY_UNEMPLOY_INS,
+				   SUM(CPY_WORK_INJURY_INS) AS CPY_WORK_INJURY_INS,
+				   SUM(CPY_CHILDBIRTH_INS) AS CPY_CHILDBIRTH_INS,
+				   SUM(CPY_INS_APPEND_DEDUCT) AS CPY_INS_APPEND_DEDUCT,
+				   SUM(CPY_INS_TOTAL) AS CPY_INS_TOTAL,
+				   SUM(PER_INS_TOTAL+CPY_INS_TOTAL) AS INSTOTAL
+				from kpa_history 
+			   where pa_month=#PaMonth#
+				 AND INSURANCE_BASE > 0
+			]]>
+		
+		<isNotEmpty prepend="AND" property="empDivision">  
+		<![CDATA[
+		 		 join_type_code =  #empDivision#
+	    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="work_area_emp">
+		<![CDATA[
+		 		 work_area_id =  #work_area_emp#
+	    ]]>
+		</isNotEmpty>
+		
+		<isEqual prepend="AND" property="condition" compareValue="all">
+		<![CDATA[
+				   EXISTS (
+							SELECT * 
+				                   FROM HR_DEPARTMENT B1
+				                  WHERE B1.DEPTID=pa_history.DEPTID
+				             START WITH B1.DEPTID =#dept#
+				             CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID)
+		]]>
+		</isEqual>
+		<isEqual prepend="AND" property="condition" compareValue="self">
+		<![CDATA[
+				   DEPTID = #dept#
+		]]>
+		</isEqual>
+	  
+		<![CDATA[
+		 		ORDER BY DEPTID DESC,POST,pa_history.EMPID
+	    ]]>		
+			
+	</select>
+	
+	<select id="retrievePayDetail" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+		    select 
+		  		  'v' || CARD_NO || 'v' AS CARD_NO,
+       			  'v' || CHINESENAME || 'v' AS CHINESENAME,
+      		 	  'v' || NET_PAY || 'v' AS NET_PAY,
+       			  'v' || HRPI.IDCARD_NO || 'v' AS IDCARD_NO
+			 from kpa_history ,
+			      HR_EMP_PA_INFO  hep,
+            	  HR_PERSONAL_INFO HRPI
+			where pa_history.Empid = HEP.EMPID
+              AND PA_HISTORY.EMPID = HRPI.EMPID 
+			  AND pa_month=#PaMonth#
+			  AND NET_PAY > 0
+		]]>
+		
+		<isNotEmpty prepend="AND" property="empDivision">
+		<![CDATA[
+		 		 join_type_code =  #empDivision#
+	    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="dept">
+		<![CDATA[
+		 		EXISTS (
+							SELECT     *
+				                     	FROM HR_DEPARTMENT B1
+				                     	WHERE B1.DEPTID=pa_history.DEPTID
+				                 	START WITH B1.DEPTID =#dept#
+				                 	CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID)
+	    ]]>
+		</isNotEmpty>
+		<![CDATA[
+		 		ORDER BY DEPTID 
+	    ]]>		
+			
+	</select>
+	
+	<select id="RetrieveInsuranceData_simple" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			$sqlContent$
+		]]>
+	</select>
+	
+	<select id="RetrieveInsuranceData_simple_per" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			$sqlContent$
+		]]>
+	</select>
+	
+	<select id="RetrieveInsuranceData_simple_com" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			$sqlContent$
+		]]>
+	</select>
+	
+	<select id="RetrieveInsuranceData" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+		 SELECT SUM(DECODE(NUM,NULL,0,NUM))NUM,SUM(Total_CPY_RETIRE_INS) Total_CPY_RETIRE_INS ,
+				SUM(Total_PER_RETIRE_INS) Total_PER_RETIRE_INS, 
+				SUM(Total_PER_RETIRE_INS) Total_PER_RETIRE_INS, 
+				SUM(TotalINS1) TotalINS1, 
+				SUM(Total_CPY_MEDICARE_INS) Total_CPY_MEDICARE_INS, 
+				SUM(Total_PER_MEDICARE_INS) Total_PER_MEDICARE_INS, 
+				SUM(TotalINS2) TotalINS2, 
+				SUM(Total_CPY_UNEMPLOY_INS) Total_CPY_UNEMPLOY_INS, 
+				SUM(Total_PER_UNEMPLOY_INS) Total_PER_UNEMPLOY_INS, 
+				SUM(TotalINS3) TotalINS3,
+				SUM(Total_CPY_WORK_INJURY_INS) Total_CPY_WORK_INJURY_INS, 
+				SUM(Total_CPY_CHILDBIRTH_INS) Total_CPY_CHILDBIRTH_INS, 
+				SUM(PER_INS_APPEND_DEDUCT) PER_INS_APPEND_DEDUCT, 
+                SUM(CPY_INS_APPEND_DEDUCT) CPY_INS_APPEND_DEDUCT,
+				SUM(TOTALCPNINS) TOTALCPNINS, 
+				SUM(TOTALPERINS) TOTALPERINS, 
+				SUM(TOTALALL) TOTALALL
+				FROM
+				(select B.Deptid,B.Parent_Dept_Id,a.NUM NUM, 
+				DECODE(A.Total_CPY_RETIRE_INS,NULL,0,A.Total_CPY_RETIRE_INS) Total_CPY_RETIRE_INS,
+				DECODE(A.Total_PER_RETIRE_INS,NULL,0,A.Total_PER_RETIRE_INS) Total_PER_RETIRE_INS,
+				DECODE(A.TotalINS1,NULL,0,A.TotalINS1) TotalINS1,
+				DECODE(A.Total_CPY_MEDICARE_INS,NULL,0,A.Total_CPY_MEDICARE_INS) Total_CPY_MEDICARE_INS,
+				DECODE(A.Total_PER_MEDICARE_INS,NULL,0,A.Total_PER_MEDICARE_INS) Total_PER_MEDICARE_INS,
+				DECODE(A.TotalINS2,NULL,0,A.TotalINS2) TotalINS2,
+				DECODE(A.Total_CPY_UNEMPLOY_INS,NULL,0,A.Total_CPY_UNEMPLOY_INS) Total_CPY_UNEMPLOY_INS,
+				DECODE(A.Total_PER_UNEMPLOY_INS,NULL,0,A.Total_PER_UNEMPLOY_INS) Total_PER_UNEMPLOY_INS,
+				DECODE(A.TotalINS3,NULL,0,A.TotalINS3) TotalINS3,
+				DECODE(A.Total_CPY_WORK_INJURY_INS,NULL,0,A.Total_CPY_WORK_INJURY_INS) Total_CPY_WORK_INJURY_INS,
+				DECODE(A.Total_CPY_CHILDBIRTH_INS,NULL,0,A.Total_CPY_CHILDBIRTH_INS) Total_CPY_CHILDBIRTH_INS,
+				NVL(PER_INS_APPEND_DEDUCT,0) PER_INS_APPEND_DEDUCT,
+                NVL(CPY_INS_APPEND_DEDUCT,0) CPY_INS_APPEND_DEDUCT, 
+				DECODE(A.TOTALCPNINS,NULL,0,A.TOTALCPNINS) TOTALCPNINS,
+				DECODE(A.TOTALPERINS,NULL,0,A.TOTALPERINS) TOTALPERINS,
+				DECODE(A.TOTALALL,NULL,0,A.TOTALALL) TOTALALL
+				FROM
+				(
+			  select  DEPTID,
+				COUNT(EMPID) NUM,
+				sum(CPY_RETIRE_INS)Total_CPY_RETIRE_INS,
+				sum(PER_RETIRE_INS)Total_PER_RETIRE_INS,
+				sum(CPY_RETIRE_INS)+sum(PER_RETIRE_INS) TotalINS1,
+				sum(CPY_MEDICARE_INS)Total_CPY_MEDICARE_INS,
+				sum(PER_MEDICARE_INS)Total_PER_MEDICARE_INS,
+				sum(CPY_MEDICARE_INS)+sum(PER_MEDICARE_INS) TotalINS2,
+				sum(CPY_UNEMPLOY_INS)Total_CPY_UNEMPLOY_INS,
+				sum(PER_UNEMPLOY_INS)Total_PER_UNEMPLOY_INS,
+				sum(CPY_UNEMPLOY_INS)+sum(PER_UNEMPLOY_INS) TotalINS3,
+				sum(CPY_WORK_INJURY_INS)Total_CPY_WORK_INJURY_INS,
+				sum(CPY_CHILDBIRTH_INS)Total_CPY_CHILDBIRTH_INS,
+				sum(PER_INS_APPEND_DEDUCT) PER_INS_APPEND_DEDUCT, 
+                sum(CPY_INS_APPEND_DEDUCT) CPY_INS_APPEND_DEDUCT,
+				sum(CPY_INS_TOTAL)  TOTALCPNINS,
+				sum(PER_INS_TOTAL) TOTALPERINS,
+				sum(CPY_INS_TOTAL+PER_INS_TOTAL) TOTALALL
+				from kpa_history t
+				where PA_MONTH=#paMonth#
+				  AND INSURANCE_BASE > 0
+			  ]]>
+			  <isNotEmpty prepend="AND" property="work_area_com">
+			      work_area_id=#work_area_com#  
+			  </isNotEmpty>	
+			<![CDATA[	
+				GROUP BY DEPTID )A,
+				  HR_DEPARTMENT B
+				WHERE (DATE_CREATED IS NULL OR DATE_CREATED < SYSDATE)
+				AND (DATE_ENDED IS NULL OR DATE_ENDED > SYSDATE)
+				AND B.DEPTID =A.DEPTID(+)
+				start with B.deptid='Z000000' connect by prior B.deptid=parent_dept_id
+				)D
+		]]>
+		<isEqual compareValue="Z000000_" property="deptID">
+				<![CDATA[
+				 		WHERE DEPTID='Z000000'
+			    ]]>
+		</isEqual>      
+		<isNotEqual compareValue="Z000000_" property="deptID">
+			<![CDATA[
+				 START WITH DEPTID=#deptID# CONNECT BY PRIOR DEPTID=PARENT_DEPT_ID 
+			    ]]>
+		</isNotEqual>
+	</select>
+	
+	
+		<!-- retrieve report pa complete daily list -->
+	<select id="retrievePaCompelte" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+				SELECT SUM(DECODE(NUM,NULL,0,NUM))NUM,
+						sum(STANDARD_WAGE)STANDARD_WAGE,
+						sum(POST_ALLOWANCE)POST_ALLOWANCE,
+						sum(QUALITY_ALLOWANCE) QUALITY_ALLOWANCE,
+						sum(SPECIAL_ALLOWANCE)SPECIAL_ALLOWANCE,
+						sum(SUBSIDY_ALLOWANCE)SUBSIDY_ALLOWANCE,
+						sum(DUTY_ALLOWANCE) DUTY_ALLOWANCE,
+						sum(VARIABLE_PAY)VARIABLE_PAY,
+						sum(BIZ_TRIP_ALLOWANCE)BIZ_TRIP_ALLOWANCE,
+						sum(OT_PAY_TOTAIL)OT_PAY_TOTAIL,
+						sum(BEFORE_TAXABLE_PLUS) BEFORE_TAXABLE_PLUS,
+						sum(BEFORE_TAXABLE_DEDUCT)BEFORE_TAXABLE_DEDUCT,
+						sum(AFTER_TAXABLE_PLUS)AFTER_TAXABLE_PLUS,
+						sum(AFTER_TAXABLE_DEDUCT)  AFTER_TAXABLE_DEDUCT,
+						sum(ABSENT_DEDUCT_TOTAL) ABSENT_DEDUCT_TOTAL,
+						sum(PER_INS_TOTAL) PER_INS_TOTAL,
+						sum(SALARY_PAYABLE) SALARY_PAYABLE,
+						sum(INCOME_TAX) INCOME_TAX,
+						sum(NET_PAY) NET_PAY
+						FROM
+						(select B.Deptid,B.Parent_Dept_Id,a.NUM NUM,
+						DECODE(A.STANDARD_WAGE,NULL,0,A.STANDARD_WAGE) STANDARD_WAGE,
+						DECODE(A.POST_ALLOWANCE,NULL,0,A.POST_ALLOWANCE) POST_ALLOWANCE,
+						DECODE(A.QUALITY_ALLOWANCE,NULL,0,A.QUALITY_ALLOWANCE) QUALITY_ALLOWANCE,
+						DECODE(A.SPECIAL_ALLOWANCE,NULL,0,A.SPECIAL_ALLOWANCE) SPECIAL_ALLOWANCE,
+						DECODE(A.SUBSIDY_ALLOWANCE,NULL,0,A.SUBSIDY_ALLOWANCE) SUBSIDY_ALLOWANCE,
+						DECODE(A.DUTY_ALLOWANCE,NULL,0,A.DUTY_ALLOWANCE) DUTY_ALLOWANCE,
+						DECODE(A.VARIABLE_PAY,NULL,0,A.VARIABLE_PAY) VARIABLE_PAY,
+						DECODE(A.BIZ_TRIP_ALLOWANCE,NULL,0,A.BIZ_TRIP_ALLOWANCE) BIZ_TRIP_ALLOWANCE,
+						DECODE(A.OT_PAY_TOTAIL,NULL,0,A.OT_PAY_TOTAIL) OT_PAY_TOTAIL,
+						DECODE(A.BEFORE_TAXABLE_PLUS,NULL,0,A.BEFORE_TAXABLE_PLUS) BEFORE_TAXABLE_PLUS,
+						DECODE(A.BEFORE_TAXABLE_DEDUCT,NULL,0,A.BEFORE_TAXABLE_DEDUCT) BEFORE_TAXABLE_DEDUCT,
+						DECODE(A.AFTER_TAXABLE_PLUS,NULL,0,A.AFTER_TAXABLE_PLUS) AFTER_TAXABLE_PLUS,
+						DECODE(A.AFTER_TAXABLE_DEDUCT,NULL,0,A.AFTER_TAXABLE_DEDUCT) AFTER_TAXABLE_DEDUCT,
+						DECODE(A.ABSENT_DEDUCT_TOTAL,NULL,0,A.ABSENT_DEDUCT_TOTAL) ABSENT_DEDUCT_TOTAL,
+						DECODE(A.PER_INS_TOTAL,NULL,0,A.PER_INS_TOTAL) PER_INS_TOTAL,
+						DECODE(A.SALARY_PAYABLE,NULL,0,A.SALARY_PAYABLE) SALARY_PAYABLE,
+						DECODE(A.INCOME_TAX,NULL,0,A.INCOME_TAX) INCOME_TAX,
+						DECODE(A.NET_PAY,NULL,0,A.NET_PAY) NET_PAY
+						FROM
+						(
+						select  DEPTID,
+						COUNT(EMPID) NUM,
+						sum(STANDARD_WAGE)STANDARD_WAGE,
+						sum(POST_ALLOWANCE)POST_ALLOWANCE,
+						sum(QUALITY_ALLOWANCE) QUALITY_ALLOWANCE,
+						sum(SPECIAL_ALLOWANCE)SPECIAL_ALLOWANCE,
+						sum(SUBSIDY_ALLOWANCE)SUBSIDY_ALLOWANCE,
+						sum(DUTY_ALLOWANCE) DUTY_ALLOWANCE,
+						sum(VARIABLE_PAY)VARIABLE_PAY,
+						sum(BIZ_TRIP_ALLOWANCE)BIZ_TRIP_ALLOWANCE,
+						sum(OT_PAY_TOTAIL)OT_PAY_TOTAIL,
+						sum(BEFORE_TAXABLE_PLUS) BEFORE_TAXABLE_PLUS,
+						sum(BEFORE_TAXABLE_DEDUCT)BEFORE_TAXABLE_DEDUCT,
+						sum(AFTER_TAXABLE_PLUS)AFTER_TAXABLE_PLUS,
+						sum(AFTER_TAXABLE_DEDUCT)  AFTER_TAXABLE_DEDUCT,
+						sum(ABSENT_DEDUCT_TOTAL) ABSENT_DEDUCT_TOTAL,
+						sum(PER_INS_TOTAL) PER_INS_TOTAL,
+						sum(SALARY_PAYABLE) SALARY_PAYABLE,
+						sum(INCOME_TAX) INCOME_TAX,
+						sum(NET_PAY) NET_PAY
+						from kpa_history t
+						where  PA_MONTH=#paMonth#
+						GROUP BY DEPTID
+						) A,HR_DEPARTMENT B
+						WHERE (DATE_CREATED IS NULL OR DATE_CREATED < SYSDATE)
+						AND (DATE_ENDED IS NULL OR DATE_ENDED > SYSDATE)
+						AND B.DEPTID =A.DEPTID(+)
+						start with B.deptid='Z000000' connect by prior B.deptid=parent_dept_id
+						)D	     
+		]]>
+		<isEqual compareValue="Z000000_" property="deptID">
+				<![CDATA[
+				 		WHERE DEPTID='Z000000'
+			    ]]>
+		</isEqual>      
+		<isNotEqual compareValue="Z000000_" property="deptID">
+			<![CDATA[
+				 START WITH DEPTID=#deptID# CONNECT BY PRIOR DEPTID=PARENT_DEPT_ID 
+			    ]]>
+		</isNotEqual>
+	</select>
+	
+	
+	
+	<!-- retrieve personal tax datalist -->
+	<select id="retrievePersonalTaxMonthly" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+				
+		select deptid,PA_MONTH,EMPID,nationality_code,Post,post_en_name AS ENGLISHPOST,CHINESENAME,PINYINNAME AS CHINESE_PINYIN,
+			DEPARTMENT AS DEPTNAME,DEPT_EN_NAME,NATIONALITY,NATIONALITY_EN_NAME,
+			SALARY_PAYABLE,PRE_TAX_PAY PRE_TAX_PAY,TO_CHAR(TAX_BENCHMARK)TAX_BENCHMARK,TAXABLE_PAY,
+			TAX_RATIO*100||'%' TAX_RATIO ,TO_CHAR(ALGORITHM_MEDUCT)ALGORITHM_MEDUCT,INCOME_TAX,AFTER_TAX_PAY,NET_PAY  
+			from kpa_history WHERE PA_MONTH=#PaMonth#
+			UNION ALL  
+			SELECT '--'as deptid,'--'AS PA_MONTH,'--' AS EMPID ,'-'as nationality_code,'--'AS Post,'--'AS post_en_name,'总计' as CHINESENAME,
+			'TOTAL' AS PINYINNAME,'--' AS DEPARTMENT,'--' AS DEPT_EN_NAME,'--' AS NATIONALITY,'--' AS NATIONALITY_EN_NAME
+			,SUM(SALARY_PAYABLE) AS SALARY_PAYABLE ,sum(PRE_TAX_PAY) AS PRE_TAX_PAY,'--' AS PRE_TAX_PAY,
+			sum(TAXABLE_PAY) AS TAXABLE_PAY,'--' AS TAX_RATIO ,'--' AS TAX_RATIO,sum(INCOME_TAX) AS INCOME_TAX,
+			sum(AFTER_TAX_PAY) AS AFTER_TAX_PAY,sum(NET_PAY) AS NET_PAY from kpa_history t 
+			WHERE PA_MONTH=#PaMonth#
+			GROUP BY PA_MONTH
+			order by deptid desc,nationality_code,POST,EMPID
+		]]>
+	</select>
+	
+	<!-- retrieve report retrieve t_pa_result column data list -->
+	<select id="retrieveTPaResultColumnList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			    SELECT ITEM.*
+			   	  FROM (
+					      SELECT T.FIELD_NAME AS NAME,T.DISTINCT_FIELD ID,ID AS ORDERNO FROM KPA_DISTINCT_LIST T 
+					      UNION ALL
+					      SELECT DISTINCT T2.PARAM_NAME,T2.PARAM_ID ,T2.ORDER_NO FROM KPA_PARAM_ITEM T2
+					      UNION ALL
+					      SELECT T3.ITEM_NAME,T3.ITEM_ID,T3.CALCU_ORDER  FROM KPA_ITEM T3
+					   ) ITEM
+		]]>
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="sqlColumn">
+			<![CDATA[
+		 		 ID IN ($sqlColumn$)
+	    	]]>
+	    	</isNotEmpty>
+		</dynamic>
+			
+	</select>
+	
+	<!-- retrieve export t_pa_result data list -->
+	<select id="retrieveTPaResultDataList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			SELECT $sqlColumn2$ FROM T_KPA_RESULT
+		]]>
+	</select>
+	
+	<!-- retrieve report retrieve t_pa_bonus_result column data list -->
+	<select id="retrieveTPaBonusResultColumnList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			    SELECT ITEM.*
+				  FROM (SELECT T.FIELD_NAME AS NAME, T.DISTINCT_FIELD ID, ID AS ORDERNO
+				          FROM KPA_DISTINCT_LIST T
+				        UNION ALL
+				        SELECT DISTINCT T2.PARAM_NAME, T2.PARAM_ID, T2.ORDER_NO
+				          FROM KPA_BONUS_PARAM_ITEM T2
+				        UNION ALL
+				        SELECT T3.ITEM_NAME, T3.ITEM_ID, T3.CALCU_ORDER FROM KPA_BONUS_ITEM T3) ITEM
+		]]>
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="sqlColumn">
+			<![CDATA[
+		 		 ID IN ($sqlColumn$)
+	    	]]>
+	    	</isNotEmpty>
+		</dynamic>
+			
+	</select>
+	
+	<!-- retrieve export t_pa_bonus_result data list -->
+	<select id="retrieveTPaBonusResultDataList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			SELECT $sqlColumn2$
+			  FROM T_KPA_BONUS_RESULT
+		]]>
+	</select>
+	
+	
+	<!-- retrieve report pay slip list -->
+	<select id="RetrievePaySlip" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			    SELECT 
+				    SUBSTR(PA_MONTH,5,2) AS PA_MONTH,
+						DEPARTMENT,
+						EMPID,
+						CHINESENAME,
+						BASE_PAY,
+						DAILY_WAGES,
+						VARIABLE_PAY,
+						POST_ALLOWANCE,
+						(OTHER_ALLOWANCE + DUTY_ALLOWANCE + BIZ_TRIP_ALLOWANCE ) AS OTHER_ALLOWANCE,
+						(WEEKDAY_OT + WEEKEND_OT + HOLIDAY_OT) AS OVER_TIME,
+						OT_PAY_TOTAIL,
+						ABSENT_DEDUCT_TOTAL,
+						BEFORE_TAXABLE_PLUS,
+						BEFORE_TAXABLE_DEDUCT,
+						SALARY_PAYABLE,
+						PER_INS_TOTAL,
+						PRE_TAX_PAY,
+						TAXABLE_PAY,
+						INCOME_TAX,
+						AFTER_TAXABLE_PLUS,
+						AFTER_TAXABLE_DEDUCT,
+						NET_PAY
+				  FROM KPA_HISTORY
+				 WHERE PA_MONTH = #PaMonth#
+				   AND DEPTID IN ( SELECT DEPTID FROM HR_DEPARTMENT START WITH DEPTID = #dept#
+				   					CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID)
+		]]>
+		
+		<isNotEmpty prepend="AND" property="empDivision">
+		<![CDATA[
+		 		 Join_Type_Code =  #empDivision#
+	    ]]>
+		</isNotEmpty>
+		
+		<![CDATA[
+		 		 ORDER BY PA_MONTH,DEPTID,EMPID
+	    ]]>		
+			
+	</select>
+	
+	<!-- retrieve export dept pay insurance data list -->
+	<select id="retrievePayInsurance" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			$sqlContent$
+		]]>
+		
+			
+	</select>
+	
+	<!-- retrieve export peopleware data list -->
+	<select id="retrievePaPeopleware" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			SELECT      COUNT(EMPID) AS EMP_COUNT,
+					NVL(SUM(SALARY_PAYABLE),0) AS SALARY_PAYABLE, 
+					NVL(SUM(CPY_INS_TOTAL),0) AS CPY_INS_TOTAL,
+			   		NVL(TRUNC(SUM(CPY_INS_TOTAL)/DECODE(SUM(SALARY_PAYABLE),0,1,SUM(SALARY_PAYABLE))*100,1),0) AS PROPORTION,
+			   		NVL(SUM(SALARY_PAYABLE +  CPY_INS_TOTAL),0) AS TOTAL, 
+			   		NVL(ROUND(SUM(SALARY_PAYABLE + CPY_INS_TOTAL)/DECODE(COUNT(EMPID),0,1,COUNT(EMPID)),2),0) AS AVERAGE_WAGE 
+			FROM KPA_HISTORY WHERE PA_MONTH = #date# AND DEPTID IN 
+			(SELECT DEPTID FROM HR_DEPARTMENT 
+                START WITH DEPTID = #deptid#
+                CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+            )
+		]]>
+		
+			
+	</select>
+	
+	<!-- retrieve export peopleware end data list -->
+	<select id="retrievePaPeopleware_end" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			SELECT      COUNT(EMPID) AS EMP_COUNT,
+					NVL(SUM(SALARY_PAYABLE),0) AS SALARY_PAYABLE, 
+					NVL(SUM(CPY_INS_TOTAL),0) AS CPY_INS_TOTAL,
+			   		NVL(TRUNC(SUM(CPY_INS_TOTAL)/DECODE(SUM(SALARY_PAYABLE),0,1,SUM(SALARY_PAYABLE))*100,1),0) AS PROPORTION,
+			   		NVL(SUM(SALARY_PAYABLE +  CPY_INS_TOTAL),0) AS TOTAL, 
+			   		NVL(ROUND(SUM(SALARY_PAYABLE + CPY_INS_TOTAL)/DECODE(COUNT(EMPID),0,1,COUNT(EMPID)),2),0) AS AVERAGE_WAGE 
+			FROM KPA_HISTORY WHERE PA_MONTH BETWEEN #sDate_p# AND #eDate_p# 
+		]]>
+		
+			
+	</select>
+	
+	<!-- retrieve export peopleware direct data list -->
+	<select id="retrievePaPeopleware_direct" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			SELECT      COUNT(EMPID) AS EMP_COUNT,
+					NVL(SUM(SALARY_PAYABLE),0) AS SALARY_PAYABLE, 
+					NVL(SUM(CPY_INS_TOTAL),0) AS CPY_INS_TOTAL,
+			   		NVL(TRUNC(SUM(CPY_INS_TOTAL)/DECODE(SUM(SALARY_PAYABLE),0,1,SUM(SALARY_PAYABLE))*100,1),0) AS PROPORTION,
+			   		NVL(SUM(SALARY_PAYABLE +  CPY_INS_TOTAL),0) AS TOTAL, 
+			   		NVL(ROUND(SUM(SALARY_PAYABLE + CPY_INS_TOTAL)/DECODE(COUNT(EMPID),0,1,COUNT(EMPID)),2),0) AS AVERAGE_WAGE 
+			FROM KPA_HISTORY WHERE PA_MONTH = #date# AND 
+			(
+				DEPTID IN 
+				(SELECT DEPTID FROM HR_DEPARTMENT 
+                	START WITH DEPTID = #deptid_direct#
+                	CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+            	)
+            OR  DEPTID IN 
+				(SELECT DEPTID FROM HR_DEPARTMENT 
+                	START WITH DEPTID = 'S400000'
+                	CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+            	)
+            )
+		]]>
+		
+			
+	</select>
+	
+	<!-- retrieve export peopleware indirect data list -->
+	<select id="retrievePaPeopleware_indirect" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			SELECT      COUNT(EMPID) AS EMP_COUNT,
+					NVL(SUM(SALARY_PAYABLE),0) AS SALARY_PAYABLE, 
+					NVL(SUM(CPY_INS_TOTAL),0) AS CPY_INS_TOTAL,
+			   		NVL(TRUNC(SUM(CPY_INS_TOTAL)/DECODE(SUM(SALARY_PAYABLE),0,1,SUM(SALARY_PAYABLE))*100,1),0) AS PROPORTION,
+			   		NVL(SUM(SALARY_PAYABLE +  CPY_INS_TOTAL),0) AS TOTAL, 
+			   		NVL(ROUND(SUM(SALARY_PAYABLE + CPY_INS_TOTAL)/DECODE(COUNT(EMPID),0,1,COUNT(EMPID)),2),0) AS AVERAGE_WAGE 
+			FROM KPA_HISTORY WHERE PA_MONTH = #date# AND DEPTID IN 
+						(SELECT DEPTID FROM HR_DEPARTMENT 
+			                START WITH DEPTID = #deptid_indirect#
+			                CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+			            )
+			       AND DEPTID NOT IN 
+						(SELECT DEPTID FROM HR_DEPARTMENT 
+			                START WITH DEPTID = #deptid_direct#
+			                CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+			            )
+			       AND DEPTID NOT IN 
+						(SELECT DEPTID FROM HR_DEPARTMENT 
+               	 			START WITH DEPTID = 'S400000'
+                			CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+                        )
+		]]>
+		
+			
+	</select>
+	
+	
+	<!-- retrieve work area data -->
+	<select id="retrieveWorkAreaData" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			  SELECT SY.CODE_ID,'(' || SY.CODE_NAME || ')' AS CODE_NAME, '(' || SY.CODE_EN_NAME || ')' AS CODE_EN_NAME,SY.CODE_KOR_NAME 
+				FROM SY_CODE SY 
+			   WHERE SY.CODE_ID = #work_area_com#
+		]]>
+		
+			
+	</select>
+	
+		<!-- retrieve export pa daily head data list -->
+	<select id="retrievePaDaily_head" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			 SELECT COUNT(EMPID) AS EMP_COUNT,
+				       NVL(SUM(DAILY_WAGES),0) AS DAILY_WAGES,
+				       NVL(SUM(HOURLY_PAY),0) AS HOURLY_PAY,
+				       NVL(SUM(DUTY_ALLOWANCE + BIZ_TRIP_ALLOWANCE + OTHER_ALLOWANCE),0) AS OTHER_ALLOWANCE,
+				       NVL(SUM(OT_PAY_TOTAIL),0) AS OT_PAY_TOTAIL,
+				       NVL(SUM(ABSENT_DEDUCT_TOTAL),0) AS ABSENT_DEDUCT_TOTAL,
+					   NVL(SUM(SALARY_PAYABLE),0) AS SALARY_PAYABLE
+				  FROM PA_DAILY_HISTORY
+				 WHERE PA_DATE = #date# 
+				   AND DEPTID= #deptid#
+		]]>
+		
+			
+	</select>
+	
+	
+	<!-- retrieve export pa daily data list -->
+	<select id="retrievePaDaily" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			    SELECT COUNT(EMPID) AS EMP_COUNT,
+				       NVL(SUM(DAILY_WAGES),0) AS DAILY_WAGES,
+				       NVL(SUM(HOURLY_PAY),0) AS HOURLY_PAY,
+				       NVL(SUM(DUTY_ALLOWANCE + BIZ_TRIP_ALLOWANCE + OTHER_ALLOWANCE),0) AS OTHER_ALLOWANCE,
+				       NVL(SUM(OT_PAY_TOTAIL),0) AS OT_PAY_TOTAIL,
+				       NVL(SUM(ABSENT_DEDUCT_TOTAL),0) AS ABSENT_DEDUCT_TOTAL,
+					   NVL(SUM(SALARY_PAYABLE),0) AS SALARY_PAYABLE
+				  FROM PA_DAILY_HISTORY
+				 WHERE PA_DATE = #date# 
+				   AND DEPTID IN 
+			(SELECT DEPTID FROM HR_DEPARTMENT 
+                START WITH DEPTID = #deptid#
+                CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+            )
+		]]>
+		
+			
+	</select>
+	
+</sqlMap>

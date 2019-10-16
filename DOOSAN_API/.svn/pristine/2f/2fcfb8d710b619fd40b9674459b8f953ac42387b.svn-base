@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <link rel="stylesheet" type="text/css" href="./api.css" />
+    <link rel="stylesheet" type="text/css" href="./aui.css" />
+
+    <style type="text/css">
+        html,
+        body {
+            height: 100%;
+            background: -webkit-linear-gradient(#429ce8, #4c87c3); /* Safari 5.1 - 6.0 */
+            background: -o-linear-gradient(#429ce8, #4c87c3); /* Opera 11.1 - 12.0 */
+            background: -moz-linear-gradient(#429ce8, #4c87c3); /* Firefox 3.6 - 15 */
+            background: linear-gradient(#429ce8, #4c87c3);
+        }
+        input::-webkit-input-placeholder, textarea::-webkit-input-placeholder {
+            color: #ffffff;
+            font-size: 16px;
+        }
+
+        input:-moz-placeholder, textarea:-moz-placeholder {
+            color: #ffffff;
+            font-size: 16px;
+        }
+
+        input::-moz-placeholder, textarea::-moz-placeholder {
+            color: #ffffff;
+            font-size: 16px;
+        }
+
+        input:-ms-input-placeholder, textarea:-ms-input-placeholder {
+            color: #ffffff;
+            font-size: 16px;
+        }
+        .aui-iconfont{
+            color: #ffffff;
+        }
+        #wrap {
+            height: 100%;
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-box-orient: vertical;
+            -webkit-flex-flow: column;
+            flex-flow: column;
+        }
+        .login-title{
+            margin-bottom: 60px;
+        }
+        .logo-div{
+            width:93px;
+            height: 93px;
+            line-height: 93px;
+            margin: 25% auto 10px auto;
+            background-color: #ffffff;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+        .logo-div img{
+            display: inline-block; vertical-align: middle;
+        }
+        .login-text{
+            text-align: center;
+            color: #fff;
+            font-size: 22px;
+        }
+        .aui-btn-default{
+            background-color: #d4e4f3;
+            color: #2168aa;
+            height: 44px !important;
+            line-height: 44px !important;
+            margin-top:40px !important;
+            font-size: 18px !important;
+        }
+        .input-row{
+            background-color:#d4e4f3;
+            background:rgba(130, 181, 228, 0.5);
+            border-radius: 0.2rem;
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .input-icon{
+            line-height: 44px;
+            width: 44px;
+            text-align: center;
+        }
+    </style>
+
+</head>
+<body>
+<div id="wrap">
+    <div id="main" class="flex-con">
+        <section class="aui-content-padded login-title">
+            <div class="logo-div">
+                <img src="./logo.jpg"/>
+            </div>
+            <div class="login-text">人 事 系 统</div>
+        </section>
+        <section class="aui-content-padded">
+            <div class="input-row">
+                <div class="input-icon">
+                    <i class="aui-iconfont aui-icon-my"></i>
+                </div>
+                <div class="input-input">
+                    <input type="text" id="username" placeholder="username">
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-icon">
+                    <i class="aui-iconfont aui-icon-lock"></i>
+                </div>
+                <div class="input-input">
+                    <input type="text" id="password" placeholder="password">
+                </div>
+            </div>
+        </section>
+        <section class="aui-content-padded">
+            <div class="aui-btn aui-btn-block aui-btn-default aui-btn-sm" onclick="basefunc()"><b>登 录</b></div>
+        </section>
+    </div>
+</div>
+</body>
+<script src="./jquery-3.1.1.js" type="text/javascript"></script>
+<script src="./enc-base64-min.js" type="text/javascript"></script>
+<script>
+    function basefunc(){
+        var username = $("#username").val();
+        var password = $("#password").val();
+        username = Base64.encode(username);
+        password = Base64.encode(password);
+        console.log("账号加密之后的结果是："+username);
+        console.log("密码加密之后的结果是："+password);
+        window.location.href = "pmapp://?test=test&username=" + username + "&password=" + password;
+    }
+</script>
+</html>

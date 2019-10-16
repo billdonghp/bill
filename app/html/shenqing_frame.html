@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,initial-scale=1.0,width=device-width" />
+    <title>我的</title>
+
+    <link href="../css/PublicStyle.css" rel="stylesheet" />
+    <link href="../css/wkd_main_wap.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="rs_dcjPic">
+        <img src="../image/sq_topPic.png">
+    </div>
+    <div class="rsBoxMsg p0">
+        <div class="rs_sqlistBtn">
+            <!-- <a href="jbsq_加班申请.html" >
+                <img src="../image/menu_btn3.png">
+                <p>加班申请</p>
+            </a> -->
+            <!-- <a href="qtsq_勤态申请.html">
+                <img src="../image/menu_btn2.png">
+                <p>勤态申请</p>
+            </a> -->
+            <a href="javascript:void(0)" class="open-win" win="sq_gongzhang" login="true">
+                <img src="../image/menu_btn14.png">
+                <p>公章申请</p>
+            </a>
+            <a href="javascript:void(0)" class="open-win" win="sq_kuaijian" login="true">
+                <img src="../image/menu_btn13.png">
+                <p>快件申请</p>
+            </a>
+        </div>
+    </div>
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/common.js"></script>
+<script type="text/javascript" src="../script/remotedb.js"></script>
+<script type="text/javascript" src="../script/core-min.js"></script>
+<script type="text/javascript" src="../script/enc-base64-min.js"></script>
+<script type="text/javascript">
+    apiready = function() {
+        loginState();
+        fnReadyOpenWin();
+    };
+</script>
+
+</html>

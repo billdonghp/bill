@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>人事管理</title>
+    <link href="../css/PublicStyle.css" rel="stylesheet" />
+    <link href="../css/wkd_main_wap.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="rs_search" style="display:none">
+        <span id="srBtn"></span><input type="search" placeholder="请输入姓名" id="keyWord" />
+    </div>
+    <section id="list">
+
+    </section>
+    <script type="text/template" id="template">
+        {{ for(var i = 0; i
+        < it.data.list.length;i++) { }} <div class="rs_mainBox {{=i > 0? 'pt0': ''}}">
+            <div class="rsBoxMsg p0">
+                <div class="rs_jbBox">
+                    <div class="rs_jbTitel" AFFIRMNO="{{=it.data.list[i].AFFIRMNO}}">
+                        <h1>{{=it.data.list[i].CHINESENAME}}</h1>
+                        <span>{{=it.data.list[i].OTFROMTIME}} 至 {{=it.data.list[i].OTTOTIME}}</span>
+                    </div>
+                    <div class="rs_jbMsg">
+                        <div class="rs_jsMsgL open-win" win="s_jiaban_Details" login="true" param='{"OTNO":"{{=it.data.list[i].OTNO}}"}'>
+                            <h1><span class="{{=it.data.list[i].OTTYPECODE == 'WorkingOtType01' ? 'pr' : (it.data.list[i].OTTYPECODE == 'WorkingOtType02' ? 'zm' : 'jr')}}">{{=it.data.list[i].OTTYPENAME}}</span>{{=it.data.list[i].OTLENGTH}}小时  </h1>
+                            <p>{{=it.data.list[i].OTREMARK}}</p>
+                        </div>
+
+                        <div class="rs_jbMsgR">
+                            {{? it.data.list[i].ACTIVITY == 1}}
+                            <div class="rs_cjwcz"></div>
+                            {{?? it.data.list[i].ACTIVITY == 2}}
+                            <div class="rs_cjyfj"></div>
+                            {{?? it.data.list[i].ACTIVITY == 0}}
+                            <div class="rs_cjspz"></div>
+                            {{?}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+            {{ } }}
+    </script>
+    <div class="rs_mainBox pt0 bottomLoading" id="loading"></div>
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/jquery-3.1.1.js"></script>
+<script type="text/javascript" src="../script/common.js"></script>
+<script type="text/javascript" src="../script/remotedb.js"></script>
+<script type="text/javascript" src="../script/doT.min.js"></script>
+<script type="text/javascript">
+    var pageindex = 0;
+    apiready = function() {
+        loginState();
+        pageInit();
+        getJBList();
+        domOprate();
+    }
+
+    function pageInit() {
+        $("#list,#loading").html("");
+        pageindex = 0;
+        //上拉
+        upPull();
+
+        //下拉
+        api.setCustomRefreshHeaderInfo({
+            bgColor: '#f0f0f0'
+        }, function() {
+            $("#list,#loading").html("");
+            $(".rs_cjBtn").addClass("none")
+            pageindex = 0;
+            upPull();
+            getJBList();
+        });
+
+        //手动下拉
+        api.addEventListener({
+            name: 'headerLoading'
+        }, function(ret, err) {
+            api.refreshHeaderLoading();
+        });
+    }
+
+    function upPull() {
+        //上拉加载
+        api.addEventListener({
+            name: 'scrolltobottom',
+            extra: {
+                threshold: 10 // 距离底部还有多少触发scrolltobottom事件
+            }
+        }, function(ret, err) {
+            pageindex += 1;
+            getJBList();
+        });
+    }
+
+    function domOprate() {
+        $("#srBtn").click(function() {
+            pageInit();
+            getJBList();
+        });
+
+        $("#keyWord").on('keypress', function(e) {
+            var keycode = e.which || e.keyCode
+            if (keycode === 13) {
+                e.preventDefault()
+                pageInit();
+                getJBList();
+            }
+        });
+    }
+
+    function getJBList() {
+        fnPost('applyInfo', {
+            body: JSON.stringify({
+                content: "otApplyInfo",
+                currentPage: pageindex,
+                key: $api.byId('keyWord').value
+            })
+        }, true, function(ret, err) {
+            pageindex == 0 ? api.refreshHeaderLoadDone() : "";
+            if (ret && ret.resultCode == 200) {
+                if (ret.data && ret.data.list && ret.data.list.length > 0) {
+                    jbList(ret, pageindex);
+                } else {
+                    $api.html($api.byId('loading'), "没有数据啦");
+                    api.removeEventListener({
+                        name: 'scrolltobottom'
+                    });
+                }
+            } else {
+                api.toast({
+                    msg: '网络不佳，请重试',
+                    duration: 2000,
+                    location: 'bottom'
+                });
+            }
+        });
+    }
+
+    function jbList(data_, index_) {
+        var list = $api.byId('list');
+        var tempFn = doT.template($api.byId('template').innerHTML);
+        var resultHTML = tempFn(data_);
+        index_ == 0 ? $api.html(list, resultHTML) : $api.append(list, resultHTML);
+        fnReadyOpenWin();
+    }
+
+    //手动刷新
+    function fnRefreshHeaderLoading() {
+        api.refreshHeaderLoading();
+    };
+
+</script>
+
+</html>

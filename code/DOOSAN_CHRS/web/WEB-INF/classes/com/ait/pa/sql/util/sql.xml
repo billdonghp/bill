@@ -1,0 +1,1416 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="pa.util">
+
+	<!-- retrieve update pa tables -->
+	<select id="retrieveUpdatePaTableColumns" parameterClass="SimpleMap" resultClass="SimpleMap">
+
+		<![CDATA[	
+		     	SELECT T.COLUMN_NAME
+  			      FROM USER_TAB_COLUMNS T
+ 				 WHERE T.TABLE_NAME = '$tableName$' 
+		]]>
+		
+		<isNotEmpty prepend="AND T.COLUMN_NAME IN " property="paramKeys">
+				<iterate property="paramKeys" open="(" close=")" conjunction=",">
+					#paramKeys[]#
+				</iterate>
+		</isNotEmpty>
+
+	</select>
+	
+	 <!-- update pa bonus history data -->
+	 <update id="updatePaBonusHistory" parameterClass="string">
+		<![CDATA[	
+			 $value$
+		]]>
+     
+	 </update>
+	 
+	 <procedure id="callPaBonusHistoryProc" parameterClass="SimpleMap">
+		<![CDATA[
+			{call PR_BONUS_MAINTAIN_CAL(#paMonth:VARCHAR#, #personId:VARCHAR#, #bonusTypeCode:VARCHAR#, #bonusNo:VARCHAR#, #cpnyId:VARCHAR#) }
+		]]>
+	</procedure>
+	 
+	 <!-- update pa history data -->
+	 <update id="updatePaHistoryData" parameterClass="string" >
+		<![CDATA[	
+			 $value$
+		]]>
+     
+	 </update>
+	 
+	<procedure id="callPaHistoryProc" parameterClass="SimpleMap">
+		<![CDATA[
+			{call Pr_MainTain_Cal(#paMonth:VARCHAR#, #cpnyId:VARCHAR#, #personId:VARCHAR#) }
+		]]>
+	</procedure>
+		
+	<!-- retrieve pa mail count -->
+	<select id="retrievePaMailCount" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[	
+		     	SELECT COUNT(*)
+		]]>
+		
+		<isEmpty prepend="" property="tableName">
+		<![CDATA[
+			FROM DUAL WHERE 1 = 2
+		]]>
+		</isEmpty>
+		
+		<isEqual prepend="" property="tableName" compareValue="PA_HISTORY"> <!-- 工资 -->
+			<![CDATA[
+			   FROM PA_HISTORY  PA, PA_EMAIL PE
+			  WHERE PA.PA_MONTH = #paMonth:VARCHAR#
+                AND PA.ATTENDANCE_PERIOD_CODE = #statTypeCode:VARCHAR#
+                AND PA.PA_MONTH = PE.PA_MONTH
+	            AND PA.PERSON_ID = PE.EMPID
+	            AND PE.BONUS_TYPE_CODE = 'BonusType'
+	            AND PA.ATTENDANCE_PERIOD_CODE = PE.ATTENDANCE_PERIOD_CODE
+	            and PA.CPNY_ID=#cpny_id:VARCHAR#
+	            and NVL(PA.SUPPLY_FLAG,'N')=#supplyFlag:VARCHAR#
+			]]>
+		</isEqual>
+		
+		<isEqual prepend="" property="tableName" compareValue="PA_REPLENISHMENT_HISTORY"> <!-- 工资(补) -->
+			<![CDATA[
+			   FROM PA_REPLENISHMENT_HISTORY PA, PA_EMAIL PE
+			  WHERE PA.PA_MONTH = #paMonth:VARCHAR#
+                AND PA.ATTENDANCE_PERIOD_CODE = #statTypeCode:VARCHAR#
+                AND PA.PA_MONTH = PE.PA_MONTH
+                AND PA.RETROACTIVE_TAX_TYPE_CODE = 'RetroactiveTaxType01'
+	            AND PA.PERSON_ID = PE.EMPID
+	            AND PE.BONUS_TYPE_CODE = 'BonusType00'
+	            AND PA.ATTENDANCE_PERIOD_CODE = PE.ATTENDANCE_PERIOD_CODE
+	            and PA.CPNY_ID=#cpny_id:VARCHAR#
+			]]>
+		</isEqual>
+		
+		<isEqual prepend="" property="tableName" compareValue="PA_BONUS_HISTORY"> <!-- 奖金 -->
+			<![CDATA[
+			   FROM PA_BONUS_HISTORY_$cpny_id$_V PA, PA_EMAIL PE
+			  WHERE PA.PA_MONTH = #paMonth:VARCHAR#
+                AND PA.ATTENDANCE_PERIOD_CODE = #statTypeCode:VARCHAR#
+                AND PA.BONUS_TYPE_CODE = #bonusTypeCode:VARCHAR#
+                AND PA.BONUS_NO = #bonusNo:NUMERIC#
+                AND PA.PA_MONTH = PE.PA_MONTH
+	            AND PA.PERSON_ID = PE.EMPID
+	            AND PA.ATTENDANCE_PERIOD_CODE = PE.ATTENDANCE_PERIOD_CODE
+	            AND PA.BONUS_TYPE_CODE = PE.BONUS_TYPE_CODE
+                AND PA.BONUS_NO = PE.BONUS_NO
+			]]>
+		</isEqual>
+		
+		<isNotEmpty prepend="AND" property="key">
+		<![CDATA[ 
+				(    PA.person_id = #person_id:VARCHAR#
+				  OR PA.EMPID = #key:VARCHAR#
+		          OR PA.CHINESENAME = #key:VARCHAR#
+		         )
+		 ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="deptId">
+		<![CDATA[
+		 		PA.DEPTID = #deptId:VARCHAR#
+	    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="activity">
+			<![CDATA[
+					PE.ACTIVITY = #activity:NUMERIC#
+			 ]]>
+		</isNotEmpty>
+		
+		
+	</select>
+	
+	<select id="retrievePaOtherMailCount" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[	
+		     SELECT COUNT(*)
+ 		      FROM PA_OTHER_EMAIL P, HR_EMPLOYEE E
+ 		     WHERE P.EMPID = E.PERSON_ID
+  		      AND E.EMP_DIFF_CODE = #statTypeCode:VARCHAR#
+	]]>
+	
+	<isEqual prepend="AND" property="tableName" compareValue="JJ"><!-- DICC -->
+		   		 P.GIVENAME = '奖金' 
+		</isEqual>
+	<isEqual prepend="AND" property="tableName" compareValue="FLJ"><!-- DICC -->
+		   		 P.GIVENAME = '福利金' 
+		</isEqual>
+	<isNotEmpty prepend="AND" property="paMonth">
+		<![CDATA[ 
+				P.PA_MONTH = #paMonth:VARCHAR#   
+		 ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[ 
+				(    E.person_id = #person_id:VARCHAR#
+			    			  OR E.EMPID = #key:VARCHAR#
+				              OR E.CHINESENAME = #key:VARCHAR#
+				             )  
+			    
+		 ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="deptId">
+		<![CDATA[
+		 		E.DEPTID = #deptId:VARCHAR#
+	    ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="activity">
+		<![CDATA[
+				P.ACTIVITY = #activity:NUMERIC#
+		 ]]>
+	</isNotEmpty>
+	</select>
+	
+
+	<!-- retrieve paInfo send mail information -->
+	<select id="retrievePaInfoForSendMail" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+		     SELECT PA.PA_MONTH,
+		     		PA.ATTENDANCE_PERIOD_CODE,
+			        PA.ATTENDANCE_PERIOD,
+			        PA.EMPID,
+			        PA.CHINESENAME,
+			        PA.DEPTID,
+			        PA.DEPARTMENT,
+			        PA.OFFICE,
+			        PA.BASE_PAY,
+                    PA.THEM_SENDERS,
+			        PA.RESIDENTIAL_GRANTS,
+			        PA.DUTIES_ALLOWANCE,
+			        PA.PERFORMANCE_PAY2,
+			        PA.PERFORMANCE_PAY3,
+                    PA.MOBILE_PHONE_FEE,
+                    PA.FUEL_SURCHARGE_FEE,
+			        PA.SPECIAL_GRANTS,
+			        PA.POST_SUBSIDIES,
+			        PA.OFF_SEA_BOUNS,
+			        PA.PAYMENT_SPECIAL,
+			        PA.NIGHT_DUTY_SUBSIDY,
+			        (PA.DUTY_SUBSIDIES + PA.DUTY_MEAL_SUBSIDIES) AS DUTY_SUBSIDIES,
+			        PA.STICKS_TO_THE_WRONG,
+			        PA.TO_THE_OTHER,
+			        PA.NOT_ATTENDANCE_MINUS,
+			        (PA.LATE_MINUS + PA.LEAVE_EARLY_MINUS) AS LATE_EARLY_MINUS,
+			        PA.VACATION_MINUS,
+			        PA.VACATION_MINUS +  PA.MATERNITY_MINUS AS VACATION_MATERNITY_MINUS,
+			        (PA.LEAVE_MINUS + SICK_MINUS) AS LEAVE_SICK_MINUS,
+			        PA.ABSENTEEISM_MINUS,                    				                	
+				    (PA.LESS_THREE_MONTHS_SICK_MINUS + MORE_THREE_MONTHS_SICK_MINUS) AS LEVEL_OFF_MINUS,
+			        PA.OTHER_LESS,
+			        PA.REDUCE_ERRORS,
+			        PA.HOLIDAY_MINUS,
+			        PA.TRIAL_MINUS,
+			        PA.OTHER_COMPENSATION,
+			        PA.MOBILE_PHONE_FEE,
+			        PA.FUEL_SURCHARGE_FEE,
+			        PA.REGIONAL_GRANTS,
+			        PA.THIS_TOTAL_SUPPORT,
+			        PA.HANDLING_CHARGE,
+			        PA.PAYMENT_OF_EMPLOYER,
+			        (PA.HANDLING_CHARGE + PA.PAYMENT_OF_EMPLOYER) AS XIAOJI,
+			        PA.TOTAL_INSURANCE_COMPANIES,
+			        PA.PAYMENT_OF_INDIVIDUAL,
+			        (PA.TOTAL_PERSONAL_INSURANCE + PA.TOTAL_INSURANCE_COMPANIES) AS GUOQI,
+			        PA.THIS_ACTUAL_TAX,
+			        PA.THIS_ACTUAL_WAGE,
+			        PA.PERSONAL_PENSION,
+			        PA.PERSONAL_MEDICAL,
+			        PA.PERSONAL_UNEMPLOYED,
+			        PA.PERSONAL_HOUSING_FUND,
+			        PA.TOTAL_DEDUCTIONS,
+			        PA.JOB_ALLOWANCE,
+			        get_emp_email(PERSON_ID) as EMAIL,
+			        HD.DEPTNAME AS FOURTHDEPTNAME,
+			        PE.ID,
+			        DECODE(PE.ACTIVITY,0,'否','是') AS ACTIVITY,
+			        PA.ONLY_CHILD,
+			        PA.RESIDENTIAL_MINUS,
+			        (NVL(PA.HOLIDAY_MINUS,0)+NVL(PA.HOLIDAY_MINUS_SHORT,0)+NVL(PA.HOLIDAY_MINUS_LONG,0)) as HOLIDAY_MINUS_ALL,
+			        PA.PAYMENT_HT_ALLOWANCE,
+			        PA.PERFORMANCE_PAY,
+			        PA.MEND_OVERTURE_AWARD,
+			        PA.TECHNIQUE_ALLOWANCE,
+					PA.SYSTEM_BALANCE,
+					PA.MEAL_FEE,
+					PA.DINNER_ALLOWANCE_DICI,
+					PA.TELEPHONE_SUBSIDY,
+					PA.DISPATCH_ALLOWANCE,
+					PA.TAX_AFTER_MINUS,
+					PA.POSITION_ALLOWANCE,
+       				PA.CUSTOMER_SATISFACTION,
+       				PA.A_POST_RESERVATION_MINUS,
+       				PA.HIGH_T_SUBSIDY,
+       				PA.DUTY_ALLOWANCE,
+       				PA.SKILL_ALLOWANCE,
+       				PA.BONUS_VALUE,
+       				PA.GIFT_COST,
+       				0 AS STICKS_TO_THE_WRONG,
+       				PA.RESEARCH_SUBSIDIES,
+       				PA.MEAL_FEE_SUBSIDY,
+       				PA.PERSONAL_WELFARE_TOTAL,
+       				PA.TAX_FREE_SUPPORT,
+       				PA.TAX_FREE,
+       				PA.SENT_GRANTS,
+       				PA.LIFE_GRANTS,
+       				PA.TECHNIQUE_ALLOWANCE_PAY,
+       				PA.INDUSTRY_INJURY_MINUS,
+       				PA.WELFARE_ALLOWANCE,
+                    PA.MEAL_DUTY,
+                    PA.SALES_BOUNS,
+                    PA.BONUS_TAX,
+                    PA.OTHER_ALLOWANCE,
+                    PA.PERSONAL_INSURANCE,
+                    PA.CAL_DQGSDK_TOTAL,
+                    PA.CAL_GSDK_TOTAL + PA.CAL_DQGSDK_TOTAL AS CAL_GSDK_TOTAL_LEIJI
+       				
+			   FROM PA_HISTORY PA, HR_DEPARTMENT HD, PA_EMAIL PE
+			  WHERE PA.OFFICE = HD.DEPTID
+                AND PA.PA_MONTH = PE.PA_MONTH
+	            AND PA.PERSON_ID = PE.EMPID
+	            AND PE.BONUS_TYPE_CODE = 'BonusType'
+	            AND PA.CPNY_ID=#cpny_id:VARCHAR#
+	            AND NVL(PA.SUPPLY_FLAG,'N')=#supplyFlag:VARCHAR#
+	            AND PA.ATTENDANCE_PERIOD_CODE = PE.ATTENDANCE_PERIOD_CODE    
+	]]>
+	
+	<isNotEmpty prepend="AND PE.ID IN " property="ids">
+				<iterate property="ids" open="(" close=")" conjunction=",">
+					 #ids[]:NUMERIC#
+				</iterate>
+	</isNotEmpty>
+	<isEqual prepend="AND" property="cpny_id" compareValue="61000000"><!-- 根据DISC的要求将符合条件的人员屏蔽 -->
+		   		 PA.JOIN_TYPE_CODE NOT IN('C_12009_1330066','C_12009_1330061')
+		</isEqual>
+	<isNotEmpty prepend="AND" property="paMonth">
+		<![CDATA[ 
+				PA.PA_MONTH = #paMonth:VARCHAR#   
+		 ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="statTypeCode">
+		<![CDATA[ 
+				PA.ATTENDANCE_PERIOD_CODE = #statTypeCode:VARCHAR#
+		 ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[ 
+				(    PA.person_id = #person_id:VARCHAR#
+				  OR PA.EMPID = #key:VARCHAR#
+		          OR PA.CHINESENAME = #key:VARCHAR#
+		         )
+			    
+		 ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="deptId">
+		<![CDATA[
+		 		PA.DEPTID = #deptId:VARCHAR#
+	    ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="activity">
+		<![CDATA[
+				PE.ACTIVITY = #activity:NUMERIC#
+		 ]]>
+	</isNotEmpty>
+	
+	<![CDATA[
+			ORDER BY PA.DEPTID,PA.EMPID
+	]]>
+	
+	</select>
+	
+	<select id="retrievePaOtherSendMail" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+		     SELECT P.PA_MONTH,
+    		   E.EMPID,
+    		   E.CHINESENAME,
+    		   P.GIVENAME,
+    		   D.DEPTNAME DEPARTMENT,
+     		   S.CODE_NAME ATTENDANCE_PERIOD,
+    		   P.PERWELFARESUM,
+    		   P.INCOMETAX,
+     		   P.NETAMOUNT,
+     		   P.PAY_AMOUNT,
+    		   GET_EMP_EMAIL(P.EMPID) EMAIL,
+    		   DECODE(P.ACTIVITY,'Y','是','N','否') ACTIVITY
+ 		      FROM PA_OTHER_EMAIL P, HR_EMPLOYEE E, SY_CODE S, HR_DEPARTMENT D
+ 		     WHERE P.EMPID = E.PERSON_ID
+  		        AND E.EMP_DIFF_CODE = S.CODE_ID
+  		        AND E.DEPTID = D.DEPTID
+  			    AND E.EMP_DIFF_CODE = #statTypeCode:VARCHAR# 
+	]]>
+	<isEqual prepend="AND" property="tableName" compareValue="JJ"><!-- DICC -->
+		   		 P.GIVENAME = '奖金' 
+	</isEqual>
+	<isEqual prepend="AND" property="tableName" compareValue="FLJ"><!-- DICC -->
+		   		 P.GIVENAME = '福利金' 
+	</isEqual>
+	<isNotEmpty prepend="AND" property="paMonth">
+		<![CDATA[ 
+				P.PA_MONTH = #paMonth:VARCHAR#   
+		 ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[ 
+				(    E.person_id = #person_id:VARCHAR#
+			    			  OR E.EMPID = #key:VARCHAR#
+				              OR E.CHINESENAME = #key:VARCHAR#
+				             )  
+			    
+		 ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="deptId">
+		<![CDATA[
+		 		E.DEPTID = #deptId:VARCHAR#
+	    ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="activity">
+		<![CDATA[
+				P.ACTIVITY = #activity:NUMERIC#
+		 ]]>
+	</isNotEmpty>
+	
+	</select>
+	
+	<select id="retrievePaInfoForSendOtherMail" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+		     SELECT P.PA_MONTH,
+    		   E.EMPID,
+    		   E.CHINESENAME,
+    		   P.GIVENAME,
+    		   D.DEPTNAME DEPARTMENT,
+     		   S.CODE_NAME ATTENDANCE_PERIOD,
+    		   P.PERWELFARESUM,
+    		   P.INCOMETAX,
+     		   P.NETAMOUNT,
+    		   GET_EMP_EMAIL(P.EMPID) EMAIL,
+    		   DECODE(P.ACTIVITY,'Y','是','N','否') ACTIVITY
+ 		      FROM PA_OTHER_EMAIL P, HR_EMPLOYEE E, SY_CODE S, HR_DEPARTMENT D
+ 		     WHERE P.EMPID = E.PERSON_ID
+  		        AND E.EMP_DIFF_CODE = S.CODE_ID
+  		        AND E.DEPTID = D.DEPTID
+  			    AND E.EMP_DIFF_CODE = #statTypeCode:VARCHAR#
+	]]>
+	<isEqual prepend="AND" property="tableName" compareValue="JJ"><!-- DICC -->
+		   		 P.GIVENAME = '奖金' 
+		</isEqual>
+	<isEqual prepend="AND" property="tableName" compareValue="FLJ"><!-- DICC -->
+		   		 P.GIVENAME = '福利金' 
+		</isEqual>
+	
+	<isNotEmpty prepend="AND" property="paMonth">
+		<![CDATA[ 
+				P.PA_MONTH = #paMonth:VARCHAR#   
+		 ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[ 
+				(    E.person_id = #person_id:VARCHAR#
+			    			  OR E.EMPID = #key:VARCHAR#
+				              OR E.CHINESENAME = #key:VARCHAR#
+				             )  
+			    
+		 ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="deptId">
+		<![CDATA[
+		 		E.DEPTID = #deptId:VARCHAR#
+	    ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="activity">
+		<![CDATA[
+				P.ACTIVITY = #activity:NUMERIC#
+		 ]]>
+	</isNotEmpty>
+	
+	</select>
+	
+	<!-- retrieve paReplenishmentInfo send mail information -->
+	<select id="retrievePaReplenishmentInfoForSendMail" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+		     SELECT PA.PA_MONTH,
+		     		PA.ATTENDANCE_PERIOD_CODE,
+			        PA.ATTENDANCE_PERIOD,
+			        PA.EMPID,
+			        PA.CHINESENAME,
+			        PA.DEPTID,
+			        PA.DEPARTMENT,
+			        PA.OFFICE,
+			        PA.PAY_CLASS_WAGES AS BASE_PAY,
+                	PA.RESIDENTIAL_GRANTS,       
+                	
+                	PA.WAGE_WARIANCE AS THIS_TOTAL_SUPPORT,        
+			        PA.RETROACTIVE_TAX_MONEY AS THIS_ACTUAL_TAX,
+			        PA.RETROACTIVE_TAX_MONEY AS TOTAL_DEDUCTIONS,
+			        PA.NEW_THIS_ACTUAL_WAGE AS THIS_ACTUAL_WAGE,
+			        
+			        HD.DEPTNAME AS FOURTHDEPTNAME,
+			        NVL(HR.EMAIL,#errorMail:VARCHAR#) as EMAIL,
+			        PE.ID,
+			        DECODE(PE.ACTIVITY,0,'否','是') AS ACTIVITY,
+		            
+		            0 AS DUTIES_ALLOWANCE,
+			        0 AS PERFORMANCE_PAY2,
+			        0 AS PERFORMANCE_PAY3,
+			        0 AS SPECIAL_GRANTS,
+			        0 AS DUTY_SUBSIDIES,
+			        0 AS STICKS_TO_THE_WRONG,
+			        0 AS TO_THE_OTHER,
+			        0 AS NOT_ATTENDANCE_MINUS,
+			        0 AS LATE_EARLY_MINUS,
+			        0 AS VACATION_MINUS,
+			        0 AS LEAVE_SICK_MINUS,
+			        0 AS ABSENTEEISM_MINUS,                    				                	
+				    0 AS LEVEL_OFF_MINUS,
+			        0 AS OTHER_LESS,
+			        0 AS REDUCE_ERRORS,
+			        0 AS HOLIDAY_MINUS,
+			        0 AS TRIAL_MINUS,
+			        0 AS OTHER_COMPENSATION,
+			        0 AS REGIONAL_GRANTS,
+			        0 AS HANDLING_CHARGE,
+			        0 AS PAYMENT_OF_EMPLOYER,
+			        0 AS XIAOJI,
+			        0 AS TOTAL_INSURANCE_COMPANIES,
+			        0 AS PAYMENT_OF_INDIVIDUAL,
+			        0 AS GUOQI,
+			        0 AS PERSONAL_PENSION,
+			        0 AS PERSONAL_MEDICAL,
+			        0 AS PERSONAL_UNEMPLOYED,
+			        0 AS PERSONAL_HOUSING_FUND,
+			        0 AS ONLY_CHILD,
+			        0 AS RESIDENTIAL_MINUS,
+			        0 AS HOLIDAY_MINUS_ALL
+		            
+			   FROM PA_REPLENISHMENT_HISTORY PA, HR_DEPARTMENT HD, PA_EMAIL PE, HR_EMPLOYEE HR
+			  WHERE PA.OFFICE = HD.DEPTID
+			    AND PA.Person_Id = HR.Person_Id
+                AND PA.PA_MONTH = PE.PA_MONTH
+                AND PA.RETROACTIVE_TAX_TYPE_CODE = 'RetroactiveTaxType01'
+	            AND PA.Person_Id = PE.EMPID
+	            AND PA.ATTENDANCE_PERIOD_CODE = PE.ATTENDANCE_PERIOD_CODE
+	            AND PE.BONUS_TYPE_CODE = 'BonusType00'
+	            AND PA.CPNY_ID=#cpny_id:VARCHAR#
+              
+	]]>
+	
+	<isNotEmpty prepend="AND PE.ID IN " property="ids">
+				<iterate property="ids" open="(" close=")" conjunction=",">
+					 #ids[]:NUMERIC#
+				</iterate>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="paMonth">
+		<![CDATA[ 
+				PA.PA_MONTH = #paMonth:VARCHAR#   
+		 ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="statTypeCode">
+		<![CDATA[ 
+				PA.ATTENDANCE_PERIOD_CODE = #statTypeCode:VARCHAR#
+			    
+		 ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[ 
+				(    PA.person_id = #person_id:VARCHAR#
+				  OR PA.EMPID = #key:VARCHAR#
+		          OR PA.CHINESENAME = #key:VARCHAR#
+		         )
+			    
+		 ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="deptId">
+		<![CDATA[
+		 		PA.DEPTID = #deptId:VARCHAR#
+	    ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="activity">
+		<![CDATA[
+				PE.ACTIVITY = #activity:NUMERIC#
+		 ]]>
+	</isNotEmpty>
+	
+	<![CDATA[
+			ORDER BY PA.DEPTID,PA.EMPID
+	]]>
+	
+	</select>
+	
+	<!-- retrieve paBonusInfo send mail information -->
+	<select id="retrievePaBonusInfoForSendMail" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+		     SELECT PA.PA_MONTH,
+		     		PA.ATTENDANCE_PERIOD_CODE,
+			        PA.ATTENDANCE_PERIOD,
+			        PA.EMPID,
+			        PA.CHINESENAME,
+			        PA.DEPTID,
+			        PA.DEPARTMENT,
+			        PA.OFFICE,
+			        PA.PAY_CLASS_WAGES AS BASE_PAY,
+                	PA.RESIDENTIAL_GRANTS,       
+                	PA.THIS_TOTAL_SUPPORT,        
+			        PA.THIS_ACTUAL_TAX,
+			        PA.THIS_ACTUAL_TAX AS TOTAL_DEDUCTIONS,
+			        PA.THIS_ACTUAL_BONUS AS THIS_ACTUAL_WAGE,
+			        HD.DEPTNAME AS FOURTHDEPTNAME,
+			        NVL(PA.EMAIL,#errorMail:VARCHAR#) as EMAIL,
+			        PE.ID,
+			        DECODE(PE.ACTIVITY,0,'否','是') AS ACTIVITY,
+		            PA.BONUS_NO,
+		            PA.BONUS_TYPE,
+		            PA.STICKS_TO_THE_WRONG,
+		            
+		            0 AS DUTIES_ALLOWANCE,
+			        0 AS PERFORMANCE_PAY2,
+			        0 AS PERFORMANCE_PAY3,
+			        0 AS POST_SUBSIDIES,
+			        0 AS TECHNIQUE_ALLOWANCE,
+			        0 AS MOBILE_PHONE_FEE,
+			        0 AS FUEL_SURCHARGE_FEE,
+			        0 AS MEAL_DUTY,
+			        0 AS OFF_SEA_BOUNS,
+			        0 AS SPECIAL_GRANTS,
+			        0 AS DUTY_SUBSIDIES,
+			        0 AS TO_THE_OTHER,
+			        0 AS NOT_ATTENDANCE_MINUS,
+			        0 AS LATE_EARLY_MINUS,
+			        0 AS VACATION_MINUS,
+			        0 AS LEAVE_SICK_MINUS,
+			        0 AS ABSENTEEISM_MINUS,                    				                	
+				    0 AS LEVEL_OFF_MINUS,
+			        PA.OTHER_LESS AS OTHER_LESS,
+			        0 AS REDUCE_ERRORS,
+			        0 AS HOLIDAY_MINUS,
+			        0 AS TRIAL_MINUS,
+			        0 AS OTHER_COMPENSATION,
+			        0 AS REGIONAL_GRANTS,
+			        0 AS HANDLING_CHARGE,
+			        0 AS PAYMENT_OF_EMPLOYER,
+			        0 AS XIAOJI,
+			        0 AS TOTAL_INSURANCE_COMPANIES,
+			        0 AS PAYMENT_OF_INDIVIDUAL,
+			        0 AS GUOQI,
+			        0 AS PERSONAL_PENSION,
+			        0 AS PERSONAL_MEDICAL,
+			        0 AS PERSONAL_UNEMPLOYED,
+			        0 AS PERSONAL_HOUSING_FUND,
+			        0 AS ONLY_CHILD,
+			        0 AS NIGHT_DUTY_SUBSIDY,
+		            0 AS RESIDENTIAL_MINUS,
+		            0 AS HOLIDAY_MINUS_ALL,
+		            0 AS A_POST_RESERVATION_MINUS,
+		            0 AS MEND_OVERTURE_AWARD,
+		            0 AS PAYMENT_HT_ALLOWANCE,
+		            0 AS RESEARCH_SUBSIDIES,
+		            0 AS VACATION_MATERNITY_MINUS,
+		            0 AS OTHER_LESS
+		            
+		            
+			   FROM PA_BONUS_HISTORY_$cpny_id$_V PA, HR_DEPARTMENT HD, PA_EMAIL PE
+			  WHERE PA.OFFICE = HD.DEPTID
+                AND PA.PA_MONTH = PE.PA_MONTH
+	            AND PA.PERSON_ID = PE.EMPID
+	            AND PA.ATTENDANCE_PERIOD_CODE = PE.ATTENDANCE_PERIOD_CODE
+	            AND PA.BONUS_TYPE_CODE = PE.BONUS_TYPE_CODE
+                AND PA.BONUS_NO = PE.BONUS_NO
+              
+	]]>
+	
+	<isNotEmpty prepend="AND PE.ID IN " property="ids">
+				<iterate property="ids" open="(" close=")" conjunction=",">
+					 #ids[]:NUMERIC#
+				</iterate>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="paMonth">
+		<![CDATA[ 
+				PA.PA_MONTH = #paMonth:VARCHAR#   
+		 ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="statTypeCode">
+		<![CDATA[ 
+				PA.ATTENDANCE_PERIOD_CODE = #statTypeCode:VARCHAR#
+			    
+		 ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="bonusTypeCode">
+		<![CDATA[ 
+				PA.BONUS_TYPE_CODE = #bonusTypeCode:VARCHAR#
+		 ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="bonusNo">
+		<![CDATA[ 
+				PA.BONUS_NO = #bonusNo:NUMERIC#    
+		 ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="key">
+		<![CDATA[ 
+				(    PA.person_id = #person_id:VARCHAR#
+				  OR PA.EMPID = #key:VARCHAR#
+		          OR PA.CHINESENAME = #key:VARCHAR#
+		         )
+			    
+		 ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="deptId">
+		<![CDATA[
+		 		PA.DEPTID = #deptId:VARCHAR#
+	    ]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="activity">
+		<![CDATA[
+				PE.ACTIVITY = #activity:NUMERIC#
+		 ]]>
+	</isNotEmpty>
+	
+	<![CDATA[
+			ORDER BY PA.DEPTID,PA.EMPID
+	]]>
+	</select>
+	
+	<!-- update pa email send ACTIVITY -->
+	<update id="updatePaEmail" parameterClass="SimpleMap" >
+		<![CDATA[
+		
+		 	UPDATE PA_EMAIL 
+			   SET ACTIVITY = 1 
+			 WHERE ID = #ID:NUMERIC#
+	 	]]>
+	 </update>
+	 
+	<!-- update updatePaOtherEmail send ACTIVITY -->
+	<update id="updatePaOtherEmail" parameterClass="SimpleMap" >
+		<![CDATA[
+		   UPDATE PA_OTHER_EMAIL P
+                SET P.ACTIVITY = 'Y', P.UPDATE_DATE = SYSDATE
+             WHERE P.PA_MONTH = #PA_MONTH:VARCHAR#
+                   AND P.GIVENAME = #GIVENAME:VARCHAR#
+                   AND P.EMPID = 
+                   (SELECT E.PERSON_ID
+                           FROM HR_EMPLOYEE E
+                     WHERE E.EMPID = #EMPID:VARCHAR#
+                        AND E.CPNY_ID = '61000000')
+	 	]]>
+	 </update>
+	
+	<!-- retrieve altert DSHR columns -->
+	<!--  ALL_TAB_COLUMNS.COLUMN_NAME,ALL_TAB_COLUMNS.DATA_TYPE,ALL_TAB_COLUMNS.DATA_LENGTH,USER_COL_COMMENTS.COMMENTS,ALL_TAB_COLUMNS.DATA_PRECISION -->
+	<select id="retrieveAlterDsHrColumns" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+				SELECT 'ALTER TABLE ' || ALL_TAB_COLUMNS.TABLE_NAME || ' ADD ' || ALL_TAB_COLUMNS.COLUMN_NAME || ' ' || ALL_TAB_COLUMNS.DATA_TYPE ||
+				       CASE ALL_TAB_COLUMNS.DATA_TYPE
+				         WHEN 'NUMBER' THEN DECODE(NVL(ALL_TAB_COLUMNS.DATA_PRECISION,1),1,'','(' || ALL_TAB_COLUMNS.DATA_PRECISION || ')')
+				         WHEN 'DATE' THEN ''
+				         ELSE '(' || ALL_TAB_COLUMNS.DATA_LENGTH || ')'
+				       END AS "ALTERSQL"
+				  FROM ALL_TAB_COLUMNS
+				 WHERE ALL_TAB_COLUMNS.TABLE_NAME = #TABLE_NAME:VARCHAR#
+				   AND ALL_TAB_COLUMNS.OWNER = 'CHRS'
+				   AND NOT EXISTS
+				 (SELECT *
+				          FROM USER_COL_COMMENTS T
+				         WHERE T.COLUMN_NAME IN ($dsHrPaHistoryColumns$)
+				           AND T.COLUMN_NAME = ALL_TAB_COLUMNS.COLUMN_NAME
+				           AND T.TABLE_NAME = ALL_TAB_COLUMNS.TABLE_NAME)
+				UNION ALL
+				SELECT 'COMMENT ON COLUMN ' || USER_COL_COMMENTS.TABLE_NAME || '.' ||
+				        USER_COL_COMMENTS.COLUMN_NAME || ' IS ''' || USER_COL_COMMENTS.COMMENTS || ''''
+				        AS "ALTERSQL"
+				  FROM USER_COL_COMMENTS
+				 WHERE USER_COL_COMMENTS.TABLE_NAME = #TABLE_NAME:VARCHAR#
+				   AND USER_COL_COMMENTS.COMMENTS IS NOT NULL
+				   AND NOT EXISTS
+				 (SELECT *
+				          FROM USER_COL_COMMENTS T
+				         WHERE T.COLUMN_NAME IN ($dsHrPaHistoryColumns$)
+				           AND T.COLUMN_NAME = USER_COL_COMMENTS.COLUMN_NAME
+				           AND T.TABLE_NAME = USER_COL_COMMENTS.TABLE_NAME)
+		]]>
+		
+	</select>
+	
+	<!-- retrieve altert DSHR Comments -->
+	<!--  ALL_TAB_COLUMNS.COLUMN_NAME,ALL_TAB_COLUMNS.DATA_TYPE,ALL_TAB_COLUMNS.DATA_LENGTH,USER_COL_COMMENTS.COMMENTS,ALL_TAB_COLUMNS.DATA_PRECISION -->
+	<select id="retrieveAlterDsHrComments" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+				SELECT 'COMMENT ON COLUMN ' || USER_COL_COMMENTS.TABLE_NAME || '.' ||
+				        USER_COL_COMMENTS.COLUMN_NAME || ' IS ''' || USER_COL_COMMENTS.COMMENTS || ''''
+				        AS "ALTERSQL",USER_COL_COMMENTS.COLUMN_NAME
+				  FROM USER_COL_COMMENTS
+				 WHERE USER_COL_COMMENTS.TABLE_NAME = #TABLE_NAME:VARCHAR#
+				   AND USER_COL_COMMENTS.COMMENTS IS NOT NULL
+				   AND NOT EXISTS
+				 (SELECT *
+				          FROM USER_COL_COMMENTS T
+				         WHERE T.COLUMN_NAME IN ($dsHrPaHistoryColumns$)
+				           AND T.COLUMN_NAME = USER_COL_COMMENTS.COLUMN_NAME
+				           AND T.TABLE_NAME = USER_COL_COMMENTS.TABLE_NAME)
+		]]>
+	</select>
+	
+	<!-- retrieve insert data DSHR columns -->
+	<select id="retrieveInsertDataColumns" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			    SELECT ALL_TAB_COLUMNS.COLUMN_NAME,
+				       ALL_TAB_COLUMNS.DATA_TYPE,
+				       (CASE ALL_TAB_COLUMNS.DATA_TYPE 
+				            WHEN 'NUMBER' THEN ALL_TAB_COLUMNS.DATA_PRECISION
+				            WHEN 'DATE'   THEN ALL_TAB_COLUMNS.DATA_PRECISION                            
+				            ELSE ALL_TAB_COLUMNS.DATA_LENGTH END
+				       ) AS DATA_LENGTH
+				  FROM ALL_TAB_COLUMNS, USER_COL_COMMENTS
+				 WHERE ALL_TAB_COLUMNS.TABLE_NAME = #TABLE_NAME:VARCHAR#
+				   AND ALL_TAB_COLUMNS.OWNER = 'CHRS'
+				   AND ALL_TAB_COLUMNS.TABLE_NAME = USER_COL_COMMENTS.TABLE_NAME
+				   AND ALL_TAB_COLUMNS.COLUMN_NAME = USER_COL_COMMENTS.COLUMN_NAME
+		]]>
+		
+	</select>
+
+	<!-- retrieve insert DSHR data -->
+	<select id="retrieveInsertDsHrDatas" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			     SELECT *
+			     	FROM $TABLE_NAME$
+			       WHERE PA_MONTH = #PA_MONTH:VARCHAR# AND CPNY_ID=#CPNYID:VARCHAR#
+		]]>
+		
+	</select>
+
+	<!-- retrieve pa_item_list of month -->
+	<select id="RetrievePa_Item_List_Month" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			     SELECT ITEM_NAME,ITEM_EN_NAME,ITEM_KOR_NAME,ITEM_ID 
+			     	FROM PA_ITEM 
+			     	where ( cpny_id=#cpnyId:VARCHAR#  or cpny_id is null)
+			    ORDER BY CALCU_ORDER
+		]]>
+		
+	</select>
+	
+	<!-- retrieve pa_param_item_list month -->
+	<select id="RetrievePa_param_item_list" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			     SELECT PARAM_NAME,PARAM_EN_NAME,PARAM_KOR_NAME,PARAM_ID 
+       					FROM PA_PARAM_ITEM 		
+       					where ( cpny_id=#cpnyId:VARCHAR#  or cpny_id is null)
+	    ]]>	 	   	
+		
+	    <![CDATA[
+	    		ORDER BY PARAM_NO
+	    ]]>
+	</select>
+
+	<!-- retrieve Pa_distinct_list  -->
+	 <select id="RetrievePa_distinct_list" parameterClass="SimpleMap" resultClass="SimpleMap" >
+		<![CDATA[	
+			     SELECT FIELD_NAME,DISTINCT_FIELD,FIELD_EN_NAME,FIELD_KOR_NAME
+     	  		   FROM PA_DISTINCT_LIST 
+     	  		  WHERE ACTIVITY = 1 
+			        AND TABLE_NAME IN ('PA_HR_V','PA_AR_V')
+			   ORDER BY ID 
+		]]>	        
+	 </select>
+	 
+	 	<!-- retrieve pa_bonus_item_list of month -->
+	<select id="RetrievePa_bonus_Item_List_Month" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			     SELECT ITEM_NAME,ITEM_ID 
+			     	FROM PA_BONUS_ITEM 
+			     WHERE (CPNY_ID=#cpnyId:VARCHAR# OR CPNY_ID IS NULL )
+			    ORDER BY CALCU_ORDER
+		]]>
+		
+	</select>
+	
+	<!-- retrieve pa_bonus_param_item_list month -->
+	<select id="RetrievePa_bonus_param_item_list" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			     SELECT PARAM_NAME,PARAM_ID 
+       					FROM PA_BONUS_PARAM_ITEM 	
+       					 WHERE (CPNY_ID=#cpnyId:VARCHAR# OR CPNY_ID IS NULL )	
+	    ]]>	
+		
+	    <![CDATA[
+	    		ORDER BY PARAM_NO
+	    ]]>
+	</select>
+
+	<!-- retrieve Pa_bonus_distinct_list  -->
+	 <select id="RetrievePa_bonus_distinct_list" parameterClass="SimpleMap" resultClass="SimpleMap" >
+		<![CDATA[	
+			     SELECT FIELD_NAME,DISTINCT_FIELD
+     	  		   FROM PA_DISTINCT_LIST 
+     	  		  WHERE ACTIVITY = 1 
+			        AND TABLE_NAME IN ('PA_HR_V')
+			   ORDER BY ID 
+		]]>	        
+	 </select>
+	 
+	 <!-- retrieve PA_HISTORY count  -->
+	 <select id="paCheckNormalCalc" parameterClass="SimpleMap" resultClass="int" >
+		<![CDATA[	
+			     SELECT COUNT(EMPID)
+     	  		   FROM PA_HISTORY PA 
+     	  		  WHERE PA.PA_MONTH = #pamonth:VARCHAR#
+			        AND PA.ATTENDANCE_PERIOD_CODE = #statTypeCode:VARCHAR#
+			        AND PA.CPNY_ID = #cpnyId:VARCHAR#
+		]]>	        
+	 </select>
+	 
+	 
+	 <!-- retrieve PA_REPLENISHMENT_HISTORY count  -->
+	 <select id="paCheckSpecialCalc" parameterClass="SimpleMap" resultClass="int" >
+		<![CDATA[	
+			     SELECT COUNT(EMPID)
+     	  		   FROM PA_REPLENISHMENT_HISTORY PA 
+     	  		  WHERE PA.PA_MONTH = #pamonth:VARCHAR#
+			        AND PA.ATTENDANCE_PERIOD_CODE = #statTypeCode:VARCHAR#
+                    AND PA.RETROACTIVE_TAX_TYPE_CODE = #retroactiveTaxType:VARCHAR#
+                    AND PA.CPNY_ID = #cpnyId:VARCHAR#
+		]]>	        
+	 </select>
+	 
+	 <!-- retrieve PA_BONUS_HISTORY count  -->
+	 <select id="paBonusCheckCalc" parameterClass="SimpleMap" resultClass="int" >
+		<![CDATA[	
+			     SELECT COUNT(EMPID)
+     	  		   FROM PA_BONUS_HISTORY PA 
+     	  		  WHERE PA.PA_MONTH = #pamonth:VARCHAR#
+			        AND PA.ATTENDANCE_PERIOD_CODE = #statTypeCode:VARCHAR#
+			        AND PA.BONUS_TYPE_CODE = #bonusTypeCode:VARCHAR#
+                    AND PA.BONUS_NO = #bonusNo:NUMERIC#
+                    AND PA.CPNY_ID = #cpnyId:VARCHAR#
+		]]>	        
+	 </select>
+	 
+	 <!-- retrieve Param Data  -->
+	 <select id="retrieveParamDataList" parameterClass="SimpleMap" resultClass="SimpleMap" >
+		<![CDATA[	
+			     SELECT Field1_Value PERSON_ID,
+			            HR.EMPID,
+			     		HR.CHINESENAME,
+			     		HD.DEPTNAME,
+                		PARAM_DATA_NO,
+                		PARAM_NO,
+                		FIELD1_VALUE ,
+                		FIELD2_VALUE ,
+                		RETURN_VALUE ,
+                		START_MONTH ,
+                		END_MONTH ,
+                		SD_ED_VALUE
+                   FROM PA_PARAM_DATA,
+                   		HR_EMPLOYEE HR,
+                   		HR_DEPARTMENT HD
+                  WHERE PARAM_NO = #configureNo:NUMERIC# 
+                  	AND FIELD1_VALUE = HR.PERSON_ID(+)
+                  	AND HR.DEPTID = HD.DEPTID
+                  	AND PA_PARAM_DATA.CPNY_ID=#cpnyId:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="deptid">
+			<![CDATA[				
+				 EXISTS( SELECT HD.DEPTID FROM HR_DEPARTMENT HD WHERE HR.DEPTID = HD.DEPTID  START WITH DEPTID = #deptid:VARCHAR2# CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID ) 
+		  ]]>	 
+	   </isNotEmpty>
+	   <isNotEmpty prepend="AND" property="key">
+			<![CDATA[				
+				 (HR.CHINESENAME LIKE '%' || #key:VARCHAR2# || '%' OR UPPER(HR.EMPID) LIKE '%' || UPPER(#key:VARCHAR2#) || '%' OR UPPER(HR.CHINESE_PINYIN) LIKE '%' || UPPER(#key:VARCHAR2#) || '%')
+		  ]]>	 
+	   </isNotEmpty>	        
+	 </select>
+	 
+	 <select id="PayCalculationSignsForSearchNumber" parameterClass="SimpleMap" resultClass="int" >
+		<![CDATA[	
+			   select count(t.empid) from hr_employee t,hr_department depart
+			   where t.deptid = depart.deptid(+) 
+			   AND t.cpny_id = #cpny_id:VACHAR#
+			   AND T.EMP_DIFF_CODE = #statTypeCode:VACHAR#
+			   AND T.ACTIVITY = 1		    
+		]]>	  
+		<isNotEmpty prepend="AND" property="deptID">
+			<![CDATA[				
+				 t.deptid=#deptID:VARCHAR# 
+		  ]]>	 
+	   </isNotEmpty>
+		<isNotEmpty prepend="AND" property="key">
+			<![CDATA[				
+					 (t.person_id = #person_id:VARCHAR#
+					  or t.empid = #key:VARCHAR#
+					  or t.chinesename = #key:VARCHAR#
+					 )
+		  ]]>	 
+	   </isNotEmpty>        
+	   <isNotEmpty prepend="AND" property="flag">
+			<![CDATA[				
+				 t.calc_flag = #flag:VARCHAR# 
+		  ]]>	 
+	   </isNotEmpty>
+		<isNotEmpty prepend="AND" property="year">
+			<![CDATA[				
+					 t.post_grade_year = #year:VARCHAR#
+		  ]]>	 
+	   </isNotEmpty>  
+	 </select>
+	 
+ 
+	 	<!-- retrieve PayCalculationSignsForSearch  -->
+	 <select id="PayCalculationSignsForSearch" parameterClass="SimpleMap" resultClass="SimpleMap" >
+		<![CDATA[	
+			 select t.empid, 
+			 		t.chinesename, 
+			 		depart.deptname,
+			 		t.calc_flag,
+			 		t.Post_Grade_Year,
+			 		t.INSR_AREA,
+			 		t.person_id   AS  person_id
+             from hr_employee t, hr_department depart
+             where t.deptid = depart.deptid(+)  and t.cpny_id=#cpny_id:VACHAR#  
+               AND T.EMP_DIFF_CODE = #statTypeCode:VACHAR#
+               AND T.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="deptID">
+			<![CDATA[				
+				 t.deptid=#deptID:VARCHAR# 
+		  ]]>	 
+	   </isNotEmpty>
+		<isNotEmpty prepend="AND" property="key">
+			<![CDATA[				
+					 (t.person_id = #person_id:VARCHAR#
+					  or t.empid = #key:VARCHAR#
+					  or t.chinesename = #key:VARCHAR#
+					 )
+		  ]]>	 
+	   </isNotEmpty>       
+	   	<isNotEmpty prepend="AND" property="flag">
+			<![CDATA[				
+				 t.calc_flag = #flag:VARCHAR# 
+		  ]]>	 
+	   </isNotEmpty>
+		<isNotEmpty prepend="AND" property="year">
+			<![CDATA[				
+					 t.post_grade_year =  #year:VARCHAR#
+		  ]]>	 
+	   </isNotEmpty>   
+	 </select>
+	 
+	 	<!-- retrieve PayCalculationSignsForSearch  -->
+	 <select id="PayCalculationSignsForSearchDici" parameterClass="SimpleMap" resultClass="SimpleMap" >
+		<![CDATA[	
+			 select  t.empid,
+			         t.chinesename,
+			         depart.deptname,
+			         t.calc_flag,
+			         t.Post_Grade_Year,
+			         t.INSR_AREA,
+			         t.person_id,
+			         t.ko_calc_flag,
+			         t.CPNYNAME
+			  from (select A.*,SY.CODE_NAME CPNYNAME
+			          from hr_employee a,SY_CODE SY
+			         where (a.join_type_code = 'C_12009_1330064' or
+			               a.cpny_id = '59000000')
+                           AND A.CPNY_ID=SY.CODE_ID(+)
+			               ) t,
+			       hr_department depart
+			 where t.deptid = depart.deptid(+)
+			   and t.activity = 1
+		]]>
+		<isNotEmpty prepend="AND" property="joinType">
+			<![CDATA[				
+				 t.join_type_code = #joinType:VARCHAR#
+		  ]]>	 
+	   </isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptID">
+			<![CDATA[				
+				 t.deptid=#deptID:VARCHAR# 
+		  ]]>	 
+	   </isNotEmpty>
+		<isNotEmpty prepend="AND" property="key">
+			<![CDATA[				
+					 (t.person_id = #person_id:VARCHAR#
+					  or t.empid = #key:VARCHAR#
+					  or t.chinesename = #key:VARCHAR#
+					 )
+		  ]]>	 
+	   </isNotEmpty>       
+	   	<isNotEmpty prepend="AND" property="flag">
+			<![CDATA[				
+				 t.calc_flag = #flag:VARCHAR# 
+		  ]]>	 
+	   </isNotEmpty>
+		<isNotEmpty prepend="AND" property="year">
+			<![CDATA[				
+					 t.post_grade_year =  #year:VARCHAR#
+		  ]]>	 
+	   </isNotEmpty>   
+	 </select>
+	 
+	 <select id="PayCalculationSignsForSearchNumberDici" parameterClass="SimpleMap" resultClass="int" >
+		<![CDATA[	
+			 select count(*) cut
+			  from (select *
+			          from hr_employee A
+			         where (a.join_type_code = 'C_12009_1330064' or
+			               a.cpny_id = '59000000')
+			               AND  A.date_left is null
+                           AND A.status_code<>'EmpStatus3') t,
+			       hr_department depart
+			 where t.deptid = depart.deptid(+)
+			   and t.activity = 1
+		]]>
+		<isNotEmpty prepend="AND" property="joinType">
+			<![CDATA[				
+				 t.join_type_code = #joinType:VARCHAR#
+		  ]]>	 
+	   </isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptID">
+			<![CDATA[				
+				 t.deptid=#deptID:VARCHAR# 
+		  ]]>	 
+	   </isNotEmpty>
+		<isNotEmpty prepend="AND" property="key">
+			<![CDATA[				
+					 (t.person_id = #person_id:VARCHAR#
+					  or t.empid = #key:VARCHAR#
+					  or t.chinesename = #key:VARCHAR#
+					 )
+		  ]]>	 
+	   </isNotEmpty>       
+	   	<isNotEmpty prepend="AND" property="flag">
+			<![CDATA[				
+				 t.calc_flag = #flag:VARCHAR# 
+		  ]]>	 
+	   </isNotEmpty>
+		<isNotEmpty prepend="AND" property="year">
+			<![CDATA[				
+					 t.post_grade_year =  #year:VARCHAR#
+		  ]]>	 
+	   </isNotEmpty>   
+	 </select>
+	 
+	 	 	<!-- retrieve PayCalculationSignsForSearch  -->
+	 <update id="PayCalculationSignsForUpdate" parameterClass="SimpleMap">
+		<![CDATA[	
+			 update hr_employee t
+			 set t.calc_flag=#calcFlag:VARCHAR#,
+			 	 t.Post_Grade_Year=#POST_GRADE_YEAR:VARCHAR#,
+			 	 t.INSR_AREA=#INSR_AREA:VARCHAR#
+			 where t.person_id=#person_id:VARCHAR#       
+		]]> 
+	 </update>
+	 
+	  	<!-- retrieve PayCalculationSignsForSearch  -->
+	 <update id="PayCalculationSignsForUpdateDici" parameterClass="SimpleMap">
+		<![CDATA[	
+			 update hr_employee t
+			 set t.calc_flag=#calcFlag:VARCHAR#,
+			 	 t.Post_Grade_Year=#POST_GRADE_YEAR:VARCHAR#,
+			 	 t.INSR_AREA=#INSR_AREA:VARCHAR#,
+			 	 t.ko_calc_flag=#ko_calc_flag:VARCHAR#
+			 where t.person_id=#person_id:VARCHAR#       
+		]]> 
+	 </update>
+	 
+	 <!-- retrieve PayBankCodeForSearchNumberPa  -->
+	 <select id="PayBankCodeForSearchNumberPa" parameterClass="SimpleMap" resultClass="int" >
+		<![CDATA[
+			 SELECT COUNT(PA.EMPID)
+			   FROM HR_EMPLOYEE HR , 
+			        (SELECT PA_HISTORY.EMPID, PA_HISTORY.DEPARTMENT, PA_HISTORY.THIS_ACTUAL_WAGE,PA_HISTORY.Person_Id
+			           FROM PA_HISTORY
+			          WHERE PA_HISTORY.PA_MONTH = #paMonth:VARCHAR#
+			            AND PA_HISTORY.ATTENDANCE_PERIOD_CODE = #statTypeCode:VARCHAR#
+			        ) PA
+			  WHERE PA.Person_Id = HR.Person_Id(+) and hr.cpny_id=#cpny_id:varchar#
+		]]>
+		<isNotEmpty prepend="AND" property="person_id">
+			<![CDATA[				
+					HR.Person_Id =  #person_id:VARCHAR#
+		  ]]>	 
+	   </isNotEmpty>            
+	 </select>
+	 
+	 <select id="PayBankCodeForSearchNumberPa1" parameterClass="SimpleMap" resultClass="int" >
+		<![CDATA[
+			 SELECT COUNT(HR.EMPID)
+			   FROM HR_EMPLOYEE HR ,hr_department depart
+			  WHERE HR.deptid = depart.deptid(+) 
+			    and  hr.cpny_id = #cpny_id:varchar#
+			    AND HR.EMP_DIFF_CODE = #statTypeCode:varchar#
+			    AND HR.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="key">
+			<![CDATA[				
+					(HR.person_id = #person_id:VARCHAR#
+					  or HR.empid = #key:VARCHAR#
+					  or HR.chinesename = #key:VARCHAR#
+					 )
+		  ]]>	 
+	   </isNotEmpty> 
+	   <isNotEmpty prepend="AND" property="deptID">
+			<![CDATA[				
+					hr.deptid=#deptID:VARCHAR#
+		  ]]>	 
+	   </isNotEmpty> 
+		<![CDATA[ 
+	      AND (HR.date_left BETWEEN TO_DATE(TO_CHAR(add_months(SYSDATE, -1), 'YYYY-MM-DD'), 'YYYY-MM-DD')
+          AND TO_DATE(TO_CHAR(SYSDATE, 'YYYY-MM-DD'), 'YYYY-MM-DD') or HR.date_left is null)
+          AND HR.CALC_FLAG = 'Y'
+	         ]]>   
+	 </select>
+	 
+	 <!-- retrieve PayBankCodeForSearchPa  -->
+	 <select id="PayBankCodeForSearchPa" parameterClass="SimpleMap" resultClass="SimpleMap" >
+		<![CDATA[
+			 SELECT PA.EMPID,PA.Person_Id, PA.DEPARTMENT,HR.CHINESENAME,PA.THIS_ACTUAL_WAGE AS WAGE,NVL(HR.BANK_CARD_NO,'请输入银行账号') AS BANK_CARD_NO
+			   FROM HR_EMPLOYEE HR , 
+			        (SELECT PA_HISTORY.EMPID, PA_HISTORY.DEPARTMENT, PA_HISTORY.THIS_ACTUAL_WAGE,PA_HISTORY.Person_Id
+			           FROM PA_HISTORY
+			          WHERE PA_HISTORY.PA_MONTH = #paMonth:VARCHAR#
+			            AND PA_HISTORY.ATTENDANCE_PERIOD_CODE = #statTypeCode:VARCHAR#
+			        ) PA
+			  WHERE PA.Person_Id = HR.Person_Id and hr.cpny_id=#cpny_id:varchar#
+		]]>
+		<isNotEmpty prepend="AND" property="person_id">
+			<![CDATA[				
+					HR.person_id =  #person_id:VARCHAR#
+		  ]]>	 
+	   </isNotEmpty>    
+	   <![CDATA[				
+			ORDER BY BANK_CARD_NO DESC,PA.DEPARTMENT,PA.EMPID	
+	   ]]>	      
+	 </select>
+	 
+	 <select id="PayBankCodeForSearchPa1" parameterClass="SimpleMap" resultClass="SimpleMap" >
+		<![CDATA[
+			 SELECT HR.EMPID,HR.Person_Id, depart.deptname as DEPARTMENT,HR.CHINESENAME,HR.BANK_CARD_NAME,NVL(HR.BANK_CARD_NO,'请输入银行账号') AS BANK_CARD_NO
+			   FROM HR_EMPLOYEE HR , hr_department depart
+			        
+			  WHERE  HR.deptid = depart.deptid(+) 
+			  AND  hr.cpny_id=#cpny_id:varchar#
+			  AND HR.EMP_DIFF_CODE = #statTypeCode:varchar#
+			  AND HR.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="key">
+			<![CDATA[				
+					(HR.person_id = #person_id:VARCHAR#
+					  or HR.empid = #key:VARCHAR#
+					  or HR.chinesename = #key:VARCHAR#
+					 )
+		  ]]>	 
+	   </isNotEmpty>   
+	   <isNotEmpty prepend="AND" property="deptID">
+			<![CDATA[				
+					hr.deptid=#deptID:VARCHAR#
+		  ]]>	 
+	   </isNotEmpty>     
+	   <![CDATA[		
+	   			AND (HR.date_left BETWEEN TO_DATE(TO_CHAR(add_months(SYSDATE, -1), 'YYYY-MM-DD'), 'YYYY-MM-DD')
+          		AND TO_DATE(TO_CHAR(SYSDATE, 'YYYY-MM-DD'), 'YYYY-MM-DD') or HR.date_left is null)
+          		AND HR.CALC_FLAG = 'Y'
+			ORDER BY BANK_CARD_NO DESC,depart.deptname,HR.EMPID	
+	   ]]>	      
+	 </select>
+	
+	 <!-- retrieve PayBankCodeForSearchNumberBonus  -->
+	 <select id="PayBankCodeForSearchNumberBonus" parameterClass="SimpleMap" resultClass="int" >
+		<![CDATA[
+			 SELECT COUNT(PA.EMPID)
+			   FROM HR_EMPLOYEE HR , 
+			        (SELECT PA_BONUS_HISTORY.EMPID, PA_BONUS_HISTORY.DEPARTMENT, PA_BONUS_HISTORY.THIS_ACTUAL_BONUS,PA_BONUS_HISTORY.Person_Id
+			           FROM PA_BONUS_HISTORY
+			          WHERE PA_BONUS_HISTORY.PA_MONTH = #paMonth:VARCHAR#
+			            AND PA_BONUS_HISTORY.BONUS_TYPE_CODE = #bonusTypeCode:VARCHAR#
+			            AND PA_BONUS_HISTORY.BONUS_NO = #bonusNo:NUMERIC#
+			            AND PA_BONUS_HISTORY.ATTENDANCE_PERIOD_CODE = #statTypeCode:VARCHAR#
+			        ) PA
+			  WHERE PA.Person_Id = HR.Person_Id(+) and hr.cpny_id=#cpny_id:varchar#
+		]]>
+		<isNotEmpty prepend="AND" property="person_id">
+			<![CDATA[				
+					HR.Person_Id =  #person_id:VARCHAR#
+		  ]]>	 
+	   </isNotEmpty>             
+	 </select>
+	 
+	 <!-- retrieve PayBankCodeForSearchBonus  -->
+	 <select id="PayBankCodeForSearchBonus" parameterClass="SimpleMap" resultClass="SimpleMap" >
+		<![CDATA[
+			 SELECT PA.EMPID,HR.PERSON_ID, PA.DEPARTMENT,HR.CHINESENAME,PA.THIS_ACTUAL_BONUS AS WAGE,NVL(HR.BANK_CARD_NO,'请输入银行账号') AS BANK_CARD_NO
+			   FROM HR_EMPLOYEE HR , 
+			        (SELECT PA_BONUS_HISTORY.EMPID, PA_BONUS_HISTORY.DEPARTMENT, PA_BONUS_HISTORY.THIS_ACTUAL_BONUS,PA_BONUS_HISTORY.person_id
+			           FROM PA_BONUS_HISTORY
+			          WHERE PA_BONUS_HISTORY.PA_MONTH = #paMonth:VARCHAR#
+			            AND PA_BONUS_HISTORY.BONUS_TYPE_CODE = #bonusTypeCode:VARCHAR#
+			            AND PA_BONUS_HISTORY.BONUS_NO = #bonusNo:NUMERIC#
+			            AND PA_BONUS_HISTORY.ATTENDANCE_PERIOD_CODE = #statTypeCode:VARCHAR#
+			        ) PA
+			  WHERE PA.Person_Id = HR.Person_Id and hr.cpny_id=#cpny_id:varchar#
+		]]>
+		<isNotEmpty prepend="AND" property="person_id">
+			<![CDATA[				
+					HR.Person_Id =  #person_id:VARCHAR#
+		  ]]>	 
+	   </isNotEmpty> 
+	   <![CDATA[				
+			ORDER BY BANK_CARD_NO DESC,PA.DEPARTMENT,PA.EMPID	
+	   ]]>	      
+	 </select>
+
+	<!-- retrieve PayBankCodeForUpdate  -->
+	 <update id="PayBankCodeForUpdate" parameterClass="SimpleMap">
+		<![CDATA[	
+			 update hr_employee
+			 set BANK_CARD_NO=#flag:VARCHAR#,BANK_CARD_NAME=#bankCardName:VARCHAR#
+			 where person_id=#person_id:VARCHAR#       
+		]]>
+     
+	 </update>
+	 <update id="PayProbationSave" parameterClass="SimpleMap">
+		<![CDATA[	
+			 insert into PA_NO_PROBATION(EMPID)
+			 values (#key:VARCHAR#)     
+		]]>
+     
+	 </update>
+	 <update id="probationDelete" parameterClass="SimpleMap">
+		<![CDATA[	
+			 delete from  PA_NO_PROBATION t
+			 where t.empid=(#empno:VARCHAR#)     
+		]]>
+     
+	 </update>
+	<update id="formalPeriod" parameterClass="SimpleMap">
+		<![CDATA[	
+		update ar_history t
+				set t.Formal_Period=(t.Formal_Period+t.Probation_Period)
+				where t.ar_month=#AR_MONTH:VARCHAR#
+				and t.empid=#EMPID:VARCHAR#
+		]]>
+     
+	 </update>	 
+	 <update id="probationPeriod" parameterClass="SimpleMap">
+		<![CDATA[	
+		update ar_history t
+				set t.PROBATION_PERIOD=0
+				where t.ar_month=#AR_MONTH:VARCHAR#
+				and t.empid=#EMPID:VARCHAR#		 
+		]]>
+     
+	 </update>	 	 
+	<select id="probationSearch" parameterClass="SimpleMap" resultClass="SimpleMap" >
+			<![CDATA[
+				select t.empid,hr.chinesename,de.deptname from pa_no_probation t,hr_employee hr,hr_department de
+				where t.empid=hr.empid(+)
+				and hr.deptid=de.deptid(+)
+			]]>
+			<isNotEmpty prepend="AND" property="key">
+				<![CDATA[				
+						t.EMPID =  #key:VARCHAR#
+			  ]]>	 
+		   </isNotEmpty>       
+	</select>
+	<select id="arHistoryInfo" parameterClass="SimpleMap" resultClass="SimpleMap" >
+			<![CDATA[
+				select 
+						ar.ar_month,
+						ar.empid,
+						ar.Formal_Period,
+						ar.Insufficient_Attendance,
+						ar.SCHEDULED_WORK_DAYS
+						from ar_history ar
+						where ar.ar_month=#paMonth:VARCHAR#
+						and ar.empid in(select empid from pa_no_probation)
+			]]>			    
+	</select>
+	
+	<select id="SearchCardno" parameterClass="SimpleMap" resultClass="SimpleMap" >
+			<![CDATA[
+				select hr.empid, hr.person_id,hr.chinesename,nvl(hr.bank_card_no,0) bank_card_no from hr_employee hr
+                   where hr.person_id=#person_id:VARCHAR#
+			]]>		   
+	</select>
+	<update id="SaveCardno" parameterClass="SimpleMap">
+			<![CDATA[
+			update hr_employee hr
+			set hr.bank_card_no=#cardno:VARCHAR#
+			where hr.person_id=#person_id:VARCHAR#				
+			]]>		   
+	</update>
+	<update id="MESFlagForUpdate" parameterClass="SimpleMap">
+			<![CDATA[
+			update hr_department hr
+			set hr.mes_flag=#flag:VARCHAR2#,
+			hr.ACTIVITY=#activeFlag:NUMERIC#
+			where hr.deptid=#deptid:VARCHAR2#				
+			]]>		   
+	</update>
+		
+	<select id="MESFlagForSearchNumber" parameterClass="SimpleMap"  resultClass="int">
+			<![CDATA[
+				select count(t.deptid)
+                   from hr_department t
+                   where		
+		 		  EXISTS (
+			              SELECT HD.DEPTID FROM HR_DEPARTMENT HD WHERE HD.DEPTID = t.DEPTID
+			                     START WITH DEPTID = #deptID:VARCHAR2#
+			                     CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+			       )      
+	    ]]>		
+	</select>
+	<select id="MESFlagForSearch" parameterClass="SimpleMap" resultClass="SimpleMap" >
+		<![CDATA[
+				select t.deptid, t.deptname, hr_get_level_deptname(t.deptid, 4) office, NVL(t.mes_flag,0) mes_flag, NVL(t.activity,1) activeFlag
+                   from hr_department t
+                   where		
+		 		  EXISTS (
+			              SELECT HD.DEPTID FROM HR_DEPARTMENT HD WHERE HD.DEPTID = t.DEPTID
+			                     START WITH DEPTID = #deptID:VARCHAR2#
+			                     CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+			       )      
+	    ]]>		   
+	</select>
+	 
+	<select  id="arStatusFlag" parameterClass="SimpleMap" resultClass="int" >
+	
+	<![CDATA[
+		
+			   SELECT  ATT_MO_LOCK_FLAG					 
+				 FROM PA_PROGRESS A, SY_CODE B,SY_CODE CPNY
+                WHERE A.STAT_TYPE_CODE = B.CODE_ID 
+                 AND A.CPNY_ID=CPNY.CODE_ID(+)	  
+				 AND PA_MONTH_STR = #pamonth:VARCAHR#		
+				 AND STAT_TYPE_CODE = #statTypeCode:VARCAHR#		
+				 AND A.CPNY_ID = #cpnyId:VARCAHR#		
+	  ]]>			
+	</select>
+</sqlMap>

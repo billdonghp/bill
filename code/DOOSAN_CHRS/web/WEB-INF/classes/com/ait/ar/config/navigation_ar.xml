@@ -1,0 +1,544 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<navigation-mapper>
+
+	<operation name="PAGE_NOT_FOUND">
+		<command>com.ait.web.ErrorCommand</command>
+		<return-url>/error.jsp</return-url>
+	</operation>
+
+	<operation name="ar_view">
+		<command>com.ait.ar.servlet.ArViewCommand</command>
+		<return-url></return-url>
+	</operation>  
+
+	<operation name="ar_search">
+		<command>com.ait.ar.servlet.ArSearchCommand</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="ar_pagecontrol">
+		<command>com.ait.ar.servlet.ArPageControlCommand</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="ar_vacation_emp">
+		<command>com.ait.ar.cmd.vacation_emp.ArVacationEmpCommand</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="ar_factory_total">
+		<command>com.ait.ar.cmd.arFactoryTotal.ArFactoryTotalCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="ar_detail_view">
+		<command>com.ait.ar.cmd.arDetailView.ArDetailViewCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="importArOtDetailReport">
+		<command>com.ait.ar.servlet.ImportArOtDetailReportCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- export vacationEmp report -->
+	<operation name="exportVacationEmp">
+		<command>com.ait.ar.cmd.vacation_emp.ExportVacationEmpCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- download vacationEmp template -->
+	<operation name="downloadVacationEmpTemplate">
+		<command>com.ait.ar.cmd.vacation_emp.DownloadVacationEmpTemplateCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- import vacationEmp report -->
+	<operation name="importVacationEmpReport">
+		<command>com.ait.ar.cmd.vacation_emp.ImportVacationEmpReportCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="ar_vacationEmp_add">
+		<command>com.ait.ar.cmd.vacation_emp.InsertVacationEmpCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="retrieveDataForUpdateVaction_emp">
+		<command>com.ait.ar.cmd.vacation_emp.RetrieveDataForUpdateVacationEmpCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="ar_vacation_emp_update">
+		<command>com.ait.ar.cmd.vacation_emp.UpdateVacationEmpCmd</command>
+		<return-url>UpdateVacationEmpCmd</return-url>
+	</operation>
+	
+	<operation name="ar_vacation_emp_del">
+		<command>com.ait.ar.cmd.vacation_emp.DeleteVacationEmpCmd</command>
+		<return-url>UpdateVacationEmpCmd</return-url>
+	</operation>
+	
+	<operation name="ar_vacation">
+		<command>com.ait.ar.cmd.vacation.ArVacationCommand</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="ar_vacation_del">
+		<command>com.ait.ar.cmd.vacation.DeleteVacationCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="ar_vacation_add">
+		<command>com.ait.ar.cmd.vacation.InsertVacationCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="ar_vacation_update">
+		<command>com.ait.ar.cmd.vacation.UpdateVacationCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="retrieveDataForUpdateVaction">
+		<command>com.ait.ar.cmd.vacation.RetrieveDataForUpdateVacationCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="ar_add">
+		<command>com.ait.ar.servlet.ArAddCommand</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="ar_modify">
+		<command>com.ait.ar.servlet.ArModifyCommand</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="ar_delete">
+		<command>com.ait.ar.servlet.ArDeleteCommand</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 页面跳转 -->
+	<operation name="arcontrol">
+		<command>com.ait.ar.command.ArControlCommand</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 部门别查看 -->
+	<operation name="deptroll">
+		<command>com.ait.ar.command.DeptRollCommand</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 个人别查看 -->
+	<operation name="emproll">
+		<command>com.ait.ar.command.EmpRollCommand</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 年假察看 -->
+	<operation name="annual">
+		<command>com.ait.ar.command.AnnualCommand</command>
+		<return-url></return-url>
+	</operation>
+
+	<!-- 考勤日期添加 -->
+	<operation name="ardateadd">
+		<command>com.ait.ar.dao.ardate.Add</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 考勤日期修改 -->
+	<operation name="ardateupdate">
+		<command>com.ait.ar.dao.ardate.Update</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 考勤日期删除 -->
+	<operation name="ardatedelete">
+		<command>com.ait.ar.dao.ardate.Delete</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 刷卡记录添加 -->
+	<operation name="arrecordadd">
+		<command>com.ait.ar.dao.record.Add</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 刷卡记录修改 -->
+	<operation name="arrecordupdate">
+		<command>com.ait.ar.dao.record.Update</command>
+		<return-url></return-url>
+	</operation>
+
+	<!-- 考勤项目添加 -->
+	<operation name="aritemadd">
+		<command>com.ait.ar.dao.item.ItemAdd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 考勤项目修改 -->
+	<operation name="aritemupdate">
+		<command>com.ait.ar.dao.item.Update</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 考勤项目删除 -->
+	<operation name="aritemdel">
+		<command>com.ait.ar.dao.item.Delete</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 班次添加 -->
+	<operation name="shiftadd">
+		<command>com.ait.ar.dao.shift.Add</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 班次修改 -->
+	<operation name="shiftedit">
+		<command>com.ait.ar.dao.shift.Update</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 班次删除 -->
+	<operation name="shiftdel">
+		<command>com.ait.ar.dao.shift.Delete</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 删除班次段 -->
+	<operation name="shift020del">
+		<command>com.ait.ar.dao.shift.Del020</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 汇总项目排序 -->
+	<operation name="staitemorder">
+		<command>com.ait.ar.dao.staitem.Order</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 汇总项目添加 -->
+	<operation name="staitemadd">
+		<command>com.ait.ar.dao.staitem.Add</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 汇总项目修改 -->
+	<operation name="staitemupdate">
+		<command>com.ait.ar.dao.staitem.Update</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 汇总项目删除 -->
+	<operation name="staitemdel">
+		<command>com.ait.ar.dao.staitem.Delete</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 修改员工日历 -->
+	<operation name="workcalendarupdate">
+		<command>com.ait.ar.dao.workcalendar.Update</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 修改工厂日历 -->
+	<operation name="factorycalendarupdate">
+		<command>com.ait.ar.dao.factorycalendar.Update</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 添加工厂日历 -->
+	<operation name="factorycalendaradd">
+		<command>com.ait.ar.dao.factorycalendar.Add</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 批量修改工厂日历 -->
+	<operation name="factorycalendarupdateall">
+		<command>com.ait.ar.dao.factorycalendar.UpdateBatch</command>
+		<return-url></return-url>
+	</operation>
+		
+	<!-- 动态组日历添加 -->
+	<operation name="groupcalendaradd">
+		<command>com.ait.ar.dao.groupcalendar.Add</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!--  动态组日历删除 -->
+	<operation name="groupcalendardel">
+		<command>com.ait.ar.dao.groupcalendar.Delete</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 动态组日历修改 -->
+	<operation name="groupcalendarupdate">
+		<command>com.ait.ar.dao.groupcalendar.Update</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 添加汇总公式 -->
+	<operation name="formularadd">
+		<command>com.ait.ar.dao.formular.Add</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 修改汇总公式 -->
+	<operation name="formularupdate">
+		<command>com.ait.ar.dao.formular.Update</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 删除汇总公式 -->
+	<operation name="formulardel">
+		<command>com.ait.ar.dao.formular.Delete</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 员工排班 -->
+	<operation name="shiftset">
+		<command>com.ait.ar.dao.shiftset.Add</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 修改汇总 -->
+	<operation name="historyupd">
+		<command>com.ait.ar.dao.history.Update</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- 调动部门 -->
+	<operation name="sysdeptdd">
+		<command>com.ait.ar.dao.sydept.update</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- retrieve attendance record list -->
+	<operation name="retrieveAttRecordList">
+		<command>com.ait.ar.cmd.idcard.RetrieveAttRecordListCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- insert attendance record -->
+	<operation name="insertAttRecord">
+		<command>com.ait.ar.cmd.idcard.InsertAttRecordCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- retrieve data for update attendance record -->
+	<operation name="retrieveDataForUpdateAttRecord">
+		<command>com.ait.ar.cmd.idcard.RetrieveDataForUpdateAttRecordCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- update attendance record -->
+	<operation name="updateAttRecord">
+		<command>com.ait.ar.cmd.idcard.UpdateAttRecordCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- delete attendance record -->
+	<operation name="deleteAttRecord">
+		<command>com.ait.ar.cmd.idcard.DeleteAttRecordCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- export attendance record report -->
+	<operation name="exportAttRecordReport">
+		<command>com.ait.ar.cmd.idcard.ExportAttRecordReportCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<!-- import attendance record report -->
+	<operation name="importAttRecordReport">
+		<command>com.ait.ar.cmd.idcard.ImportAttRecordReportCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- import attendance record -->
+	<operation name="importAttRecord">
+		<command>com.ait.ar.cmd.idcard.ImportAttRecordCommand</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- download attendance record template -->
+	<operation name="downloadAttRecordTemplate">
+		<command>com.ait.ar.cmd.idcard.DownloadAttRecordTemplateCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	
+	<!-- retrieve visit vard list -->
+	<operation name="retrieveVisitCardList">
+		<command>com.ait.ar.cmd.visitcard.RetrieveVisitCardListCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- retrieve data for insert visit vard -->
+	<operation name="retrieveDataForInsertVisitCard">
+		<command>com.ait.ar.cmd.visitcard.RetrieveDataForInsertVisitCardCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- insert visit vard -->
+	<operation name="insertVisitCard">
+		<command>com.ait.ar.cmd.visitcard.InsertVisitCardCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- retrieve data for update visit vard -->
+	<operation name="retrieveDataForUpdateVisitCard">
+		<command>com.ait.ar.cmd.visitcard.RetrieveDataForUpdateVisitCardCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- update visit vard -->
+	<operation name="updateVisitCard">
+		<command>com.ait.ar.cmd.visitcard.UpdateVisitCardCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- export visit vard report -->
+	<operation name="exportVisitCardReport">
+		<command>com.ait.ar.cmd.visitcard.ExportVisitCardReportCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	
+	<!-- retrieve eatery record list -->
+	<operation name="retrieveEateryRecordList">
+		<command>com.ait.ar.cmd.eatery.RetrieveEateryRecordListCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- insert eatery record -->
+	<operation name="insertEateryRecord">
+		<command>com.ait.ar.cmd.eatery.InsertEateryRecordCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- retrieve data for update eatery record -->
+	<operation name="retrieveDataForUpdateEateryRecord">
+		<command>com.ait.ar.cmd.eatery.RetrieveDataForUpdateEateryRecordCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- update eatery record -->
+	<operation name="updateEateryRecord">
+		<command>com.ait.ar.cmd.eatery.UpdateEateryRecordCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- delete eatery record -->
+	<operation name="deleteEateryRecord">
+		<command>com.ait.ar.cmd.eatery.DeleteEateryRecordCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- export eatery record report -->
+	<operation name="exportEateryRecordReport">
+		<command>com.ait.ar.cmd.eatery.ExportEateryRecordReportCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<!-- import eatery record report -->
+	<operation name="importEateryRecordReport">
+		<command>com.ait.ar.cmd.eatery.ImportEateryRecordReportCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- download eatery record template -->
+	<operation name="downloadEateryRecordTemplate">
+		<command>com.ait.ar.cmd.eatery.DownloadEateryRecordTemplateCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="ar_otplan">
+		<command>com.ait.ar.cmd.overtimeplan.RetrieveOTPlanListCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="ar_otplan_add">
+		<command>com.ait.ar.cmd.overtimeplan.InsertOTPlanCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="ar_otplan_del">
+		<command>com.ait.ar.cmd.overtimeplan.DeleteOTPlanCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="retrieveDataForUpdateOTPlan">
+		<command>com.ait.ar.cmd.overtimeplan.RetrieveDataForUpdateOTPlanCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="ar_otplan_update">
+		<command>com.ait.ar.cmd.overtimeplan.UpdateOTPlanCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="downloadOTPlanTemplate">
+		<command>com.ait.ar.cmd.overtimeplan.DownloadOTPlanTemplateCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="importOTPlanReport">
+		<command>com.ait.ar.cmd.overtimeplan.ImportOTPlanReportCmd</command>
+		<return-url></return-url>
+	</operation>
+		
+	<operation name="exportArHistoryReport">
+		<command>com.ait.ar.cmd.arHistory.ExportArHistoryReportCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="arDetialBackList">
+		<command>com.ait.ar.cmd.arDetailBack.RetrieveArDetialBackListCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="exportArBlanlanceReport">
+		<command>com.ait.ar.arBalance.ExportArBalanceReportCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- retrieve detail lock list -->
+	<operation name="retrieveDetailLockList">
+		<command>com.ait.ar.cmd.detaillock.RetrieveDetailLockListCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- retrieve detail supervisor lock list -->
+	<operation name="retrieveDetailSupervisorLockList">
+		<command>com.ait.ar.cmd.detaillock.RetrieveDetailSupervisorLockListCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- update detail lock list -->
+	<operation name="updateDetailLockList">
+		<command>com.ait.ar.cmd.detaillock.UpdateDetailLockCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- update detail Supervisor lock list -->
+	<operation name="updateDetailSupervisorLock">
+		<command>com.ait.ar.cmd.detaillock.UpdateDetailSupervisorLockCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="MESFlag">
+		<command>com.ait.ar.dao.MESFlagCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<!-- import shift data -->
+	<operation name="importEmpShiftReport">
+		<command>com.ait.ar.servlet.ArImportShiftCommand</command>
+		<return-url></return-url>
+	</operation>
+</navigation-mapper>

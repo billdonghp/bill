@@ -1,0 +1,1934 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="hrm.empinfo">
+
+	<!-- retrieve education information -->
+	<select id="retrieveEducationInfo" parameterClass="string" resultClass="Education">
+		<![CDATA[	
+		 SELECT EDUC_NO           					educationNo,
+		  		 EMPID             					empID,   
+		  		 SUBJECT           			 		subjectCode,
+				 B.CODE_NAME						subject,
+         B.CODE_EN_NAME         englishSubject,
+         B.CODE_KOR_NAME        korSubject,
+		  		 DEGREE_CODE       					degreeCode,
+				 C.CODE_NAME						DEGREE,
+         C.CODE_EN_NAME         englishDegree,
+         C.CODE_KOR_NAME        korDegree,
+		  		 DEGREE_TYPE       					degreeType,
+		  		 INSTITUTION_NAME  					institutionName,
+		  		 RANK              					rank,
+		  		 EDUC_CARD_NO      					eduCardNo,
+		  		 SCHOOL_ADDRESS      			    schoolAddress,
+		  		 TO_CHAR(START_DATE,'YYYY-MM-DD')   startDate,
+		  		 TO_CHAR(END_DATE,'YYYY-MM-DD')     endDate,
+		  		 TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD')creatDate,
+		  		 A.CREATED_BY        				creatorID,
+		  		 TO_CHAR(A.UPDATE_DATE,'YYYY-MM-DD')modifyDate,
+		  		 A.UPDATED_BY        				modifierID,
+		  		 A.ORDERNO           				orderNo,
+		  		 A.ACTIVITY 		   				activity
+		    FROM HR_EDUCATION A,
+				 SY_CODE B,
+				 SY_CODE C
+		   WHERE A.EMPID   = #EMPID#
+		     AND B.CODE_ID(+) = A.SUBJECT
+			 AND C.CODE_ID(+) = A.DEGREE_CODE    
+		]]>
+	</select>
+	
+	<!-- retrieve personal information -->
+	<select id="retrievePersonalInfo" parameterClass="string" resultClass="PersonalInfo">
+		<![CDATA[	
+			SELECT  A.EMPID                 					empID,
+					B.DEPTID									deptID,
+					B.CHINESENAME								chineseName,
+					B.CHINESE_PINYIN							chinesePinyin,
+					B.ENGLISHNAME								englishName,
+					B.KOREANNAME								koreanName,
+					B.WORK_YEAR									work_year,
+					B.INSR_AREA									insr_area,
+                    B.WORK_AREA                                 work_area,
+                    T.CODE_NAME                                 work_area_name,
+                    T.CODE_EN_NAME                              enWorkAreaName,
+                    T.CODE_KOR_NAME                             korWorkAreaName,
+					TO_CHAR(B.END_PROBATION_DATE,'YYYY-MM-DD')  formal_date,
+					C.CODE_NAME									insr_area_name,
+			  		BEFORE_DEGREE_CODE    						beforeDegreeCode,
+					D.CODE_NAME									beforeDegree,
+                    D.CODE_EN_NAME                              enBeforeDegree,
+                    D.CODE_KOR_NAME                             korBeforeDegree,
+			  		AFTER_DEGREE_CODE     						afterDegreeCode,
+					E.CODE_NAME									afterDegree,
+                    E.CODE_EN_NAME                              enAfterDegree,
+                    E.CODE_KOR_NAME                             korAfterDegree,
+			  		SEXCODE               						sexCode,
+					F.CODE_NAME									sex,
+                    F.CODE_EN_NAME                              enlishSex,
+                    F.CODE_KOR_NAME                             korSex,
+			  		TO_CHAR(DOB,'YYYY-MM-DD')                 	dob,
+			  		RELIGION_CODE         						religionCode,
+					G.CODE_NAME									religion,
+                    G.CODE_EN_NAME                              enReligion,
+                    G.CODE_KOR_NAME                             korReligion,
+			  		NATION_CODE           						nationCode,
+					H.CODE_NAME									nation,
+                    H.CODE_EN_NAME                              enNation,
+                    H.CODE_KOR_NAME                             korNation,
+			  		NATIONALITY_CODE      						natioNalityCode,
+					I.CODE_NAME									natioNality,
+                    I.CODE_EN_NAME                              enNationNality,
+                    I.CODE_KOR_NAME                             korNationNality,
+			  		BORNPLACE_CODE        						bornPlaceCode, 
+					J.CODE_NAME									bornPlace,
+                    J.CODE_EN_NAME                              enBornPlace,
+                    J.CODE_KOR_NAME                             korBornPlace,
+					NVL(Q.CODE_ID,'100000')						parentBornPlaceCode,  
+					Q.CODE_NAME									parentBornPlace, 
+                    Q.CODE_EN_NAME                              enParentBornPlace,
+                    Q.CODE_KOR_NAME                             korParentBornPlace,
+			  		POLITY_CODE           						polityCode,
+					K.CODE_NAME									polity,
+                    K.CODE_EN_NAME                              enPolity,
+                    K.CODE_KOR_NAME                             korPolity,
+			  		MEMBERSHIP            						membership,
+			  		MARITAL_STATUS_CODE   						maritalStatusCode,
+					L.CODE_NAME									maritalStatus,
+                    L.CODE_EN_NAME                              enMaritalStatus,
+                    L.CODE_KOR_NAME                             korMaritalStatus,
+			  		TO_CHAR(WEDDING_DATE,'YYYY-MM-DD')          weddingDate,
+			  		MATE_EMPID            						mateEmpID,
+			  		IDCARD_NO             						idcardNo,
+			  		IDCARD_ADDR           						idcardAddress,
+			  		HOME_ADDRESS          						homeAddress,
+			  		POSTALCODE            						postalCode,
+			  		EMAIL                 						email,
+			  		REG_TYPE_CODE         						regTypeCode,
+					M.CODE_NAME									regType,
+                    M.CODE_EN_NAME                              enRegType,
+                    M.CODE_KOR_NAME                             korRegType,
+			  		REG_PLACE             						regPlace,
+			  		PASSPORT_NO            						passportNo,
+			  		OFFICE_PHONE           						officePhone,
+			  		HOME_PHONE            						homePhone,
+			  		CELLPHONE              						cellPhone,
+			  		BPCALL                						bpcall,
+			  		FAX                   						fax,
+			  		FILE_RELATION         						fileRelationCode,
+					N.CODE_NAME									fileRelation,
+                    N.CODE_EN_NAME                              enFileRelation,
+                    N.CODE_KOR_NAME                             korFileRelation,
+			  		HOBBY                 						hobby,
+			  		SURPLUS_WORKAGE        						surplusWorkage,
+			  		SPECIALITY            						speciality,
+			  		PHOTOPATH             						photoPath,
+			  		PHOTOSIZE              						photoSize,
+			  		BANK_ACCOUNTNO        						bankAccountNo,
+			  		BANK_NAME_CODE         						bankNameCode,
+					O.CODE_NAME									bankName,
+                    O.CODE_EN_NAME                              enBankName,
+                    O.CODE_KOR_NAME                             korBankName,
+			  		ACCUMULATION_FUND     						accumulationFund,
+			  		TO_CHAR(VISA_DATE,'YYYY-MM-DD')             visaDate,
+			  		VISA_TYPE_CODE        						visaTypeCode,
+					P.CODE_NAME									visaType,
+                    P.CODE_EN_NAME                              enVisaType,
+                    P.CODE_KOR_NAME                             korVisaType,
+			  		RESIDENCE_ID           						residenceID,
+			  		TO_CHAR(RESIDENCE_VALID_DATE,'YYYY-MM-DD')  residenceValiDate,
+			  		A.ORDERNO            						orderNo,
+			  		TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD')         createDate,
+			  		A.CREATED_BY            					createdBy,
+			  		TO_CHAR(A.UPDATE_DATE,'YYYY-MM-DD')         updateDate,
+			  		A.UPDATED_BY            					updatedBy,
+			  		A.ACTIVITY 									activity                 
+			   FROM HR_PERSONAL_INFO A,
+			   		HR_EMPLOYEE B,
+					SY_CODE C,
+					SY_CODE D,
+					SY_CODE E,
+					SY_CODE F,
+					SY_CODE G,
+					SY_CODE H,
+					SY_CODE I,
+					SY_CODE J,
+					SY_CODE K,
+					SY_CODE L,
+					SY_CODE M,
+					SY_CODE N,
+					SY_CODE O,
+					SY_CODE P,
+					SY_CODE Q,
+					SY_CODE T
+			  WHERE A.EMPID = #empID#               
+			    AND A.EMPID = B.EMPID(+)
+				AND B.INSR_AREA = C.CODE_ID(+)    
+				AND A.BEFORE_DEGREE_CODE = D.CODE_ID(+)  
+				AND A.AFTER_DEGREE_CODE = E.CODE_ID(+)  
+				AND A.SEXCODE = F.CODE_ID(+)  
+				AND A.RELIGION_CODE = G.CODE_ID(+)  
+				AND A.NATION_CODE = H.CODE_ID(+)  
+				AND A.NATIONALITY_CODE = I.CODE_ID(+)  
+				AND A.BORNPLACE_CODE = J.CODE_ID(+)  
+				AND A.POLITY_CODE = K.CODE_ID(+)  
+				AND A.MARITAL_STATUS_CODE = L.CODE_ID(+) 
+				AND A.REG_TYPE_CODE = M.CODE_ID(+)  
+				AND A.FILE_RELATION = N.CODE_ID(+) 
+				AND A.BANK_NAME_CODE = O.CODE_ID(+)  
+				AND A.VISA_TYPE_CODE = P.CODE_ID(+)
+				AND J.PARENT_CODE = Q.CODE_ID(+)
+				AND B.WORK_AREA=T.CODE_ID(+)  
+		]]>
+	</select>
+	
+	<!-- retrieve language information -->
+	<select id="retrieveLanguageInfo" parameterClass="string" resultClass="ForeignLanguage">
+		<![CDATA[	
+			SELECT LANGUAGE_NO              			languageNo,
+			  	   A.EMPID                     			empID,
+				   B.CHINESENAME						chineseName,
+			  	   LANGUAGE_TYPE_CODE       			languageTypeCode,
+				   C.CODE_NAME							languageType,
+           C.CODE_EN_NAME           enLanguageType,
+           C.CODE_KOR_NAME          korLanguageType,
+			  	   EXAM_NAME_CODE           			examNameCode,
+				   D.CODE_NAME							examName,
+           D.CODE_EN_NAME           enExamName,
+           D.CODE_KOR_NAME          korExamName,
+			  	   LANGUAGE_LEVEL_CODE      			languageLevelCode,
+				   E.CODE_NAME							languageLevel,
+           E.CODE_EN_NAME           enLanguageLevel,
+           E.CODE_KOR_NAME          korLanguageLevel,
+			  	   MARK                    				mark,
+			  	   TO_CHAR(DATE_OBTAINED,'YYYY-MM-DD')  obtainedDate,
+			  	   LANGUAGE_LOCATION        			languageLocaiton,
+			  	   LANGUAGE_CARD_NO          			lanCardNo,
+			  	   QUALIFICATION_INSTITUTE  			qualificationInstitute,
+			  	   TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD')  creatDate,
+			  	   A.CREATED_BY               			creatorID,
+			  	   TO_CHAR(A.UPDATE_DATE,'YYYY-MM-DD')  modifyDate,
+			  	   A.UPDATED_BY               			modifierID,
+			  	   A.ORDERNO                			orderNo,
+			  	   A.ACTIVITY 			   	 			activity       
+			  FROM HR_LANGUAGE_LEVEL A,
+			  	   HR_EMPLOYEE B,
+			  	   SY_CODE C,
+				   SY_CODE D,
+				   SY_CODE E
+			 WHERE A.EMPID = #EMPID#
+			   AND A.EMPID = B.EMPID(+)
+			   AND A.LANGUAGE_TYPE_CODE = C.CODE_ID(+)
+			   AND A.EXAM_NAME_CODE = D.CODE_ID(+)
+			   AND A.LANGUAGE_LEVEL_CODE = E.CODE_ID(+)
+   		]]>
+	</select>
+	   
+	<!-- retrieve military service information -->
+	<select id="retrieveMilitaryServiceInfo" parameterClass="string" resultClass="MilitaryService">
+		<![CDATA[	
+		   SELECT MILITARY_NO          				 militaryNo,
+		  		 A.EMPID                 			 empID,
+				 B.CHINESENAME						 chineseName,
+         B.ENGLISHNAME             enName,
+         B.KOREANNAME              korName,
+		  		 MILITARY_STATUS      				 mserviceStatus,
+		 		 MILITARY_TYPE_CODE   				 militaryTypeCode,
+				 C.CODE_NAME						 militaryType,	
+         C.CODE_EN_NAME          enMilitaryType,
+         C.CODE_KOR_NAME         korMilitaryType,
+		  		 MILITARY_LEVEL_CODE  				 militaryLevelCode,
+				 D.CODE_NAME						 militaryLevel,
+         D.CODE_EN_NAME          enMilitaryLevel,
+         D.CODE_KOR_NAME         korMilitaryLevel,
+		  		 MILITARY_AREA_CODE   				 militaryAreaCode,
+				 E.CODE_NAME						 militaryArea,
+         E.CODE_EN_NAME          enMilitaryArea,
+         E.CODE_KOR_NAME         korMilitaryArea,
+		  		 TO_CHAR(START_DATE,'YYYY-MM-DD')    startTime,
+		  		 TO_CHAR(END_DATE,'YYYY-MM-DD')      endTime,
+		  		 TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD') creatDate,
+		 		 A.CREATED_BY           			 creatorID,
+		  		 TO_CHAR(A.UPDATE_DATE,'YYYY-MM-DD') modifyDate,
+		  		 A.UPDATED_BY           			 modifierID,
+		  		 A.ORDERNO              			 orderNo,
+		  		 A.ACTIVITY             			 activity
+		    FROM HR_MILITARY_SERVICE A,
+				 HR_EMPLOYEE B,
+				 SY_CODE C,
+				 SY_CODE D,
+				 SY_CODE E
+		   WHERE A.EMPID = #EMPID#
+		     AND A.EMPID = B.EMPID(+)
+			 AND A.MILITARY_TYPE_CODE = C.CODE_ID(+)
+			 AND A.MILITARY_LEVEL_CODE = D.CODE_ID(+)
+			 AND A.MILITARY_AREA_CODE = E.CODE_ID(+)
+  
+	   	]]>
+	</select>
+	
+	<!-- retrieve IT level information -->
+	<select id="retrieveITLevelInfo" parameterClass="string" resultClass="ITLevel">
+		<![CDATA[	
+				SELECT IT_NO             				it_NO,
+			  	   A.EMPID              				empID,
+			  	   IT_EXAM_NAME_CODE  					itExamNameCode,
+				   B.CODE_NAME							itExamName,
+           B.CODE_EN_NAME           enItExamName,
+           B.CODE_KOR_NAME          korItExamName,
+			  	   IT_LEVEL_CODE      					itLevelCode,
+				   C.CODE_NAME							itLevel,
+           C.CODE_EN_NAME           enItLevel,
+           C.CODE_KOR_NAME          korItLevel,
+			  	   IT_MARK            					itMark,
+			  	   TO_CHAR(OBTAINED_DATE,'YYYY-MM-DD')  obtainedDate,
+			  	   TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD')  creatDate,
+			  	   A.CREATED_BY         				creatorID,
+			  	   TO_CHAR(A.UPDATE_DATE,'YYYY-MM-DD')  modifyDate,
+			  	   A.UPDATED_BY         				modifierID,
+			  	   A.ACTIVITY            				activity 
+			  FROM HR_IT_LEVEL A,
+			  	   SY_CODE B,
+				   SY_CODE C
+			 WHERE A.EMPID = #EMPID#
+			   AND A.IT_EXAM_NAME_CODE = B.CODE_ID(+)
+			   AND A.IT_LEVEL_CODE = C.CODE_ID(+)
+   	   	]]>
+	</select>
+	
+	<!-- insert education information -->
+	<insert id="insertEducationInfo" parameterClass="Education" >
+		<![CDATA[
+		 INSERT INTO HR_EDUCATION A
+  		     ( 	 EDUC_NO,
+		  		 EMPID,
+		  		 SUBJECT,
+		  		 DEGREE_CODE,
+		  		 DEGREE_TYPE,
+		  		 INSTITUTION_NAME,
+		  		 RANK,
+		  		 EDUC_CARD_NO,
+		  		 SCHOOL_ADDRESS ,     			  
+		  		 START_DATE,
+		  		 END_DATE,
+		  		 A.CREATE_DATE,
+		  		 A.CREATED_BY,
+		  		 A.ORDERNO,
+		  		 A.ACTIVITY
+		     )
+	   VALUES(	 HR_EDU_SEQ.NEXTVAL,
+	   			 #empID:VARCHAR#,
+				 #subjectCode:VARCHAR#,
+				 #degreeCode:VARCHAR#,
+				 #degreeType:VARCHAR#,
+				 #institutionName:VARCHAR#,
+				 #rank:NUMERIC#,
+				 #eduCardNo:VARCHAR#,
+				 #schoolAddress:NUMERIC#,
+				 TO_DATE(#startDate:VARCHAR#,'YYYY-MM-DD'),
+				 TO_DATE(#endDate:VARCHAR#,'YYYY-MM-DD'),
+				 SYSDATE,
+				 #creatorID:VARCHAR#,
+				 #orderNo:NUMERIC#,
+				 #activity:NUMERIC#
+	   		  )		 	 
+	   		]]>
+	</insert>
+	
+	<!-- insert language information -->
+	<insert id="insertLanguageInfo" parameterClass="ForeignLanguage" >
+		<![CDATA[
+	   			INSERT INTO HR_LANGUAGE_LEVEL A
+			   		  	  (	LANGUAGE_NO,
+						   	EMPID,
+							LANGUAGE_TYPE_CODE,
+							EXAM_NAME_CODE,
+							LANGUAGE_LEVEL_CODE,
+							MARK,
+							DATE_OBTAINED,
+			  	   			CREATE_DATE,
+			  	   			CREATED_BY
+						   )
+					VALUES( HR_LANG_SEQ.NEXTVAL,
+							#empID:VARCHAR#,
+							#languageTypeCode:VARCHAR#,
+							#examNameCode:VARCHAR#,
+							#languageLevelCode:VARCHAR#,
+							#mark:VARCHAR#,
+							TO_DATE(#obtainedDate:VARCHAR#,'YYYY-MM-DD'),
+							SYSDATE,
+							#creatorID:VARCHAR#
+						   ) 	  
+		   		]]>
+	</insert>
+	
+	<!-- insert military service information -->
+	<insert id="insertMilitaryServiceInfo" parameterClass="MilitaryService" >
+		<![CDATA[
+		
+	   			INSERT INTO HR_MILITARY_SERVICE A
+			   		  	  (	MILITARY_NO,
+		  		 		  	EMPID,
+			 		 		MILITARY_TYPE_CODE,		 
+		  		 			MILITARY_LEVEL_CODE,
+					  		MILITARY_AREA_CODE,
+		  		 			START_DATE,
+		  		 			END_DATE,
+		  		 			CREATE_DATE,
+		 		 			CREATED_BY
+						   )
+					VALUES( HR_MS_SEQ.NEXTVAL,
+							#empID:VARCHAR#,
+							#militaryTypeCode:VARCHAR#,
+							#militaryLevelCode:VARCHAR#,
+							#militaryAreaCode:VARCHAR#,
+							TO_DATE(#startTime:VARCHAR#,'YYYY-MM-DD'),
+							TO_DATE(#endTime:VARCHAR#,'YYYY-MM-DD'),
+							SYSDATE,
+							#creatorID:VARCHAR#
+						   ) 	
+		]]>
+	</insert>
+	
+	<!-- insert IT level information -->
+	<insert id="insertITLevelInfo" parameterClass="ITLevel" >
+		<![CDATA[			   
+			   	   INSERT INTO HR_IT_LEVEL A
+			   		  	  (	IT_NO,             		
+			  	   		  	EMPID,              				
+			  	   			IT_EXAM_NAME_CODE,
+			  	   			IT_LEVEL_CODE,
+			  	   			IT_MARK,
+			  	   			OBTAINED_DATE,
+			  	   			CREATE_DATE,
+			  	   			CREATED_BY         				
+						   )
+					VALUES( HR_IT_SEQ.NEXTVAL,
+							#empID:VARCHAR#,
+							#itExamNameCode:VARCHAR#,
+							#itLevelCode:VARCHAR#,
+							#itMark:VARCHAR#,
+							TO_DATE(#obtainedDate:VARCHAR#,'YYYY-MM-DD'),
+							SYSDATE,
+							#creatorID:VARCHAR#
+						   ) 	  
+						   
+		]]>
+	</insert>
+	
+	<!-- update education information -->
+	<update id="updateEducationInfo" parameterClass="Education" >
+		<![CDATA[
+		
+		 	   UPDATE HR_EDUCATION A
+	  		      SET SUBJECT 		   = #subjectCode:VARCHAR#,
+			  		  DEGREE_CODE 	   = #degreeCode:VARCHAR#,
+			  		  INSTITUTION_NAME = #institutionName:VARCHAR#,
+			  		  START_DATE 	   = TO_DATE(#startDate:VARCHAR#,'YYYY-MM-DD'),
+			  		  END_DATE		   = TO_DATE(#endDate:VARCHAR#,'YYYY-MM-DD'),
+			  		  SCHOOL_ADDRESS   = #schoolAddress:VARCHAR#,   			
+			  		  UPDATE_DATE 	   = SYSDATE,
+			  		  UPDATED_BY 	   = #modifierID:VARCHAR#    
+			    WHERE A.EDUC_NO = #educationNo#
+		    
+			]]>
+	</update>
+	
+	<!-- update personal information -->
+	<update id="updatePersonalBasicInfo" parameterClass="PersonalInfo" >
+		<![CDATA[	
+		
+	 	   UPDATE HR_PERSONAL_INFO A
+  		      SET NATIONALITY_CODE 	 = #natioNalityCode:VARCHAR#,
+		  		  SEXCODE 		   	 = #sexCode:VARCHAR#,
+		  		  BORNPLACE_CODE   	 = #bornPlaceCode:VARCHAR#,
+		  		  NATION_CODE 	   	 = #nationCode:VARCHAR#,
+		  		  BEFORE_DEGREE_CODE = #beforeDegreeCode:VARCHAR#,
+				  AFTER_DEGREE_CODE  = #afterDegreeCode:VARCHAR#,
+				  POLITY_CODE        = #polityCode:VARCHAR#,
+		  		  UPDATE_DATE 		 = SYSDATE,
+		  		  UPDATED_BY 		 = #updatedBy:VARCHAR#
+		    WHERE A.EMPID = #empID#
+	
+				]]>
+	</update>           
+		<!-- update personal information -->
+	<update id="updateHrEmployeeInfo" parameterClass="PersonalInfo" >
+		<![CDATA[	
+		
+	 	   UPDATE HR_EMPLOYEE A
+  		      SET END_PROBATION_DATE = TO_DATE(#formal_date:VARCHAR#,'YYYY-MM-DD'),
+  		         WORK_AREA = #work_area:VARCHAR#,
+  		         JOIN_TYPE_CODE=#joinTypeCode:VARCHAR#        
+		     WHERE A.EMPID = #empID#
+	                 
+				]]>           
+	</update>           
+	
+	<!-- update language information -->
+	<update id="updateLanguageInfo" parameterClass="ForeignLanguage" >
+		<![CDATA[
+		
+	 	   UPDATE HR_LANGUAGE_LEVEL A
+  		      SET LANGUAGE_TYPE_CODE  = #languageTypeCode:VARCHAR#,
+		  		  EXAM_NAME_CODE 	  = #examNameCode:VARCHAR#,
+		  		  LANGUAGE_LEVEL_CODE = #languageLevelCode:VARCHAR#,
+		  		  MARK 	   	 		  = #mark:VARCHAR#,
+		  		  DATE_OBTAINED 	  = TO_DATE(#obtainedDate:VARCHAR#,'YYYY-MM-DD'),
+		  		  UPDATE_DATE 		  = SYSDATE,
+		  		  UPDATED_BY 		  = #modifierID:VARCHAR#
+		    WHERE A.LANGUAGE_NO 	  = #languageNo#
+	 
+		]]>
+	</update>
+	
+	<!-- update military service information -->
+	<update id="updateMilitaryServiceInfo" parameterClass="MilitaryService" >
+		<![CDATA[
+		
+	 	   UPDATE HR_MILITARY_SERVICE A
+  		      SET MILITARY_TYPE_CODE  = #militaryTypeCode:VARCHAR#,
+		  		  MILITARY_LEVEL_CODE = #militaryLevelCode:VARCHAR#,
+		  		  MILITARY_AREA_CODE  = #militaryAreaCode:VARCHAR#,
+		  		  START_DATE 	   	  = TO_DATE(#startTime:VARCHAR#,'YYYY-MM-DD'),
+		  		  END_DATE 	  		  = TO_DATE(#endTime:VARCHAR#,'YYYY-MM-DD'),
+		  		  UPDATE_DATE 		  = SYSDATE,
+		  		  UPDATED_BY 		  = #modifierID:VARCHAR#
+		    WHERE A.MILITARY_NO 	  = #militaryNo#
+	 
+			]]>
+	</update>		  
+	
+	<!-- update cost center information -->
+	<update id="updateCostcenterInfo" parameterClass="BasicInfo" >
+		<![CDATA[
+		
+			UPDATE HR_EMPLOYEE A
+			   SET A.COSTCENTER = #costcenter:VARCHAR#
+			 WHERE A.EMPID = #empID#
+	 
+	 	]]>
+	</update>	
+	
+	<!-- update IT level information -->
+	<update id="updateITLevelInfo" parameterClass="ITLevel" >
+		<![CDATA[
+		
+	 	   UPDATE HR_IT_LEVEL A
+  		      SET IT_EXAM_NAME_CODE  = #itExamNameCode:VARCHAR#,
+		  		  IT_LEVEL_CODE 	 = #itLevelCode:VARCHAR#,
+		  		  IT_MARK  			 = #itMark:VARCHAR#,
+		  		  OBTAINED_DATE 	 = TO_DATE(#obtainedDate:VARCHAR#,'YYYY-MM-DD'),
+		  		  UPDATE_DATE 		 = SYSDATE,
+		  		  UPDATED_BY 		 = #modifierID:VARCHAR#
+		    WHERE A.IT_NO 	 		 = #it_NO#
+	 
+	 	]]>
+	</update>	
+	
+	<!-- delete education information -->
+	<delete id="deleteEducationInfo" parameterClass="Education" >
+		<![CDATA[
+		
+		    DELETE 
+		      FROM HR_EDUCATION A
+			 WHERE A.EDUC_NO = #educationNo#
+			]]>
+	</delete>
+	
+	<!-- delete language information -->
+	<delete id="deleteLanguageInfo" parameterClass="ForeignLanguage" >
+		<![CDATA[
+
+			DELETE 
+			  FROM HR_LANGUAGE_LEVEL A
+			 WHERE A.LANGUAGE_NO = #languageNo#
+	 
+		]]>
+	</delete>
+	
+	<!-- delete military service information -->
+	<delete id="deleteMilitaryServiceInfo" parameterClass="MilitaryService" >
+		<![CDATA[
+		
+				DELETE 
+				  FROM HR_MILITARY_SERVICE A
+				 WHERE A.MILITARY_NO = #militaryNo#
+				 
+			]]>
+	</delete>		  
+	
+	<!-- delete IT level information -->
+	<delete id="deleteITLevelInfo" parameterClass="ITLevel" >
+		<![CDATA[
+		
+	 		DELETE 
+	 		  FROM HR_IT_LEVEL A
+			 WHERE A.IT_NO = #it_NO#
+	 	]]>
+	 </delete>
+	 
+	 <!-- retrieve family information -->
+	<select id="retrieveFamilyInfo" parameterClass="string" resultClass="Family">
+		<![CDATA[
+			SELECT A.FAMILY_NO            				familyNo,
+			  	   A.EMPID                 				empID,
+				   B.CHINESENAME		   				chineseName,
+           B.CHINESE_PINYIN           pinyin,
+           B.ENGLISHNAME              enName,
+           B.KOREANNAME               korName,
+			  	   A.FAM_TYPE_CODE         				relationalTypeCode,
+				   C.CODE_NAME			 				relationalType,
+           C.CODE_EN_NAME           enRelationalType,
+           C.CODE_KOR_NAME          korRelationalType,
+			  	   A.FAM_NAME              				famName,
+			  	   A.FAM_NAME_PINYIN       				famPinYin,
+			  	   TO_CHAR(A.FAM_BORNDATE,'YYYY-MM-DD') famBornDate,
+			  	   A.FAM_IDCARD            				famIDCard,
+			  	   A.FAM_DEGREE_CODE       				famDegreeCode,
+				   D.CODE_NAME						 	famDegree,
+           D.CODE_EN_NAME           enFamDegree,
+           D.CODE_KOR_NAME          korFamDegree,
+			  	   A.FAM_OCCUP_CODE        				famOccupationCode,
+				   E.CODE_NAME						 	famOccupation,
+           E.CODE_EN_NAME           enFamOccupation,
+           E.CODE_KOR_NAME          korFamOccupation,
+			  	   A.FAM_NATIONALITY_CODE  				famNationalityCode,
+				   F.CODE_NAME						    famNationality,
+			  	   A.FAM_HOME_ADDR        				famHomeAddress,
+			  	   A.FAM_PHONE             				famPhone,
+			  	   A.FAM_COMPANY_NAME      				famCompanyName,
+			  	   TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD')  creatDate,
+			  	   A.CREATED_BY            				creatorID,
+			  	   TO_CHAR(A.UPDATE_DATE,'YYYY-MM-DD')  modifyDate,
+			  	   A.UPDATED_BY            				modifierID,
+			  	   A.ORDERNO               				orderNo,
+			  	   A.ACTIVITY              				activity
+			  FROM HR_FAMILY A,
+			  	   HR_EMPLOYEE B,
+				   SY_CODE C,
+				   SY_CODE D,
+				   SY_CODE E,
+				   SY_CODE F
+			 WHERE A.EMPID = #empID#
+			   AND A.EMPID = B.EMPID(+)
+			   AND A.FAM_TYPE_CODE = C.CODE_ID(+)
+			   AND A.FAM_DEGREE_CODE = D.CODE_ID(+)
+			   AND A.FAM_OCCUP_CODE = E.CODE_ID(+)
+			   AND A.FAM_NATIONALITY_CODE = F.CODE_ID(+) 
+	 	 	]]>
+	 </select>
+	 
+	 <!-- insert family information -->
+	 <insert id="insertFamilyInfo" parameterClass="Family" >
+		<![CDATA[	
+				   INSERT INTO HR_FAMILY A
+				             ( FAMILY_NO,
+							   EMPID,
+							   FAM_TYPE_CODE,
+							   FAM_NAME,
+							   FAM_BORNDATE,
+							   FAM_OCCUP_CODE,
+							   FAM_IDCARD,
+							   FAM_DEGREE_CODE,
+							   CREATE_DATE,
+							   CREATED_BY
+							 )
+					  VALUES(HR_FAM_SEQ.NEXTVAL,
+					  		 #empID:VARCHAR#,
+							 #relationalTypeCode:VARCHAR#,
+							 #famName:VARCHAR#,
+							 TO_DATE(#famBornDate:VARCHAR#,'YYYY-MM-DD'),
+							 #famOccupationCode:VARCHAR#,
+							 #famIDCard:VARCHAR#,
+							 #famDegreeCode:VARCHAR#,
+							 SYSDATE,
+							 #creatorID:VARCHAR#
+					  		)
+	  	 ]]>
+	 </insert>
+	 
+	 <!-- update family information -->
+	 <update id="updateFamilyInfo" parameterClass="Family" >
+		<![CDATA[
+			   UPDATE HR_FAMILY A
+			      SET FAM_TYPE_CODE   = #relationalTypeCode:VARCHAR#,
+				  	  FAM_NAME 		  = #famName:VARCHAR#,
+					  FAM_BORNDATE	  = TO_DATE(#famBornDate:VARCHAR#,'YYYY-MM-DD'),
+					  FAM_OCCUP_CODE  = #famOccupationCode:VARCHAR#,
+					  FAM_IDCARD	  = #famIDCard:VARCHAR#,
+					  FAM_DEGREE_CODE = #famDegreeCode:VARCHAR#,
+					  UPDATE_DATE	  = SYSDATE,
+					  UPDATED_BY	  = #modifierID:VARCHAR#
+			    WHERE A.FAMILY_NO = #familyNo#
+			  ]]>
+	 </update>
+	 
+	 <!-- delete family information -->
+	 <delete id="deleteFamilyInfo" parameterClass="Family" >
+		<![CDATA[
+			    DELETE 
+				  FROM HR_FAMILY A
+				 WHERE A.FAMILY_NO = #familyNo#
+	  	  
+			  ]]>
+	 </delete>
+	 
+	<!-- update personal relation information -->
+	<update id="updatePersonalRelationInfo" parameterClass="PersonalInfo" >
+		<![CDATA[	
+			       UPDATE HR_PERSONAL_INFO A
+		  		      SET IDCARD_NO 	   	   = #idcardNo:VARCHAR#,
+				  		  MARITAL_STATUS_CODE  = #maritalStatusCode:VARCHAR#,
+				  		  WEDDING_DATE   	   = TO_DATE(#weddingDate:VARCHAR#,'YYYY-MM-DD'),
+				  		  MATE_EMPID 	   	   = #mateEmpID:VARCHAR#,
+				  		  OFFICE_PHONE 		   = #officePhone:VARCHAR#,
+						  HOME_PHONE  		   = #homePhone:VARCHAR#,
+						  CELLPHONE 		   = #cellPhone:VARCHAR#,
+						  FAX 				   = #fax:VARCHAR#,
+						  EMAIL				   = #email:VARCHAR#,
+						  FILE_RELATION		   = #fileRelationCode:VARCHAR#,
+						  HOME_ADDRESS 		   = #homeAddress:VARCHAR#,
+						  REG_PLACE   		   = #regPlace:VARCHAR#,
+						  POSTALCODE  		   = #postalCode:VARCHAR#,
+						  REG_TYPE_CODE 	   = #regTypeCode:VARCHAR#,
+						  RELIGION_CODE 	   = #religionCode:VARCHAR#,
+						  HOBBY				   = #hobby:VARCHAR#,
+						  SPECIALITY		   = #speciality:VARCHAR#,
+				  		  UPDATE_DATE 		   = SYSDATE,
+				  		  UPDATED_BY 		   = #updatedBy:VARCHAR#,
+				  		  DOB                  = TO_DATE(#dob:VARCHAR#,'YYYY-MM-DD')
+				    WHERE A.EMPID = #empID#
+	 			  ]]>  
+	 </update>
+	 
+	<!-- retrieve health information -->
+	<select id="retrieveHealthInfo" parameterClass="string" resultClass="Health">
+		<![CDATA[
+		  	  SELECT HEALTH_NO           			 	 	healthNo,
+					  A.EMPID               				empID,
+					  B.CHINESENAME		  					chineseName,
+					  HEIGHT              					height,
+					  WEIGHT              					weight,
+					  BLOOD_TYPE_CODE     					bloodTypeCode,
+					  C.CODE_NAME		  					bloodType,
+                      C.CODE_EN_NAME                        enBloodType,
+                      C.CODE_KOR_NAME                       korBloodType,
+					  L_EYE_SIGHT         					leftEyesight,
+					  R_EYE_SIGHT         					rightEyesight,
+					  RH                  					healthRH,
+					  COLOR_BLIND         					colorBlind,
+					  BLOOD_PRESSURE_MIX  					bloodPressureMix,
+					  BLOOD_PRESSURE_MAX  					bloodPressureMax,
+                      D.CODE_NAME                           bloodSugar,
+                      D.CODE_EN_NAME                        enBloodSugar,
+                      D.CODE_KOR_NAME                       korBloodSugar,
+                      D.CODE_ID                             bloodSugarCode,
+					  E.CODE_NAME               	  	    healthOT,
+                      E.CODE_EN_NAME                        enHealthOT,
+                      E.CODE_KOR_NAME                       korHealthOT,
+                      E.CODE_ID                             healthOtCode,
+					  F.CODE_NAME                  		    healthPT,
+                      F.CODE_EN_NAME                        enHealthPT,
+                      F.CODE_KOR_NAME                       korHealthPT,
+                      F.CODE_ID                             healthPtCode,
+					  G.CODE_NAME        				    healthHBSAG,
+                      G.CODE_EN_NAME                        enHealthHBSAG,
+                      G.CODE_KOR_NAME                       korHealthHBSAG,
+                      G.CODE_ID                             healthHbsagCode,
+					  K.CODE_NAME                			healthHBS,
+                      K.CODE_EN_NAME                        enHealthHBS,
+                      K.CODE_KOR_NAME                       korHealthHBS,
+                      K.CODE_ID                             healthHbsCode,
+					  H.CODE_NAME               			healthHBEAG,
+                      H.CODE_EN_NAME                        enHealthHBEAG,
+                      H.CODE_KOR_NAME                       korHealthHBEAG,
+                      H.CODE_ID                             healthHbeagCode,
+					  I.CODE_NAME               			healthHBE,
+                      I.CODE_EN_NAME                        enHealthHBE,
+                      I.CODE_KOR_NAME                       korHealthHBE,
+                      I.CODE_ID                             healthHbeCode,
+					  J.CODE_NAME          					healthHBC,
+                      J.CODE_EN_NAME                        enHealthHBC,
+                      J.CODE_KOR_NAME                       korHealthHBC,
+                      J.CODE_ID                             healthHbgCode,
+					  TO_CHAR(PHYSICAL_DATE,'YYYY-MM-DD')   physicalDate,
+					  A.CONTENT             				content,
+					  TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD')   createDate,
+					  A.CREATED_BY          				createdBy,
+					  TO_CHAR(A.UPDATE_DATE,'YYYY-MM-DD')   updateDate,
+					  A.UPDATED_BY          				updatedBy,
+					  A.ORDERNO             				orderNo,
+					  A.ACTIVITY            				activity,
+					  A.CONTENT                             content
+				  FROM  HR_HEALTH A,
+				 	    HR_EMPLOYEE B,
+				 	    SY_CODE C,
+			            SY_CODE D,
+			            SY_CODE E,
+			            SY_CODE F,
+			            SY_CODE G,
+			            SY_CODE H,
+			            SY_CODE I,
+			            SY_CODE J,
+			            SY_CODE K
+	            
+				WHERE A.EMPID = #empID#  
+				 AND A.EMPID = B.EMPID(+)
+			     AND A.BLOOD_TYPE_CODE = C.CODE_ID(+)
+		          AND A.BLOOD_SUGAR=D.CODE_ID(+)
+		          AND A.OT=E.CODE_ID(+)
+		          AND A.PT=F.CODE_ID(+)
+		          AND A.HBSAG=G.CODE_ID(+)
+		          AND A.HBS=H.CODE_ID(+)
+		          AND A.HBEAG=I.CODE_ID(+)
+		          AND A.HBE=J.CODE_ID(+)
+		          AND A.HBC=K.CODE_ID
+				 
+		]]>
+	 </select>
+	 
+	  <!-- insert health information -->
+	 <insert id="insertHealthInfo" parameterClass="Health" >
+		<![CDATA[	
+				   INSERT INTO HR_HEALTH A
+				             (   HEALTH_NO,
+  							     EMPID,
+  								 HEIGHT,
+  								 WEIGHT,
+  								 BLOOD_TYPE_CODE,
+  								 L_EYE_SIGHT,
+  								 R_EYE_SIGHT,
+  								 RH,
+  								 COLOR_BLIND,
+  								 BLOOD_PRESSURE_MIX,
+  								 BLOOD_PRESSURE_MAX,
+  								 BLOOD_SUGAR,
+  								 OT,
+  								 PT,
+ 								 HBSAG,
+  								 HBS,
+  								 HBEAG,
+  								 HBE,
+  								 HBC,
+  								 PHYSICAL_DATE,
+  								 CONTENT,
+  								 CREATE_DATE,
+  								 CREATED_BY,
+  								 UPDATE_DATE,
+  								 UPDATED_BY,
+  								 ORDERNO,
+  								 ACTIVITY
+							 )
+					  VALUES(HR_HEALTH_SEQ.NEXTVAL,
+					  		 #empID:VARCHAR#,
+							 #height:VARCHAR#,
+							 #weight:VARCHAR#,
+							 #bloodTypeCode:VARCHAR#,
+							 #leftEyesight:VARCHAR#,
+							 #rightEyesight:VARCHAR#,
+							 #healthRH:VARCHAR#,
+							 #colorBlind:VARCHAR#,
+							 #bloodPressureMix:VARCHAR#,
+							 #bloodPressureMax:VARCHAR#,
+							 #bloodSugar:VARCHAR#,
+							 #healthOT:VARCHAR#,
+							 #healthPT:VARCHAR#,
+							 #healthHBSAG:VARCHAR#,
+							 #healthHBS:VARCHAR#,            
+							 #healthHBEAG:VARCHAR#,
+							 #healthHBE:VARCHAR#,
+							 #healthHBC:VARCHAR#,
+							 TO_DATE(#physicalDate:VARCHAR#,'YYYY-MM-DD'),
+							 #content:VARCHAR#,
+							 SYSDATE,
+							 #createdBy:VARCHAR#,
+							 SYSDATE,
+							 #updatedBy:VARCHAR#, 
+							 #orderNo:NUMERIC#,
+							 #activity:NUMERIC#
+					  		)
+	  	 ]]>
+	 </insert>
+	 
+	 <!-- update health information -->
+	 <update id="updateHealthInfo" parameterClass="Health" >
+		<![CDATA[
+			
+				UPDATE HR_HEALTH A
+				   SET HEIGHT	  		   = #height:VARCHAR#,
+  					   WEIGHT			   = #weight:VARCHAR#,
+  					   BLOOD_TYPE_CODE	   = #bloodTypeCode:VARCHAR#,
+  					   L_EYE_SIGHT		   = #leftEyesight:VARCHAR#,
+  					   R_EYE_SIGHT		   = #rightEyesight:VARCHAR#,
+  					   RH				   = #healthRH:VARCHAR#,
+  					   COLOR_BLIND		   = #colorBlind:VARCHAR#,
+  					   BLOOD_PRESSURE_MIX  = #bloodPressureMix:VARCHAR#,
+  					   BLOOD_PRESSURE_MAX  = #bloodPressureMax:VARCHAR#,
+  					   BLOOD_SUGAR		   = #bloodSugar:VARCHAR#,
+  					   OT				   = #healthOT:VARCHAR#,
+  					   PT				   = #healthPT:VARCHAR#,
+ 					   HBSAG			   = #healthHBSAG:VARCHAR#,
+  					   HBS				   = #healthHBS:VARCHAR#,
+  					   HBEAG			   = #healthHBEAG:VARCHAR#,
+  					   HBE				   = #healthHBE:VARCHAR#,
+  					   HBC				   = #healthHBC:VARCHAR#,
+  					  CONTENT			   = #content:VARCHAR#,
+  					   PHYSICAL_DATE	   = TO_DATE(#physicalDate:VARCHAR#,'YYYY-MM-DD'),
+  					   UPDATE_DATE		   = SYSDATE,
+  					   UPDATED_BY		   = #updatedBy:VARCHAR#
+				 WHERE A.HEALTH_NO = #healthNo#
+			  ]]>
+	 </update>
+	 
+	 <!-- delete health information -->
+	 <delete id="deleteHealthInfo" parameterClass="Health" >
+		<![CDATA[
+			    DELETE 
+				  FROM HR_HEALTH A
+				 WHERE A.HEALTH_NO = #healthNo#
+	  	  
+			  ]]>
+	 </delete>
+	 
+	 <!-- retrieve experience information -->
+	<select id="retrieveExperienceInfo" parameterClass="string" resultClass="Experience">
+		<![CDATA[
+		   SELECT WORK_EXPER_NO   					workExperNo,
+				  EMPID           					empID,
+				  CPNY_NAME       					prevCpnyName,
+				  DEPT_NAME       					prevDeptName,
+				  POSITION        					prevPosition,
+				  LEAVE_REASON    					leaveReason,
+				  WORK_CONTENT                      workContent,
+				  POST            					prevPost,
+				  GRADE           					previousGrade,
+				  TO_CHAR(START_DATE,'YYYY-MM-DD')  startDate,
+				  TO_CHAR(END_DATE,'YYYY-MM-DD')    endDate,
+				  TO_CHAR(CREATE_DATE,'YYYY-MM-DD') createDate,  
+				  CREATED_BY      					createdBy,
+				  TO_CHAR(UPDATE_DATE,'YYYY-MM-DD') updateDate,
+				  UPDATED_BY      					updatedBy,
+				  ORDERNO         					orderNo,
+				  ACTIVITY        					activity
+			 FROM HR_WORK_EXPERIENCE A
+			WHERE A.EMPID = #empID#
+				 
+		]]>
+	 </select>
+	 
+	  <!-- insert experience information -->
+	 <insert id="insertExperienceInfo" parameterClass="Experience" >
+		<![CDATA[	
+			
+	  INSERT INTO HR_WORK_EXPERIENCE A
+		   	   	  (WORK_EXPER_NO,
+			  	   EMPID,
+			  	   CPNY_NAME,
+			  	   DEPT_NAME,
+			  	   POSITION,
+			  	   LEAVE_REASON,
+			  	   WORK_CONTENT,
+			  	   POST,
+			  	   GRADE,
+			  	   START_DATE,
+			  	   END_DATE,
+			  	   CREATE_DATE,
+			  	   CREATED_BY,
+			  	   UPDATE_DATE,
+			  	   UPDATED_BY,
+			  	   ORDERNO,
+			  	   ACTIVITY        					
+				  )
+	        VALUES(HR_W_EXP_SEQ.NEXTVAL,
+				   #empID:VARCHAR#,
+				   #prevCpnyName:VARCHAR#,
+				   #prevDeptName:VARCHAR#,
+				   #prevPosition:VARCHAR#,
+				   #leaveReason:VARCHAR#,
+				   #workContent:VARCHAR#,
+				   #prevPost:VARCHAR#,
+				   #previousGrade:VARCHAR#,
+				   TO_DATE(#startDate:VARCHAR#,'YYYY-MM-DD'),
+				   TO_DATE(#endDate:VARCHAR#,'YYYY-MM-DD'),
+				   TO_DATE(#createDate:VARCHAR#,'YYYY-MM-DD'),
+				   #createdBy:VARCHAR#,
+				   TO_DATE(#updateDate:VARCHAR#,'YYYY-MM-DD'),
+				   #updatedBy:VARCHAR#,
+				   #orderNo:NUMERIC#,
+			  	   #activity:NUMERIC#
+				  )
+	  	 ]]>
+	 </insert>
+	 
+	 <!-- update experience information -->
+	 <update id="updateExperienceInfo" parameterClass="Experience" >
+		<![CDATA[
+			    UPDATE HR_WORK_EXPERIENCE A
+			   	   SET CPNY_NAME 	 = #prevCpnyName:VARCHAR#,
+				  	   DEPT_NAME 	 = #prevDeptName:VARCHAR#,
+				  	   POSITION 	 = #prevPosition:VARCHAR#,
+				  	   LEAVE_REASON  = #leaveReason:VARCHAR#, 
+				  	   WORK_CONTENT   = #workContent:VARCHAR#,
+				  	   START_DATE    = TO_DATE(#startDate:VARCHAR#,'YYYY-MM-DD'),
+				  	   END_DATE      = TO_DATE(#endDate:VARCHAR#,'YYYY-MM-DD'),
+				  	   UPDATE_DATE   = SYSDATE,
+				  	   UPDATED_BY  	 = #updatedBy:VARCHAR#
+				 WHERE A.WORK_EXPER_NO = #workExperNo#      		
+
+			  ]]>
+	 </update>
+	 
+	 <!-- delete experience information -->
+	 <delete id="deleteExperienceInfo" parameterClass="Experience" >
+		<![CDATA[
+			 	  DELETE 
+				    FROM HR_WORK_EXPERIENCE A
+				   WHERE A.WORK_EXPER_NO = #workExperNo# 
+	  	  
+			  ]]>
+	 </delete>
+	 
+	 	 <!-- retrieve qualification information -->
+	<select id="retrieveQualificationInfo" parameterClass="string" resultClass="Qualification">
+		<![CDATA[
+		  	   
+		       SELECT QUAL_NO          			  			 qualificationNo,
+					  A.EMPID            					 empID,
+					  B.CHINESENAME				   			 chineseName,
+            B.CHINESE_PINYIN             pinyin,
+            B.ENGLISHNAME                enName,
+            B.KOREANNAME                 korName,
+					  QUAL_NAME_CODE   						 qualificationNameCode,
+					  C.CODE_NAME	   						 qualificationName,
+            C.CODE_EN_NAME             enQualificationName,
+            C.CODE_KOR_NAME            korQualificationName,
+					  TO_CHAR(DATE_OBTAINED,'YYYY-MM-DD')    obtainedDate,
+					  QUAL_GRADE       						 qualificationGrade,
+					  QUAL_CARD_NO     						 qualificationCardNo,
+					  QUAL_LOCATION    						 qualificationLocation,
+					  MARK             						 mark,
+					  TO_CHAR(START_QUAL_DATE,'YYYY-MM-DD')  quaStartDate,
+					  TO_CHAR(END_QUAL_DATE,'YYYY-MM-DD')    quaEndDate,
+					  QUAL_INSTITUTE   						 qualificationInstitute,
+					  TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD')    createDate,
+					  A.CREATED_BY      	 				 createdBy,
+					  TO_CHAR(A.UPDATE_DATE,'YYYY-MM-DD')    updateDate,
+					  A.UPDATED_BY       					 updatedBy,
+					  A.ORDERNO          					 orderNo,
+					  A.ACTIVITY         					 activity
+			     FROM HR_QUALIFICATION A,
+				 	  HR_EMPLOYEE B,
+					  SY_CODE C
+				WHERE A.EMPID = #empID#
+				  AND A.EMPID = B.EMPID(+)
+				  AND A.QUAL_NAME_CODE = C.CODE_ID(+)
+				 
+		]]>
+	 </select>
+	 
+	  <!-- insert qualification information -->
+	 <insert id="insertQualificationInfo" parameterClass="Qualification" >
+		<![CDATA[	
+				
+	     INSERT INTO HR_QUALIFICATION A
+		   	   	     (QUAL_NO,
+					  EMPID,
+					  QUAL_NAME_CODE,
+					  DATE_OBTAINED,
+					  QUAL_GRADE,
+					  QUAL_CARD_NO,
+					  QUAL_LOCATION,
+					  MARK,
+					  START_QUAL_DATE,
+					  END_QUAL_DATE,
+					  QUAL_INSTITUTE,
+					  CREATE_DATE,
+					  CREATED_BY,
+					  UPDATE_DATE,
+					  UPDATED_BY,
+					  ORDERNO,
+					  ACTIVITY		
+				    )
+	          VALUES(HR_QUAL_SEQ.NEXTVAL,
+				     #empID:VARCHAR#,
+				     #qualificationNameCode:VARCHAR#,
+				   	 TO_DATE(#obtainedDate:VARCHAR#,'YYYY-MM-DD'),
+				   	 #qualificationGrade:VARCHAR#,
+				   	 #qualificationCardNo:VARCHAR#,
+				   	 #qualificationLocation:VARCHAR#,
+				   	 #mark:VARCHAR#,
+				   	 TO_DATE(#quaStartDate:VARCHAR#,'YYYY-MM-DD'),
+				   	 TO_DATE(#quaEndDate:VARCHAR#,'YYYY-MM-DD'),
+				  	 #qualificationInstitute:VARCHAR#,
+				   	 TO_DATE(#createDate:VARCHAR#,'YYYY-MM-DD'),
+				   	 #createdBy:VARCHAR#,
+				   	 TO_DATE(#updateDate:VARCHAR#,'YYYY-MM-DD'),
+				   	 #updatedBy:VARCHAR#,
+				   	 #orderNo:NUMERIC#,
+			  	   	 #activity:NUMERIC#
+				    )
+	  	 ]]>
+	 </insert>
+	 
+	 <!-- update qualification information -->
+	 <update id="updateQualificationInfo" parameterClass="Qualification" >
+		<![CDATA[
+			
+		       UPDATE HR_QUALIFICATION A
+		   	   	  SET QUAL_NAME_CODE  = #qualificationNameCode:VARCHAR#,
+					 DATE_OBTAINED 	  = TO_DATE(#obtainedDate:VARCHAR#,'YYYY-MM-DD'),
+					  QUAL_GRADE 	  = #qualificationGrade:VARCHAR#,
+					  QUAL_CARD_NO 	  = #qualificationCardNo:VARCHAR#,
+					  QUAL_LOCATION	  = #qualificationLocation:VARCHAR#,
+					  MARK 			  = #mark:VARCHAR#,
+					  START_QUAL_DATE = TO_DATE(#quaStartDate:VARCHAR#,'YYYY-MM-DD'),
+					  END_QUAL_DATE   = TO_DATE(#quaEndDate:VARCHAR#,'YYYY-MM-DD'),
+					  QUAL_INSTITUTE  = #qualificationInstitute:VARCHAR#,
+					  CREATE_DATE 	  = TO_DATE(#createDate:VARCHAR#,'YYYY-MM-DD'),
+					  CREATED_BY 	  = #createdBy:VARCHAR#,
+					  UPDATE_DATE 	  = TO_DATE(#updateDate:VARCHAR#,'YYYY-MM-DD'),
+					  UPDATED_BY 	  = #updatedBy:VARCHAR#,
+					  ORDERNO 		  = #orderNo:NUMERIC#,
+					  ACTIVITY 		  = #activity:NUMERIC#	
+			    WHERE A.QUAL_NO = #qualificationNo# 	
+
+			  ]]>
+	 </update>
+	 
+	 <!-- delete qualification information -->
+	 <delete id="deleteQualificationInfo" parameterClass="Qualification" >
+		<![CDATA[
+	
+			DELETE 
+			  FROM HR_QUALIFICATION A
+			 WHERE A.QUAL_NO = #qualificationNo#	
+	  	  
+			  ]]>
+	 </delete>
+	 
+	<!-- retrieve additional information -->
+	<select id="retrieveAdditionalInfo" parameterClass="string" resultClass="Additional">
+		<![CDATA[
+		  	   
+		   SELECT ADDITIONAL_NO   					   additionalNo,
+				  A.EMPID           				   empID,
+				  TO_CHAR(EVENT_DATE,'YYYY-MM-DD')     eventDate,
+				  INFO_TYPE_CODE  					   infoTypeCode,
+				  C.CODE_NAME	  					   infoType,
+				  C.CODE_EN_NAME             enInfoType,
+          		  C.CODE_KOR_NAME            korInfoType,
+				  DETAILS         					   detatls,
+				  REGISTER_ID     					   registerID,
+				  B.CHINESENAME   					   register,
+       B.CHINESE_PINYIN registerPinYin,
+       B.ENGLISHNAME enRegister,
+       B.Koreanname korRegister,
+				  TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD')  createDate,
+				  A.CREATED_BY      				   createdBy,
+				  TO_CHAR(A.UPDATE_DATE,'YYYY-MM-DD')  updateDate,
+				  A.UPDATED_BY      				   updatedBy,
+				  A.ORDERNO         				   orderNo,
+				  A.ACTIVITY        				   activity
+			 FROM HR_ADDITIONAL_INFO A,
+			 	  HR_EMPLOYEE B,
+				  SY_CODE C
+			WHERE A.EMPID = #empID#
+			  AND A.REGISTER_ID = B.EMPID(+)
+			  AND A.INFO_TYPE_CODE = C.CODE_ID(+)
+					 
+		]]>
+	 </select>
+	 
+	  <!-- insert additional information -->
+	 <insert id="insertAdditionalInfo" parameterClass="Additional" >
+		<![CDATA[	
+
+			  INSERT INTO HR_ADDITIONAL_INFO
+						( ADDITIONAL_NO,
+						  EMPID,
+						  EVENT_DATE,
+						  INFO_TYPE_CODE,
+						  DETAILS,
+						  REGISTER_ID,
+						  CREATE_DATE,
+						  CREATED_BY,
+						  ORDERNO,
+						  ACTIVITY        				   
+						) 
+				  VALUES(HR_ADIN_SEQ.NEXTVAL,
+				  		 #empID:VARCHAR#,
+						 TO_DATE(#eventDate:VARCHAR#,'YYYY-MM-DD'),
+						 #infoTypeCode:VARCHAR#,
+						 #detatls:VARCHAR#,
+						 #registerID:VARCHAR#,
+						 SYSDATE,
+						 #createdBy:VARCHAR#,
+						 #orderNo:NUMERIC#,
+						 #activity:NUMERIC#
+						 )
+	  	 ]]>
+	 </insert>
+	 
+	 <!-- update additional information -->
+	 <update id="updateAdditionalInfo" parameterClass="Additional" >
+		<![CDATA[
+			
+  			   UPDATE HR_ADDITIONAL_INFO
+			      SET EVENT_DATE     = TO_DATE(#eventDate:VARCHAR#,'YYYY-MM-DD'),
+					  INFO_TYPE_CODE = #infoTypeCode:VARCHAR#,
+					  DETAILS 		 = #detatls:VARCHAR#,
+					  UPDATE_DATE 	 = SYSDATE,
+					  UPDATED_BY 	 = #updatedBy:VARCHAR#,
+					  ORDERNO 		 = #orderNo:NUMERIC#,
+					  ACTIVITY 		 = #activity:NUMERIC# 
+				WHERE ADDITIONAL_NO = #additionalNo#  
+			  ]]>
+	 </update>
+	 
+	 <!-- delete additional information -->
+	 <delete id="deleteAdditionalInfo" parameterClass="Additional" >
+		<![CDATA[
+	
+				DELETE
+				  FROM HR_ADDITIONAL_INFO
+				 WHERE ADDITIONAL_NO = #additionalNo#  
+	  	  
+			  ]]>
+	 </delete>
+	 
+	 <!-- retrieve reward information -->
+	<select id="retrieveRewardInfo" parameterClass="SimpleMap" resultClass="Reward">
+		<![CDATA[
+	 
+	 	   SELECT REWARD_NO             			 rewardNo,
+				  A.EMPID                 			 empID,
+				  B.CHINESENAME						 chineseName,
+				  B.DEPTID							 deptID,
+				  F.DEPTNAME						 department,
+				  REWARD_TYPE_CODE      			 rewardTypeCode,
+				  C.CODE_NAME						 rewardType,
+          C.CODE_EN_NAME         enRewardType,
+          C.CODE_KOR_NAME        korRewardType,
+				  TO_CHAR(REWARD_DATE,'YYYY-MM-DD')  rewardDate,
+				  REWARD_CONTENTS        			 rewardContents,
+				  REWARD_SORT_CODE       			 rewardSortCode,
+				  D.CODE_NAME			 			 rewardSort,
+          D.CODE_EN_NAME         enRewardSort,
+          D.CODE_KOR_NAME        korRewardSort,
+				  ACHIEVEMENT_TYPE_CODE  			 achievementTypeCode,
+				  E.CODE_NAME			 			 achievementType,
+				  REWARD_AMOUNT          			 rewardAmount,
+				  REWARD_BONUS           			 rewardBonus,
+				  TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD') createDate,
+				  A.CREATED_BY             			 createdBy ,
+				  TO_CHAR(A.UPDATE_DATE,'YYYY-MM-DD') updateDate,
+				  A.UPDATED_BY             			 updatedBy,
+				  A.ORDERNO                			 orderNo,
+				  A.ACTIVITY               			 activity
+		 	 FROM HR_REWARD A,
+			 	  HR_EMPLOYEE B,
+				  SY_CODE C,
+				  SY_CODE D,
+				  SY_CODE E,
+				  HR_DEPARTMENT F
+			WHERE A.EMPID = #empID#
+			  AND A.EMPID = B.EMPID(+)
+			  AND A.REWARD_TYPE_CODE = C.CODE_ID(+)
+			  AND A.REWARD_SORT_CODE = D.CODE_ID(+)
+			  AND A.ACHIEVEMENT_TYPE_CODE = E.CODE_ID(+)
+			  AND B.DEPTID = F.DEPTID(+)
+					 
+		]]>
+	 </select>
+	 
+	  <!-- insert reward information -->
+	 <insert id="insertRewardInfo" parameterClass="Reward" >
+		<![CDATA[	
+		
+		INSERT INTO HR_REWARD
+					(REWARD_NO,
+  					 EMPID,
+  					 REWARD_TYPE_CODE,
+  					 REWARD_DATE,
+  					 REWARD_CONTENTS,
+  					 REWARD_SORT_CODE,
+  					 ACHIEVEMENT_TYPE_CODE,
+  					 REWARD_AMOUNT,
+  					 REWARD_BONUS,
+  					 CREATE_DATE,
+  					 CREATED_BY,
+  					 ORDERNO,
+  					 ACTIVITY,
+  					 TRANS_NO			   
+					) 
+			  VALUES(HR_REWARD_SEQ.NEXTVAL,
+			  		 #empID:VARCHAR#,
+					 #rewardTypeCode:VARCHAR#,
+					 TO_DATE(#rewardDate:VARCHAR#,'YYYY-MM-DD'),
+					 #rewardContents:VARCHAR#,
+					 #rewardSortCode:VARCHAR#,
+					 #achievementTypeCode:VARCHAR#,
+					 #rewardAmount:NUMERIC#,
+					 #rewardBonus:NUMERIC#,
+					 SYSDATE,
+					 #createdBy:VARCHAR#,
+					 #orderNo:NUMERIC#,
+					 #activity:NUMERIC#,
+					 #transNo:VARCHAR#
+					 )
+
+	  	 ]]>
+	 </insert>
+	 
+	 <!-- update reward information -->
+	 <update id="updateRewardInfo" parameterClass="Reward" >
+		<![CDATA[
+			
+    	      UPDATE HR_REWARD
+			     SET REWARD_TYPE_CODE  	   = #rewardTypeCode:VARCHAR#,
+  					 REWARD_DATE 		   = TO_DATE(#rewardDate:VARCHAR#,'YYYY-MM-DD'),
+  					 REWARD_CONTENTS 	   = #rewardContents:VARCHAR#,
+  					 REWARD_SORT_CODE 	   = #rewardSortCode:VARCHAR#,
+  					 ACHIEVEMENT_TYPE_CODE = #achievementTypeCode:VARCHAR#,
+  					 REWARD_AMOUNT		   = #rewardAmount:NUMERIC#,
+  					 REWARD_BONUS		   = #rewardBonus:NUMERIC#,
+  					 UPDATE_DATE		   = SYSDATE,
+  					 UPDATED_BY			   = #updatedBy:VARCHAR#,
+  					 ORDERNO			   = #orderNo:NUMERIC#,
+  					 ACTIVITY			   = #activity:NUMERIC#		   
+			   WHERE REWARD_NO = #rewardNo#
+			  ]]>
+	 </update>
+	 
+	 <!-- delete reward information -->
+	 <delete id="deleteRewardInfo" parameterClass="Reward" >
+		<![CDATA[
+	   
+			DELETE
+			  FROM HR_REWARD
+			 WHERE REWARD_NO = #rewardNo#
+	  	  
+			  ]]>
+	 </delete>
+	 
+	 <!-- retrieve training inside information -->
+	 <select id="retrieveTrainingInside" parameterClass="string" resultClass="TrainingInside">
+		<![CDATA[
+	 
+	       SELECT TRAIN_IN_NO       	   	 		    trainInNo,
+				  A.EMPID             					empID,
+				  B.CHINESENAME		  					chineseName,
+				  B.DEPTID			  					deptID,
+				  COURSE_CODE       					courseCode,
+				  C.CODE_NAME							course,
+          C.CODE_EN_NAME          enCourse,
+          C.CODE_KOR_NAME         korourse,
+				  COURSE_TYPE_CODE  					courseTypeCode,
+				  D.CODE_NAME							courseType,
+          D.CODE_EN_NAME          enCourseType,
+          D.CODE_KOR_NAME         korCourseType,
+				  PLACE             					place,
+				  MARK              					mark,
+				  TO_CHAR(START_DATE,'YYYY-MM-DD')  	startDate,
+				  TO_CHAR(END_DATE,'YYYY-MM-DD')    	endDate,
+				  TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD') 	createDate,
+				  A.CREATED_BY        					createdBy,
+				  TO_CHAR(A.UPDATE_DATE,'YYYY-MM-DD') updateDate,
+				  A.UPDATED_BY       					updatedBy,
+				  A.ORDERNO           					orderNo,
+				  A.ACTIVITY          					activity
+			 FROM HR_TRAINING_INSIDE A,
+			 	  HR_EMPLOYEE B,
+				  SY_CODE C,
+				  SY_CODE D
+		    WHERE A.EMPID = #empID#
+			  AND A.EMPID = B.EMPID(+)
+			  AND A.COURSE_CODE = C.CODE_ID(+)
+			  AND A.COURSE_TYPE_CODE = D.CODE_ID(+) 
+					 
+		]]>
+	 </select>
+	 
+	  <!-- insert training inside information -->
+	 <insert id="insertTrainingInside" parameterClass="TrainingInside" >
+		<![CDATA[	
+		
+				 INSERT INTO HR_TRAINING_INSIDE
+			            ( TRAIN_IN_NO,
+						  EMPID,
+						  COURSE_CODE,
+						  COURSE_TYPE_CODE,
+						  PLACE,
+						  MARK,
+						  START_DATE,
+						  END_DATE,
+						  CREATE_DATE,
+						  CREATED_BY,
+						  ORDERNO,
+						  ACTIVITY          					
+						)
+				  VALUES( HR_TRAIN_IN_SEQ.NEXTVAL,
+				  		  #empID:VARCHAR#,
+						  #courseCode:VARCHAR#,
+						  #courseTypeCode:VARCHAR#,
+						  #place:VARCHAR#,
+						  #mark:VARCHAR#,
+						  TO_DATE(#startDate:VARCHAR#,'YYYY-MM-DD'),
+						  TO_DATE(#endDate:VARCHAR#,'YYYY-MM-DD'),
+						  SYSDATE,
+						  #createdBy:VARCHAR#,
+						  #orderNo:NUMERIC#,
+						  #activity:NUMERIC#
+				  		)
+
+	  	 ]]>
+	 </insert>
+	 
+	 <!-- update training inside information -->
+	 <update id="updateTrainingInside" parameterClass="TrainingInside" >
+		<![CDATA[
+			
+      			   UPDATE HR_TRAINING_INSIDE
+				      SET COURSE_CODE		= #courseCode:VARCHAR#,
+						  COURSE_TYPE_CODE	= #courseTypeCode:VARCHAR#,
+						  PLACE				= #place:VARCHAR#,
+						  MARK				= #mark:VARCHAR#,
+						  START_DATE		= TO_DATE(#startDate:VARCHAR#,'YYYY-MM-DD'),
+						  END_DATE			= TO_DATE(#endDate:VARCHAR#,'YYYY-MM-DD'),
+						  UPDATE_DATE		= SYSDATE,
+						  UPDATED_BY		= #updatedBy:VARCHAR#,
+						  ORDERNO			= #orderNo:NUMERIC#,
+						  ACTIVITY			= #activity:NUMERIC#         					
+					WHERE TRAIN_IN_NO = #trainInNo#	
+			  ]]>
+	 </update>
+	 
+	 <!-- delete training inside information -->
+	 <delete id="deleteTrainingInside" parameterClass="TrainingInside" >
+		<![CDATA[
+	   
+				DELETE 
+				  FROM HR_TRAINING_INSIDE
+	  	  		 WHERE TRAIN_IN_NO = #trainInNo#	
+			  ]]>
+	 </delete>
+	 
+	  <!-- retrieve training outside information -->
+	 <select id="retrieveTrainingOutside" parameterClass="string" resultClass="TrainingOutside">
+		<![CDATA[
+	 
+	    	   SELECT TRAIN_OUT_NO      		   			trainOutNo,
+					  A.EMPID             					empID,
+					  B.CHINESENAME		  					chineseName,
+				 	  B.DEPTID			  					deptID,
+					  COURSE_NAME       					course,
+					  COURSE_TYPE_CODE  					courseTypeCode,
+					  C.CODE_NAME							courseType,
+            C.CODE_EN_NAME          enCourseType,
+            C.CODE_KOR_NAME         korCourseType,
+					  INSTITUTION_NAME  					institutionName,
+					  PLACE             					place,
+					  MARK              					mark,
+					  TO_CHAR(START_DATE,'YYYY-MM-DD')      startDate,
+					  TO_CHAR(END_DATE,'YYYY-MM-DD')        endDate,
+					  A.ORDERNO           					orderNo,
+					  TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD')   createDate,
+					  A.CREATED_BY        					createdBy,
+					  TO_CHAR(A.UPDATE_DATE,'YYYY-MM-DD')   updateDate,
+					  A.UPDATED_BY        					updatedBy,
+					  A.ACTIVITY          					activity	
+				 FROM HR_TRAINING_OUTSIDE A,
+			 	  	  HR_EMPLOYEE B,
+				  	  SY_CODE C
+			    WHERE A.EMPID = #empID#
+				  AND A.EMPID = B.EMPID(+)
+				  AND A.COURSE_TYPE_CODE = C.CODE_ID(+) 
+					 
+		]]>
+	 </select>
+	 
+	  <!-- insert training outside information -->
+	 <insert id="insertTrainingOutside" parameterClass="TrainingOutside" >
+		<![CDATA[	
+		
+	  		  INSERT INTO HR_TRAINING_OUTSIDE
+			            ( TRAIN_OUT_NO,
+						  EMPID,
+						  COURSE_NAME,
+						  COURSE_TYPE_CODE,
+						  INSTITUTION_NAME,
+						  PLACE,
+						  MARK,
+						  START_DATE,
+						  END_DATE,
+						  CREATE_DATE,
+						  CREATED_BY,
+						  ORDERNO,
+						  ACTIVITY          					
+						)
+				  VALUES( HR_TRAIN_OUT_SEQ.NEXTVAL,
+				  		  #empID:VARCHAR#,
+						  #course:VARCHAR#,
+						  #courseTypeCode:VARCHAR#,
+						  #institutionName:VARCHAR#,
+						  #place:VARCHAR#,
+						  #mark:VARCHAR#,
+						  TO_DATE(#startDate:VARCHAR#,'YYYY-MM-DD'),
+						  TO_DATE(#endDate:VARCHAR#,'YYYY-MM-DD'),
+						  SYSDATE,
+						  #createdBy:VARCHAR#,
+						  #orderNo:NUMERIC#,
+						  #activity:NUMERIC#
+				  		)
+
+	  	 ]]>
+	 </insert>
+	 
+	 <!-- update training outside information -->
+	 <update id="updateTrainingOutside" parameterClass="TrainingOutside" >
+		<![CDATA[
+			
+       			   UPDATE HR_TRAINING_OUTSIDE
+				      SET COURSE_NAME		= #course:VARCHAR#,
+						  COURSE_TYPE_CODE	= #courseTypeCode:VARCHAR#,
+						  INSTITUTION_NAME	= #institutionName:VARCHAR#,
+						  PLACE				= #place:VARCHAR#,
+						  MARK				= #mark:VARCHAR#,
+						  START_DATE		= TO_DATE(#startDate:VARCHAR#,'YYYY-MM-DD'),
+						  END_DATE			= TO_DATE(#endDate:VARCHAR#,'YYYY-MM-DD'),
+						  UPDATE_DATE		= SYSDATE,
+						  UPDATED_BY		= #updatedBy:VARCHAR#,
+						  ORDERNO			= #orderNo:NUMERIC#,
+						  ACTIVITY			= #activity:NUMERIC#         					
+					WHERE TRAIN_OUT_NO = #trainOutNo#
+			  ]]>
+	 </update>
+	 
+	 <!-- delete training outside information -->
+	 <delete id="deleteTrainingOutside" parameterClass="TrainingOutside" >
+		<![CDATA[
+	   
+			    DELETE 
+				  FROM HR_TRAINING_OUTSIDE
+	  	  		 WHERE TRAIN_OUT_NO = #trainOutNo#
+	  	  
+			  ]]>
+	 </delete>
+	 
+	  <!-- retrieve accounts information -->
+	 <select id="retrieveAccountsInfo" parameterClass="string" resultClass="PaEmpInfo">
+		<![CDATA[
+	 
+		   SELECT A.EMPID         empID,
+				  COST_CENTER     costCenter,
+				  B.CODE_NAME	  costCenterName,
+          B.CODE_EN_NAME   enCostCenterName,
+          B.CODE_KOR_NAME  korCostCenterName,
+				  VENDER_CODE     venderCode,
+				  BANK_NAME_CODE  bankNameCode,
+				  C.CODE_NAME	  bankName,
+          C.CODE_EN_NAME         enBankName,
+          C.CODE_KOR_NAME        korBankName,
+				  BANK_AREA_CODE  bankAreaCode,
+				  D.CODE_NAME	  bankAreaName,
+          D.CODE_EN_NAME             enBankAreaName,
+          D.CODE_KOR_NAME            korBankAreaName,
+				  BANK_CITY_CODE  bankCityCode,
+				  E.CODE_NAME	  bankCityName,
+          E.CODE_EN_NAME             enBankCityName,
+          E.CODE_KOR_NAME            korBankCityName,
+				  CARD_NO         cardNo,
+				  CARD_NAME       cardName,
+				  CALC_FLAG 	  calcFlag,
+				  DECODE(CALC_FLAG,'Y','是','否') calcFlagName,
+				  DECODE(CALC_FLAG,'Y','YES','NO') enCalcFlagName
+			 FROM HR_EMP_PA_INFO A,
+			 	  SY_CODE B,
+				  SY_CODE C,
+				  SY_CODE D,
+				  SY_CODE E
+			WHERE A.EMPID = #empID#
+			  AND A.COST_CENTER = B.CODE_ID(+)
+			  AND A.BANK_NAME_CODE = C.CODE_ID(+)
+			  AND A.BANK_AREA_CODE = D.CODE_ID(+)
+			  AND A.BANK_CITY_CODE = E.CODE_ID(+)
+					 
+		]]>
+	 </select>
+
+	  <!-- insert accounts information -->
+	 <insert id="insertAccountsInfo" parameterClass="PaEmpInfo" >
+		<![CDATA[	
+		
+	 	INSERT INTO HR_EMP_PA_INFO
+		            ( EMPID,
+					  COST_CENTER,
+					  VENDER_CODE,
+					  BANK_NAME_CODE,
+					  BANK_AREA_CODE,
+					  BANK_CITY_CODE,
+					  CARD_NO,
+					  CARD_NAME,
+					  CALC_FLAG
+					 )
+			  VALUES(#empID:VARCHAR#,
+			  		 #costCenter:VARCHAR#,
+					 #venderCode:VARCHAR#,
+					 #bankNameCode:VARCHAR#,
+					 #bankAreaCode:VARCHAR#,
+					 #bankCityCode:VARCHAR#,
+					 #cardNo:VARCHAR#,
+					 #cardName:VARCHAR#,
+			  		 NVL(#calcFlag:VARCHAR#,'N')
+			  		 ) 
+
+	  	 ]]>
+	 </insert>
+	 
+	 <!-- update accounts information -->
+	 <update id="updateAccountsInfo" parameterClass="PaEmpInfo" >
+		<![CDATA[
+			
+			   UPDATE HR_EMP_PA_INFO
+			      SET COST_CENTER	 = #costCenter:VARCHAR#,
+					  VENDER_CODE	 = #venderCode:VARCHAR#,
+					  BANK_NAME_CODE = #bankNameCode:VARCHAR#,
+					  BANK_AREA_CODE = #bankAreaCode:VARCHAR#,
+					  BANK_CITY_CODE = #bankCityCode:VARCHAR#,
+					  CARD_NO		 = #cardNo:VARCHAR#,
+					  CARD_NAME		 = #cardName:VARCHAR#,
+					  CALC_FLAG		 = NVL(#calcFlag:VARCHAR#,'N')
+				WHERE EMPID = #empID#
+			  ]]>
+	 </update>
+	 
+	 <!-- delete accounts information -->
+	 <delete id="deleteAccountsInfo" parameterClass="PaEmpInfo" >
+		<![CDATA[
+	   
+				DELETE 
+				  FROM HR_EMP_PA_INFO
+				 WHERE EMPID = #empID#
+	  	  
+			  ]]>
+	 </delete>
+	 
+	 <select id="retrieveEvaluateByMonth" parameterClass="string" resultClass="SimpleMap">
+	 	<![CDATA[
+	 		    SELECT   A.evPeriodName evPeriodName ,
+                         A.evPeriodId  evPeriodId,
+                         max(A.职务工资) "职务工资",
+                         MAX(decode(A.evIdea,'奖金额度',A.evIdeaContent))  "奖金额度",
+                         MAX(decode(A.evIdea,'奖金工资比率',A.evIdeaContent)) "奖金工资比率" , 
+                         MAX(decode(A.evIdea,'评价意见',A.evIdeaContent)) "评价意见"    
+   
+                 FROM (
+
+                         SELECT  EV_PERIOD_NAME		  evPeriodName ,
+                                 A.EV_PERIOD_ID  evPeriodId, 
+	 		                     EV_COLUMN_DETAIL       evIdea ,
+	 		                     EV_IDEA                evIdeaContent ,
+                                 P.职务工资             "职务工资"               
+                         FROM    
+                                 EVS_EMP A,
+	                             EVS_ITEM_DETAIL B,
+	                             EVS_COLUMN_DETAIL C,
+	                             EVS_DETAIL_MARK D ,
+	                             EVS_PERIOD E ,
+                                 PA_HISTORY P  
+                           
+                         WHERE 
+                                 A.EV_EMP_ID = #empId#
+                                 AND A.EV_TYPE_ID = 'EVTYPE007'
+                                 AND A.EV_PROCESS_ID = 'EVPROCESS010'
+                                 AND A.EV_PERIOD_ID = B.EV_PERIOD_ID
+                                 AND A.EV_EMP_ID = B.EV_EMP_ID
+                                 AND B.SEQ_EV_ITEM_DETAIL = C.SEQ_EV_ITEM_DETAIL
+                                 AND B.SEQ_EV_ITEM_DETAIL = D.SEQ_EV_ITEM_DETAIL
+                                 AND A.EV_PERIOD_ID=E .EV_PERIOD_ID  
+                                 AND A.EV_EMP_ID = P.工号
+                                 And SUBSTR(A.EV_PERIOD_ID,0,4)=SUBSTR(P.工资月,0,4)) A 
+                                 
+                                 
+                                 
+                               
+                         GROUP BY   A.evPeriodName , A.evPeriodId
+                         
+                    
+           
+	 	]]>
+	 </select>
+    <select id="retrieveEvaluate" parameterClass="string" resultClass="SimpleMap">  
+	 	<![CDATA[
+	 	
+		SELECT   
+		 EV_PERIOD_ID,
+		 EV_EMP_ID,
+		 EV_PERIOD,
+        EV_TYPE,
+		 SY_CODE.CODE_NAME EV_TYPE_NAME,
+     SY_CODE.CODE_EN_NAME EN_EV_TYPE_NAME,
+     SY_CODE.CODE_KOR_NAME KOR_EV_TYPE_NAME,
+		 FIR_MARK, 
+		 FIR_OPINION,
+		 SEC_MARK,
+		 SEC_OPINION,
+		 EV_MARK,
+		 EV_GRADE  
+		 FROM EVS_HISTORY	,sy_code
+		 where  EV_EMP_ID=#empID#  
+     and sy_code.code_id=EV_TYPE      
+	 	
+	 ]]>
+	 </select>
+	 
+	 
+	  <delete id="deleteEvaluate" parameterClass="EvBean" >    
+		<![CDATA[
+	   
+				DELETE 
+				  FROM EVS_HISTORY
+	  	  		 WHERE EV_PERIOD_ID = #ev_period_id#	                 
+			  ]]>  
+	 </delete>           
+	 
+	 
+	  <update id="updateEvaluate" parameterClass="EvBean" >                         
+		<![CDATA[
+			
+			   UPDATE EVS_HISTORY
+			      SET EV_PERIOD	     =  #evPeriod:VARCHAR#,     
+					  EV_TYPE	     =  #evType:VARCHAR#,
+					  FIR_MARK       =  #firMark:VARCHAR#,
+					  FIR_OPINION   =  #firOpinion:VARCHAR#,
+					  SEC_MARK       = #secMark:VARCHAR#,
+					  SEC_OPINION	 = #secOpinion:VARCHAR#,  
+					 EV_MARK		 = #evMark:VARCHAR#,
+					 EV_GRADE		 = #evGrade:VARCHAR#                 
+				 WHERE EV_PERIOD_ID = #ev_period_id#                              
+			  ]]>                                                          
+	 </update>
+	 
+	 <insert id="insertEvaluate"  parameterClass="EvBean">
+	 
+	   insert into EVS_HISTORY(	   
+	     EV_PERIOD_ID,
+		 EV_EMP_ID,
+		 EV_PERIOD,
+		 EV_TYPE,
+		 FIR_MARK,
+		 FIR_OPINION,  
+		 SEC_MARK,
+		 SEC_OPINION,
+		 EV_MARK,
+		 EV_GRADE
+	   
+	   )values
+	   (
+	  EV_PERIOD_ID_SEQ.NEXTVAL,                         
+	  #empID:VARCHAR#,  
+	  #evPeriod:VARCHAR#,
+	  #evType:VARCHAR#,
+	  #firMark:VARCHAR#,
+	  #firOpinion:VARCHAR#,
+	  #secMark:VARCHAR#,
+	  #secOpinion:VARCHAR#,  
+      #evMark:VARCHAR#,  
+	  #evGrade:VARCHAR#			    
+	  )
+	 
+	 </insert>
+	 
+	 <select id="retrieveEvaluateByYear" parameterClass="string" resultClass="SimpleMap">
+	 	<![CDATA[
+
+		   SELECT O.EV_PERIOD_ID,
+		   		  O.EV_PERIOD_NAME,
+		   		  O.EV_TYPE_ID,
+				  O.EV_TYPE_NAME,
+				  SUM(DECODE(O.EV_PROCESS_ID,'EVPROCESS001',O.PROCESS_MARK,0)) "目标设定分数",
+				  SUM(DECODE(O.EV_PROCESS_ID,'EVPROCESS005',O.PROCESS_MARK,0)) "自我评价分数",
+				  SUM(DECODE(O.EV_PROCESS_ID,'EVPROCESS006',O.PROCESS_MARK,0)) "一次评价分数",
+				  MAX(DECODE(O.EV_PROCESS_ID,'EVPROCESS006',O.PROCESS_IDEA,'')) "一次评价意见",
+				  SUM(DECODE(O.EV_PROCESS_ID,'EVPROCESS007',O.PROCESS_MARK,0)) "二次评价分数",
+				  MAX(DECODE(O.EV_PROCESS_ID,'EVPROCESS007',O.PROCESS_IDEA,'')) "二次评价意见",
+				  O.EV_FINAL_MARK,
+				  O.EV_FINAL_GRADE
+		  FROM (		
+				   SELECT M.EV_PERIOD_ID,
+				   		  M.EV_PERIOD_NAME,
+				   		  M.EV_TYPE_ID,
+						  M.EV_TYPE_NAME,
+						  M.EV_PROCESS_ID,
+						  M.EV_PROCESS_NAME,
+						  SUM(M.EV_DETAIL_MARK * 0.01 * M.EV_DETAIL_PROP * M.EV_ITEM_PROP) PROCESS_MARK,
+						  MAX(M.EV_DETAIL_IDEA) PROCESS_IDEA,
+						  M.EV_FINAL_MARK,
+						  M.EV_FINAL_GRADE
+				   	 FROM (
+							SELECT A.EV_PERIOD_ID,
+								   L.EV_PERIOD_NAME,
+								   A.EV_EMP_ID,
+								   A.EV_EMP_NAME,
+								   A.EV_DEPT_ID,
+								   A.EV_DEPT_NAME,
+								   A.EV_TYPE_ID,
+								   E.CODE_NAME 	  		EV_TYPE_NAME,
+								   D.EV_PROCESS_ID,
+								   K.CODE_NAME		    EV_PROCESS_NAME,
+								   I.EV_PROCESS_PROP,
+								   I.EV_OPERATE_ID,
+								   H.CODE_NAME	   	    EV_OPERATE_NAME,
+								   B.EV_ITEM_ID,
+								   G.CODE_NAME			EV_ITEM_NAME,
+								   I.EV_ITEM_PROP,
+								   B.EV_DETAIL_PROP,
+								   B.EV_DETAIL_ORDER,
+								   D.EV_MARK		    EV_DETAIL_MARK,
+								   D.EV_IDEA		    EV_DETAIL_IDEA,
+								   A.EV_MARK	   	    EV_FINAL_MARK,
+								   A.EV_GRADE_ID,
+								   F.CODE_NAME	   	    EV_FINAL_GRADE,
+								   B.SEQ_EV_ITEM_DETAIL
+							FROM EVS_EMP A,
+								 EVS_ITEM_DETAIL B,
+								 EVS_DETAIL_MARK D,
+								 SY_CODE E,
+								 SY_CODE F,
+								 SY_CODE G,
+								 SY_CODE H,
+								 EVS_RELATION I,
+								 SY_CODE K,
+								 EVS_PERIOD L
+							WHERE A.EV_EMP_ID 	   	   = #empID#
+							  AND A.EV_TYPE_ID 		   <> 'EVTYPE007'
+							  AND A.EV_PROCESS_ID 	   = 'EVPROCESS010'
+							  AND A.EV_PERIOD_ID 	   = B.EV_PERIOD_ID
+							  AND A.EV_EMP_ID 		   = B.EV_EMP_ID
+							  AND B.SEQ_EV_ITEM_DETAIL = D.SEQ_EV_ITEM_DETAIL
+							  AND A.EV_TYPE_ID 		   = E.CODE_ID
+							  AND A.EV_GRADE_ID 	   = F.CODE_ID
+							  AND B.EV_ITEM_ID 		   = G.CODE_ID
+							  AND I.EV_OPERATE_ID 	   = H.CODE_ID
+							  AND A.EV_PERIOD_ID 	   = I.EV_PERIOD_ID
+							  AND A.EV_TYPE_ID 		   = I.EV_TYPE_ID
+							  AND D.EV_PROCESS_ID 	   = I.EV_PROCESS_ID
+							  AND B.EV_ITEM_ID 		   = I.EV_ITEM_ID
+							  AND D.EV_PROCESS_ID 	   = K.CODE_ID
+							  AND A.EV_PERIOD_ID	   = L.EV_PERIOD_ID
+							  AND I.EV_OPERATE_ID	   <> 'EVOPERATE006'
+					
+					 ) M
+				 GROUP BY M.EV_PERIOD_ID, M.EV_TYPE_ID, M.EV_PROCESS_ID,
+				          M.EV_PERIOD_NAME, M.EV_TYPE_NAME, M.EV_PROCESS_NAME,
+						  M.EV_FINAL_MARK, M.EV_FINAL_GRADE		 
+			UNION ALL 
+				   SELECT N.EV_PERIOD_ID,
+				   		  N.EV_PERIOD_NAME,
+				   		  N.EV_TYPE_ID,
+						  N.EV_TYPE_NAME,
+						  N.EV_PROCESS_ID,
+						  N.EV_PROCESS_NAME,
+						  SUM(PROCESS_MARK)   PROCESS_MARK,
+						  MAX(N.PROCESS_IDEA) PROCESS_IDEA,
+						  N.EV_FINAL_MARK,
+						  N.EV_FINAL_GRADE
+			         FROM (
+					       SELECT M.EV_PERIOD_ID,
+						   		  M.EV_PERIOD_NAME,
+						   		  M.EV_TYPE_ID,
+								  M.EV_TYPE_NAME,
+								  M.EV_PROCESS_ID,
+								  M.EV_PROCESS_NAME,
+								  MAX(M.EV_DETAIL_MARK * M.EV_ITEM_PROP) PROCESS_MARK,
+								  MAX(M.EV_DETAIL_IDEA) PROCESS_IDEA,
+								  M.EV_FINAL_MARK,
+								  M.EV_FINAL_GRADE
+						   	 FROM (
+									SELECT A.EV_PERIOD_ID,
+										   L.EV_PERIOD_NAME,
+										   A.EV_EMP_ID,
+										   A.EV_EMP_NAME,
+										   A.EV_DEPT_ID,
+										   A.EV_DEPT_NAME,
+										   A.EV_TYPE_ID,
+										   E.CODE_NAME 	  		EV_TYPE_NAME,
+										   D.EV_PROCESS_ID,
+										   K.CODE_NAME		    EV_PROCESS_NAME,
+										   I.EV_PROCESS_PROP,
+										   I.EV_OPERATE_ID,
+										   H.CODE_NAME	   	    EV_OPERATE_NAME,
+										   B.EV_ITEM_ID,
+										   G.CODE_NAME			EV_ITEM_NAME,
+										   I.EV_ITEM_PROP,
+										   B.EV_DETAIL_PROP,
+										   B.EV_DETAIL_ORDER,
+										   D.EV_MARK		    EV_DETAIL_MARK,
+										   D.EV_IDEA		    EV_DETAIL_IDEA,
+										   A.EV_MARK	   	    EV_FINAL_MARK,
+										   A.EV_GRADE_ID,
+										   F.CODE_NAME	   	    EV_FINAL_GRADE,
+										   B.SEQ_EV_ITEM_DETAIL
+									FROM EVS_EMP A,
+										 EVS_ITEM_DETAIL B,
+										 EVS_DETAIL_MARK D,
+										 SY_CODE E,
+										 SY_CODE F,
+										 SY_CODE G,
+										 SY_CODE H,
+										 EVS_RELATION I,
+										 SY_CODE K,
+										 EVS_PERIOD L
+									WHERE A.EV_EMP_ID 	   	   = #empID#
+									  AND A.EV_TYPE_ID 		   <> 'EVTYPE007'
+									  AND A.EV_PROCESS_ID 	   = 'EVPROCESS010'
+									  AND A.EV_PERIOD_ID 	   = B.EV_PERIOD_ID
+									  AND A.EV_EMP_ID 		   = B.EV_EMP_ID
+									  AND B.SEQ_EV_ITEM_DETAIL = D.SEQ_EV_ITEM_DETAIL
+									  AND A.EV_TYPE_ID 		   = E.CODE_ID
+									  AND A.EV_GRADE_ID 	   = F.CODE_ID
+									  AND B.EV_ITEM_ID 		   = G.CODE_ID
+									  AND I.EV_OPERATE_ID 	   = H.CODE_ID
+									  AND A.EV_PERIOD_ID 	   = I.EV_PERIOD_ID
+									  AND A.EV_TYPE_ID 		   = I.EV_TYPE_ID
+									  AND D.EV_PROCESS_ID 	   = I.EV_PROCESS_ID
+									  AND B.EV_ITEM_ID 		   = I.EV_ITEM_ID
+									  AND D.EV_PROCESS_ID 	   = K.CODE_ID
+									  AND A.EV_PERIOD_ID	   = L.EV_PERIOD_ID
+									  AND I.EV_OPERATE_ID	   = 'EVOPERATE006'
+							
+							 ) M
+						 GROUP BY M.EV_PERIOD_ID, M.EV_TYPE_ID, M.EV_PROCESS_ID, M.EV_ITEM_ID,
+						          M.EV_PERIOD_NAME, M.EV_TYPE_NAME, M.EV_PROCESS_NAME,
+								  M.EV_FINAL_MARK, M.EV_FINAL_GRADE		  
+					 ) N	  
+			GROUP BY N.EV_PERIOD_ID, N.EV_TYPE_ID, N.EV_PROCESS_ID, 
+				     N.EV_PERIOD_NAME, N.EV_TYPE_NAME, N.EV_PROCESS_NAME,
+					 N.EV_FINAL_MARK, N.EV_FINAL_GRADE	  
+			  
+		) O			  
+GROUP BY O.EV_PERIOD_ID, O.EV_TYPE_ID, O.EV_PERIOD_NAME, O.EV_TYPE_NAME, O.EV_FINAL_MARK, O.EV_FINAL_GRADE
+
+	UNION ALL
+
+	SELECT EV_PERIOD_ID, 
+		   评价期间 AS EV_PERIOD_NAME,
+		   get_code_id (TRIM (评价类型), 'EVTYPE') EV_TYPE_ID,
+		   评价类型 AS EV_TYPE_NAME,
+		   0 "目标设定分数",
+		   0 "自我评价分数",
+		   一次评价分数,
+		   一次评价意见,
+		   二次评价分数,
+		   二次评价意见, 
+		   EV_MARK EV_FINAL_MARK,
+		   EV_GRADE EV_FINAL_GRADE
+	  FROM EVS_HISTORY 
+	 WHERE EV_EMP_ID = #empID# 
+
+	ORDER BY EV_PERIOD_ID DESC 
+	 	]]>
+	 </select>
+	 
+</sqlMap>

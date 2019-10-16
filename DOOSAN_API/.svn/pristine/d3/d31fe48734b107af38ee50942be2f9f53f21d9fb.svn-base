@@ -1,0 +1,42 @@
+# Getting Started
+
+### Reference Documentation
+For further reference, please consider the following sections:
+
+* [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
+
+### Guides
+The following guides illustrate how to use some features concretely:
+
+* [Building a RESTful Web Service](https://spring.io/guides/gs/rest-service/)
+* [Serving Web Content with Spring MVC](https://spring.io/guides/gs/serving-web-content/)
+* [Building REST services with Spring](https://spring.io/guides/tutorials/bookmarks/)
+
+
+##项目启动说明
+
+####1.redis安装
+    百度自行安装redis，默认端口无密码。
+
+####2.手机端测试
+    确保手机与服务器再同一个网段（通常是连接同一个wifi）
+    修改src\main\resources\static\js\mui.min.js中下面两个属性的地址为本机ip地址
+    var baseServerAdrr = 'http://192.168.101.131'
+    var basePath='http://192.168.101.131'
+    
+####3.lombok插件安装
+    安装插件后类上加@Data注解可以不用写set get方法
+    
+####4.监控地址 
+    http://localhost/druid/index.html
+    
+####5.接口页面 
+    http://localhost/swagger-ui.html
+
+####6.部署
+mvn clean package -Dmaven.test.skip=true
+cd target
+java -jar   xxxx.jar
+
+####7.启动方法
+在springboot的应用的根目录下运行mvn spring-boot:run

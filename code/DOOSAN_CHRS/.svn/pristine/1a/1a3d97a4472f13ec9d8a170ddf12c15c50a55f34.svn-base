@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="ar.detaillock">
+	 
+	<!-- retrieve detail lock list -->
+	<select id="retrieveDetailLockList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+				SELECT AC.DDATE,
+					   AC.AR_DATE_STR,
+					   AC.TYPEID,
+					   AC.IDAY,
+					   DECODE(#statTypeCode:VARCHAR# , 'C_12067_1330308', AC.LOCK_FLAG_Z, AC.LOCK_FLAG_G ) AS LOCK_FLAG,
+					   AC.LOCK_FLAG_Z,
+					   AC.LOCK_FLAG_G
+				  FROM AR_CALENDER AC,
+				       (SELECT ar_get_startdate_stattype(#AR_MONTH_STR:VARCHAR#, #statTypeCode:VARCHAR#,#cpnyId:VARCHAR#) AS S_DATE,
+				               ar_get_enddate_stattype(#AR_MONTH_STR:VARCHAR#, #statTypeCode:VARCHAR#,#cpnyId:VARCHAR#) AS E_DATE
+				          FROM DUAL) AR_MONTH
+				 WHERE AC.DDATE BETWEEN AR_MONTH.S_DATE AND AR_MONTH.E_DATE
+				 AND AC.CPNY_ID=#cpnyId:VARCHAR#
+		]]>
+		
+	</select>
+
+	 <!-- update detail lock data -->
+	 <update id="updateDetailLock" parameterClass="SimpleMap" >
+		<![CDATA[	
+		
+			UPDATE AR_CALENDER SET
+		]]>
+		<isEqual prepend="" property="STAT_TYPE_CODE" compareValue="C_12067_1330306"> <!-- 工厂 -->
+		<![CDATA[
+				 LOCK_FLAG_G = #ATT_MO_FLAG:NUMERIC#
+		]]>
+		</isEqual>		
+		<isEqual prepend="" property="STAT_TYPE_CODE" compareValue="C_12067_1330308"> <!-- 支社 -->
+		<![CDATA[
+				 LOCK_FLAG_Z = #ATT_MO_FLAG:NUMERIC#
+		]]>
+		</isEqual>
+		<isEqual prepend="" property="STAT_TYPE_CODE" compareValue="C_12067_1354182"> <!-- DICI -->
+		<![CDATA[
+				 LOCK_FLAG_G = #ATT_MO_FLAG:NUMERIC#
+		]]>
+		</isEqual>
+		<isEqual prepend="" property="STAT_TYPE_CODE" compareValue="C_12067_1396152"> <!-- DICI北京 -->
+		<![CDATA[
+				 LOCK_FLAG_G = #ATT_MO_FLAG:NUMERIC#
+		]]>
+		</isEqual>
+		<isEqual prepend="" property="STAT_TYPE_CODE" compareValue="C_12067_1396147"> <!-- DICI烟台 -->
+		<![CDATA[
+				 LOCK_FLAG_Z = #ATT_MO_FLAG:NUMERIC#
+		]]>
+		</isEqual>
+		<isEqual prepend="" property="STAT_TYPE_CODE" compareValue="C_12067_1354183"> <!-- DIY -->
+		<![CDATA[
+				 LOCK_FLAG_G = #ATT_MO_FLAG:NUMERIC#
+		]]>
+		</isEqual>
+		<isEqual prepend="" property="STAT_TYPE_CODE" compareValue="C_12067_1354185"> <!-- DISD -->
+		<![CDATA[
+				 LOCK_FLAG_G = #ATT_MO_FLAG:NUMERIC#
+		]]>
+		</isEqual>
+		<isEqual prepend="" property="STAT_TYPE_CODE" compareValue="C_12067_1354184"> <!--DISC -->
+		<![CDATA[
+				 LOCK_FLAG_G = #ATT_MO_FLAG:NUMERIC#
+		]]>
+		</isEqual>
+		<isEqual prepend="" property="STAT_TYPE_CODE" compareValue="C_12067_1330307"> <!--其他 -->
+		<![CDATA[
+				 LOCK_FLAG_G = #ATT_MO_FLAG:NUMERIC#
+		]]>
+		</isEqual>
+		 <![CDATA[
+		    WHERE  CPNY_ID=#cpnyId:VARCHAR#
+		 ]]>
+		<isNotEmpty prepend="AND" property="AR_DATE_STR">
+			<![CDATA[
+			 		AR_DATE_STR = #AR_DATE_STR:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PA_MONTH_STR">
+			<![CDATA[
+			      	DDATE BETWEEN ar_get_startdate_stattype(#PA_MONTH_STR:VARCHAR#, #STAT_TYPE_CODE:VARCHAR#,#cpnyId:VARCHAR#) 
+			      	          AND ar_get_enddate_stattype(#PA_MONTH_STR:VARCHAR#, #STAT_TYPE_CODE:VARCHAR#,#cpnyId:VARCHAR#)
+		    ]]>
+		</isNotEmpty>
+			
+		<![CDATA[	
+			   
+			 
+		]]>
+		
+	 </update>
+	
+	<!-- retrieve detail Supervisor lock cnt -->
+	<select id="retrieveDetailSupervisorLockCnt" parameterClass="SimpleMap" resultClass="string" >
+		<![CDATA[	
+				 SELECT COUNT(*)
+				   FROM AR_SUPERVISOR A, HR_EMPLOYEE C
+				  WHERE A.SUPERVISOR_ID = C.PERSON_ID
+			        AND C.EMP_DIFF_CODE = #statTypeCode:VARCHAR#
+			        AND C.CPNY_ID = #cpnyId:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="deptid">
+			<![CDATA[
+				 		C.DEPTID IN (
+			      			SELECT DEPTID 
+			                FROM HR_DEPARTMENT 
+			                START WITH DEPTID = #deptid#
+			                CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+					   ) 
+			    ]]>
+		</isNotEmpty>
+		 
+		<isNotEmpty prepend="AND" property="personId">
+		<![CDATA[ 
+			           C.PERSON_ID = #personId:VARCHAR#
+		]]>
+		</isNotEmpty>
+		<isEmpty prepend="" property="personId">
+			<isNotEmpty prepend="AND" property="key">
+			 <![CDATA[ 
+					  (C.EMPID = #key:VARCHAR# OR C.CHINESENAME LIKE '%' || #key:VARCHAR# || '%')
+			]]>
+			</isNotEmpty>
+		</isEmpty>
+		
+	</select>
+	
+	<!-- retrieve detail Supervisor lock list -->
+	<select id="retrieveDetailSupervisorLockList" parameterClass="SimpleMap" resultClass="SimpleMap" remapResults="true">
+		<![CDATA[	
+				 SELECT $CALENDER_SQL$
+				 		A.SUPERVISOR_ID AS PERSON_ID,
+				   		MAX(C.EMPID) AS EMPID,
+				   		MAX(C.CHINESENAME) AS CHINESENAME,
+				   		MAX(D.DEPTNAME) AS DEPTNAME
+				   FROM AR_SUPERVISOR A, AR_SUPERVISOR_LOCK_INFO B, HR_EMPLOYEE C, HR_DEPARTMENT D
+				  WHERE A.SUPERVISOR_ID = B.SUPERVISOR_ID(+)
+			        AND A.SUPERVISOR_ID = C.PERSON_ID
+			        AND C.DEPTID = D.DEPTID
+			        AND B.LOCK_DATE_STR(+) BETWEEN #S_DATE:VARCHAR# AND #E_DATE:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="deptid">
+			<![CDATA[
+				 		C.DEPTID IN (
+			      			SELECT DEPTID 
+			                FROM HR_DEPARTMENT 
+			                START WITH DEPTID = #deptid#
+			                CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+					   ) 
+			    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			        AND C.EMP_DIFF_CODE = #statTypeCode:VARCHAR#
+			        AND C.CPNY_ID = #cpnyId:VARCHAR#
+		 ]]>
+		 
+		<isNotEmpty prepend="AND" property="personId">
+		<![CDATA[ 
+			           C.PERSON_ID = #personId:VARCHAR#
+		]]>
+		</isNotEmpty>
+		<isEmpty prepend="" property="personId">
+			<isNotEmpty prepend="AND" property="key">
+			 <![CDATA[ 
+					       (C.EMPID = #key:VARCHAR# OR C.CHINESENAME LIKE '%' || #key:VARCHAR# || '%')
+			]]>
+			</isNotEmpty>
+		</isEmpty>
+			        
+		<![CDATA[
+				 GROUP BY A.SUPERVISOR_ID
+				 ORDER BY MAX(C.DEPTID),MAX(C.EMPID)
+		]]>
+		
+	</select>
+	
+	<!-- delete detail Supervisor lock data -->
+	 <delete id="deleteDetailSupervisorLock" parameterClass="SimpleMap" >
+		<![CDATA[	
+		
+			DELETE AR_SUPERVISOR_LOCK_INFO T WHERE T.SUPERVISOR_ID = #SUPERVISOR_ID:VARCHAR# AND LOCK_DATE_STR = #LOCK_DATE_STR:VARCHAR#
+		]]>
+	 </delete>
+	
+	<!-- insert detail Supervisor lock data -->
+	<insert id="insertDetailSupervisorLock" parameterClass="SimpleMap" >
+		<![CDATA[	
+		
+			INSERT INTO AR_SUPERVISOR_LOCK_INFO 
+					   (SUPERVISOR_ID,
+						LOCK_DATE_STR,
+						LOCK_FLAG,
+						CREATE_DATE,
+						CREATED_BY,
+						ACTIVITY)
+				VALUES (
+						#SUPERVISOR_ID:VARCHAR2#,
+						#LOCK_DATE_STR:VARCHAR2#,
+						#LOCK_FLAG:NUMERIC#,
+						SYSDATE,
+						#ADMIN_ID:VARCHAR2#,
+						1
+						)
+		]]>
+	</insert>
+	
+	<!-- update detail Supervisor lock data -->
+	 <update id="updateDetailSupervisorLock" parameterClass="SimpleMap" >
+		<![CDATA[	
+		
+			UPDATE AR_SUPERVISOR_LOCK_INFO T SET LOCK_FLAG = #ATT_MO_FLAG:NUMERIC#
+				WHERE 1 = 1
+				
+		]]>
+		
+		<isNotEmpty prepend="AND" property="PA_MONTH_STR">
+			<![CDATA[
+			      	T.LOCK_DATE_STR BETWEEN TO_CHAR(ar_get_startdate_stattype(#PA_MONTH_STR:VARCHAR#, #STAT_TYPE_CODE:VARCHAR#,#cpnyId:VARCHAR#), 'YYYY/MM/DD')
+			      	          AND TO_CHAR(ar_get_enddate_stattype(#PA_MONTH_STR:VARCHAR#, #STAT_TYPE_CODE:VARCHAR#,#cpnyId:VARCHAR#), 'YYYY/MM/DD')
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="AR_DATE_STR">
+			<![CDATA[
+			      	T.LOCK_DATE_STR = #AR_DATE_STR:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<![CDATA[	
+				  AND EXISTS (SELECT * 
+							  FROM HR_EMPLOYEE HR 
+							 WHERE HR.PERSON_ID = T.SUPERVISOR_ID
+							   AND HR.EMP_DIFF_CODE = #STAT_TYPE_CODE:VARCHAR# 
+							   AND CPNY_ID=#cpnyId:VARCHAR#)
+		]]>	
+	 </update>
+	
+</sqlMap>

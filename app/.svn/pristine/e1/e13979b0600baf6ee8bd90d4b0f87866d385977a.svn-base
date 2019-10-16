@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>勤态审批</title>
+    <link href="../css/PublicStyle.css" rel="stylesheet" />
+    <link href="../css/wkd_main_wap.css" rel="stylesheet" />
+</head>
+
+<body>
+    <section id="list">
+
+    </section>
+    <script type="text/template" id="template">
+        <div class="rs_mainBox">
+            <div class="rsBoxMsg pt5">
+                <div class="rs_jbspBox" id="rs_jbspBox" AFFIRMNO="{{=it.data.list[0].AFFIRMNO}}">
+                    <div class="rs_spList">
+                        <span>姓名</span><b>{{=it.data.list[0].CHINESENAME}}</b>
+                    </div>
+                    <div class="rs_spList">
+                        <span>部门</span><b>{{=it.data.list[0].DEPTNAME}}</b>
+                    </div>
+                    <div class="rs_spList">
+                        <span>职级</span><b>{{=it.data.list[0].POSITION}}</b>
+                    </div>
+                    <div class="rs_spList">
+                        <span>申请日期</span><b>{{=it.data.list[0].CREATEDATE}}</b>
+                    </div>
+                    <div class="rs_spList">
+                        <span>勤态类型</span><b>{{=it.data.list[0].LEAVETYPENAME}}</b>
+                    </div>
+                    <div class="rs_spList">
+                        <span>记假方式</span><b>{{=it.data.list[0].APPLYLEAVETYPE}}</b>
+                    </div>
+                    <div class="rs_spList">
+                        <span>勤态时段</span><b><em class="blue">{{=it.data.list[0].LEAVEFROMTIME}}</em><br><em>{{=it.data.list[0].LEAVETOTIME}}</em></b>
+                    </div>
+                    <div class="rs_spList">
+                        <span>创建者</span><b>{{=it.data.list[0].CRECHINESENAME}}</b>
+                    </div>
+                    <div class="rs_spList">
+                        <span>申请原因</span><b>{{=it.data.list[0].LEAVEREASON}}</b>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{? it.data.list[0].affirmList}}
+        <div class="rs_mainBox pt0">
+            <div class="rsBoxMsg pt5">
+                <div class="rs_cjqk">
+                    <h1>裁决情况</h1> {{ for(var i = 0; i
+                    < it.data.list[0].affirmList.length;i++) { }} <div class="rs_tkMsg">
+                        <span class="{{=it.data.list[0].affirmList[i].affirmFlag== 0 ? 'ws' : 'tg'}}">{{=it.data.list[0].affirmList[i].affirmFlag == 1 ? "通过" : (it.data.list[0].affirmList[i].affirmFlag == 2 ? "否决" : "未审")}}</span>
+                        <h1>{{=it.data.list[0].affirmList[i].affirmorName}}  {{=it.data.list[0].affirmList[i].affirmFlag== 0 ? "" : it.data.list[0].affirmList[i].updateDate}}</h1> {{? it.data.list[0].affirmList[i].affirmFlag != 0 }}
+                        <p>意见：{{=it.data.list[0].affirmList[i].remark}} </p> {{?}}
+                </div>
+                {{ } }}
+            </div>
+        </div>
+        </div>
+        {{?}}
+    </script>
+</body>
+
+</html>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/common.js"></script>
+<script type="text/javascript" src="../script/remotedb.js"></script>
+<script type="text/javascript" src="../script/doT.min.js"></script>
+<script type="text/javascript">
+    apiready = function() {
+        loginState();
+        var pageParam = api.pageParam;
+        frameInit(pageParam);
+    };
+
+    function frameInit(pageParam) {
+        if (!pageParam) {
+            pageError();
+        } else {
+            dataInit(pageParam);
+        }
+    }
+
+
+    function dataInit(pageParam) {
+        fnPost('applyInfo', {
+            body: JSON.stringify({
+                applyNo: pageParam.LEAVENO,
+                applyType: "LeaveApply",
+                content: "leaveApplyInfo",
+                currentPage: 0,
+                key: ""
+            })
+        }, true, function(ret, err) {
+            if (ret && ret.resultCode == 200) {
+                if (ret.data && ret.data.list && ret.data.list.length > 0) {
+                    jbList(ret);
+                } else {
+                    pageError();
+                }
+            } else {
+                api.toast({
+                    msg: '网络不佳，请重试',
+                    duration: 2000,
+                    location: 'bottom'
+                });
+            }
+        });
+    }
+
+    function jbList(data_) {
+        var list = $api.byId('list');
+        var tempFn = doT.template($api.byId('template').innerHTML);
+        var resultHTML = tempFn(data_);
+        $api.html(list, resultHTML);
+        api.parseTapmode();
+    }
+</script>

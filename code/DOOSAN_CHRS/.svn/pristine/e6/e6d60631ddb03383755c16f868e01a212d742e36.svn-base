@@ -1,0 +1,63 @@
+#----------index alert message--------------#
+alert.index.id_password=Invalid ID or password. Please try again.
+alert.index.id_password_empty=User ID and password cannot be empty.
+alert.index.id_empty=User ID cannot be empty.
+alert.index.password_empty=Password cannot be empty.
+alert.index.enter_id_password=Please enter User ID and Password.
+alert.index.expired=Your access has expired, login again please.
+alert.index.sorry_try=Sorry, the page cannot be found, please try again.
+
+
+#------------首页显示页面--------------#
+#--个人查看--#
+display.index.personal.personal_info_request=Personal Info Request
+display.index.personal.overtime_work_request=Overtime Work Request
+display.index.personal.vacation_request=Vacation Request
+display.index.biz_trip_request=Biz Trip Request
+display.index.training_request=Training Request
+
+#--待裁决信息--#
+display.index.approve.overtime_work_info=Overtime Work Info
+display.index.approve.vacation_info=Vacation Info
+display.index.approve.biz_trip_info=Travel Info
+display.index.approve.training_info=Training Info
+
+#--待确认信息--#
+display.index.confirm.personal_info=Personal Info
+display.index.confirm.overtime_work_info=Overtime Work Info
+display.index.confirm.vacation_info=Vacation Info
+display.index.confirm.biz_trip_info=Travel Info
+display.index.confirm.training_info=Training Info
+
+#----------试用转正人员列表----------#
+display.index.page1=Sorry, you have no eligible level for this list.
+#display.mutual.name=Name#
+#display.mutual.dept=Dept#
+#display.mutual.position=Position#
+#display.mutual.post=Post#
+display.index.off_probation.expected_date=Off Probation Date
+
+#-----------将到期合同------------------#
+display.index.page2=Sorry, you have no eligible level for this list.
+#display.mutual.name=Name#
+#display.mutual.dept=Dept#
+#display.mutual.position=Position#
+#display.mutual.post=Post#
+display.index.expired_contract.expired_date=Expiry Date
+
+#-----------人事令信息------------------#
+#display.mutual.name=Name#
+#display.mutual.dept=Dept#
+#display.mutual.position=Position#
+#display.mutual.post=Post#
+#display.mutual.regulation_no=Regulation No.#
+display.index.hr_regulation.narrative=Description
+
+#-----------健康提示信息------------------#
+display.index.page3=Sorry, you have no eligible level for this list.
+#display.mutual.name=Name#
+#display.mutual.dept=Dept#
+#display.mutual.position=Position#
+#display.mutual.post=Post#
+#display.mutual.physical_exam_date=Checkup Date#
+display.index.health_info.expired_date=Expiry Date

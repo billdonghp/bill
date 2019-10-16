@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="pa.param">
+
+	<!-- pa param item list -->
+	<select id="retrievePaParamList" parameterClass="SimpleMap" resultClass="SimpleMap">
+
+		<![CDATA[	
+			SELECT T.PARAM_NO,T.PARAM_ID,T.PARAM_NAME,T.ORDER_NO,T.DESCR,T.CPNY_ID, NVL(SY.CODE_NAME,'公共') AS CPNY_NAME
+			  FROM PA_PARAM_ITEM T,SY_CODE SY
+			 WHERE T.CPNY_ID = SY.CODE_ID(+)
+			   AND NVL(T.CPNY_ID,#CPNY_ID:VARCHAR#) = #CPNY_ID:VARCHAR# 
+			 
+		]]>
+	
+		<isNotEmpty prepend="AND" property="key">
+			<![CDATA[ 
+					((T.PARAM_ID LIKE '%' || UPPER(#key:VARCHAR#) || '%' OR T.PARAM_NAME LIKE '%' || #key:VARCHAR# || '%'))
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PARAM_ID">
+			<![CDATA[ 
+					T.PARAM_ID = #PARAM_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<![CDATA[
+			ORDER BY T.ORDER_NO
+		]]>
+	
+	</select>
+	
+	<!-- pa param item list count -->
+	<select id="retrievePaParamListCnt" parameterClass="SimpleMap" resultClass="int">
+
+		<![CDATA[	
+			SELECT COUNT(*)
+			  FROM PA_PARAM_ITEM T
+			 WHERE NVL(T.CPNY_ID,#CPNY_ID:VARCHAR#) = #CPNY_ID:VARCHAR#  
+		]]>
+		
+		<isNotEmpty prepend="AND" property="key">
+			<![CDATA[ 
+					((T.PARAM_ID LIKE '%' || UPPER(#key:VARCHAR#) || '%' OR T.PARAM_NAME LIKE '%' || #key:VARCHAR# || '%'))
+			]]>
+		</isNotEmpty>
+	
+	</select>
+	
+	
+	<!-- pa param item configure list -->
+	<select id="retrievePaParamConfigureList" parameterClass="SimpleMap" resultClass="SimpleMap">
+
+		<![CDATA[	
+			SELECT A.CONFIGURE_NO,
+			       A.DISTINCT_FIELD,
+			       B.FIELD_NAME,
+			       A.DISTINCT_FIELD_2ND,
+			       C.FIELD_NAME AS FIELD_NAME2,
+			       A.PA_MONTH_STR,
+			       A.DEFAULT_VAL,
+			       A.DATA_TYPE,
+			       D.CODE_NAME AS DATA_TYPE_NAME,
+			       A.GENERATE_TYPE_CODE,
+			       E.CODE_NAME AS GENERATE_TYPE,
+			       A.CPNY_ID,
+			       NVL(F.CODE_NAME,'公共') AS CPNY_NAME,
+			       A.STAT_TYPE_CODE,
+       			   H.CODE_NAME AS STAT_TYPE,
+       			   A.PARAM_NO,
+       			   G.PARAM_ID,
+       			   G.PARAM_NAME
+			  FROM PA_PARAM_ITEM_CONFIGURE A,
+			       PA_DISTINCT_LIST        B,
+			       PA_DISTINCT_LIST        C,
+			       SY_CODE                 D,
+			       SY_CODE                 E,
+			       SY_CODE                 F,
+			       PA_PARAM_ITEM           G,
+			       SY_CODE                 H
+			 WHERE A.PARAM_NO = G.PARAM_NO
+			   AND A.DISTINCT_FIELD = B.DISTINCT_FIELD
+			   AND A.DISTINCT_FIELD_2ND = C.DISTINCT_FIELD(+)
+			   AND A.DATA_TYPE = D.CODE_ID(+)
+			   AND A.GENERATE_TYPE_CODE = E.CODE_ID(+)
+			   AND A.CPNY_ID = F.CODE_ID(+)
+			   AND A.STAT_TYPE_CODE = H.CODE_ID(+)
+			   AND A.CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+	
+		<isNotEmpty prepend="AND" property="PARAM_ID">
+			<![CDATA[ 
+					G.PARAM_ID = #PARAM_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PA_MONTH_STR">
+			<![CDATA[ 
+					A.PA_MONTH_STR = #PA_MONTH_STR:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="CONFIGURE_NO">
+			<![CDATA[ 
+					A.CONFIGURE_NO = #CONFIGURE_NO:NUMERIC#
+			]]>
+		</isNotEmpty>
+	
+		<![CDATA[
+			ORDER BY A.PA_MONTH_STR,A.STAT_TYPE_CODE
+		]]>
+	
+	</select>
+	
+	<!-- pa param item configure list count -->
+	<select id="retrievePaParamConfigureListCnt" parameterClass="SimpleMap" resultClass="int">
+
+		<![CDATA[	
+			SELECT COUNT(*)
+			  FROM PA_PARAM_ITEM_CONFIGURE A,
+			       PA_PARAM_ITEM           G
+			 WHERE A.PARAM_NO = G.PARAM_NO
+			   AND A.CPNY_ID = #CPNY_ID:VARCHAR#
+		]]>
+	
+		<isNotEmpty prepend="AND" property="PARAM_ID">
+			<![CDATA[ 
+					G.PARAM_ID = #PARAM_ID:VARCHAR#
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="PA_MONTH_STR">
+			<![CDATA[ 
+					A.PA_MONTH_STR = #PA_MONTH_STR:VARCHAR#
+			]]>
+		</isNotEmpty>
+	
+	</select>
+	
+	<!-- delete pa param item -->
+	<delete id="deletePaParamConfigure" parameterClass="SimpleMap">
+
+		<![CDATA[	
+			DELETE PA_PARAM_ITEM_CONFIGURE T
+			 WHERE T.CONFIGURE_NO = #CONFIGURE_NO:NUMERIC#
+		]]>
+		
+	</delete>
+	
+	<!-- delete pa param item data -->
+	<delete id="deletePaParamData" parameterClass="SimpleMap">
+
+		<![CDATA[	
+			DELETE PA_PARAM_DATA T
+			 WHERE T.PARAM_NO = #CONFIGURE_NO:NUMERIC#
+		]]>
+		
+	</delete>
+	
+	<!-- insert pa param item -->
+	<insert id="insertPaParamConfigure" parameterClass="SimpleMap">
+
+		<![CDATA[	
+			INSERT INTO PA_PARAM_ITEM_CONFIGURE T (
+			   		PARAM_NO,
+					CONFIGURE_NO,
+					DISTINCT_FIELD,
+					DISTINCT_FIELD_2ND, 
+					PA_MONTH_STR, 
+					DATA_TYPE,
+					GENERATE_TYPE_CODE, 
+					DEFAULT_VAL,
+					STAT_TYPE_CODE,
+					CPNY_ID
+					) VALUES(
+					#PARAM_NO:NUMERIC#,
+					PA_PARAM_ITEM_CONFIGURE_SEQ.NEXTVAL,
+					#DISTINCT_FIELD:VARCHAR#,
+					#DISTINCT_FIELD_2ND:VARCHAR#,
+					#PA_MONTH_STR:VARCHAR#,
+					#DATA_TYPE:VARCHAR#,
+					#GENERATE_TYPE_CODE:VARCHAR#,
+					#DEFAULT_VAL:VARCHAR#,
+					#STAT_TYPE_CODE:VARCHAR#,
+					#CPNY_ID:VARCHAR#
+					)
+		]]>
+		
+	</insert>
+	
+	<!-- validate update pa param item -->
+	<select id="validateUpdatePaParamConfigure" parameterClass="SimpleMap" resultClass="int">
+
+		<![CDATA[	
+			SELECT COUNT(*) 
+			  FROM PA_PARAM_ITEM_CONFIGURE T 
+			 WHERE T.CONFIGURE_NO <> #CONFIGURE_NO:NUMERIC#
+			   AND T.PARAM_NO = #PARAM_NO:PARAM_NO#
+			   AND T.STAT_TYPE_CODE = #STAT_TYPE_CODE:VARCHAR#
+			   AND T.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND T.PA_MONTH_STR = #PA_MONTH_STR:VARCHAR#
+		]]>
+		
+	</select>
+	
+	
+	<!-- update pa param item -->
+	<update id="updatePaParamConfigure" parameterClass="SimpleMap">
+
+		<![CDATA[	
+			UPDATE PA_PARAM_ITEM_CONFIGURE T
+				SET
+					DISTINCT_FIELD = #DISTINCT_FIELD:VARCHAR#,
+					DISTINCT_FIELD_2ND = #DISTINCT_FIELD_2ND:VARCHAR#,
+					DATA_TYPE = #DATA_TYPE:VARCHAR#,
+					GENERATE_TYPE_CODE = #GENERATE_TYPE_CODE:VARCHAR#,
+					DEFAULT_VAL = #DEFAULT_VAL:VARCHAR#,
+					STAT_TYPE_CODE = #STAT_TYPE_CODE:VARCHAR#
+
+			 WHERE T.CONFIGURE_NO = #CONFIGURE_NO:NUMERIC#
+		]]>
+		
+	</update>
+	
+	<!-- validate add pa param item -->
+	<select id="validateAddPaParamConfigure" parameterClass="SimpleMap" resultClass="int">
+
+		<![CDATA[	
+			SELECT COUNT(*) 
+			  FROM PA_PARAM_ITEM_CONFIGURE T 
+			 WHERE T.PARAM_NO = #PARAM_NO:PARAM_NO#
+			   AND T.STAT_TYPE_CODE = #STAT_TYPE_CODE:VARCHAR#
+			   AND T.CPNY_ID = #CPNY_ID:VARCHAR#
+			   AND T.PA_MONTH_STR = #PA_MONTH_STR:VARCHAR#
+		]]>
+		
+	</select>
+	
+</sqlMap>

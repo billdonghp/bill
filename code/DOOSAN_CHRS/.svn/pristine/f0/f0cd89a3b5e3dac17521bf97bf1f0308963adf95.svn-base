@@ -1,0 +1,724 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="pu.conferenceroom">
+
+	<select id="conferenceRoomConfirmListNumber"
+		parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+select count(*) as s from ( select distinct  * from 
+		pu_conferenceroom_apply a,hr_department    h2,hr_employee      he	,hr_employee      he1,pu_room    room
+		where he.deptid=h2.deptid
+		and he1.person_id=a.APPLYORID
+		and a.conferenceroom = room.id
+		 and a.cpny_id = #cpnyId:VARCHAR#
+		
+		]]>
+		<isNotEmpty prepend="AND" property="applerId">
+			<![CDATA[		   
+		 EXISTS ( SELECT SAD.ADMIN_DEPTID
+		   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+		  WHERE SAD.ADMIN_NO = SA.ADMINNO
+		    AND SA.ADMINID = #applerId:VARCHAR2#
+		    AND SAD.ADMIN_DEPTID = h2.DEPTID	
+	   ) 
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="applerId">
+			<![CDATA[		   
+		  (ROOM.CONFIRMORID like '%' || #applerId:VARCHAR2# || '%' OR ROOM.CONFIRMORID IS NULL) 
+		]]>
+		</isNotEmpty>
+		<isEqual prepend="AND" property="qryType" compareValue="0">
+			<![CDATA[
+				a.ISCONFIRM = '0'
+			]]>
+		</isEqual>
+		<isEqual prepend="AND" property="qryType" compareValue="1">
+			<![CDATA[
+				a.ISCONFIRM = '1'
+			]]>
+		</isEqual>
+
+		<isNotEmpty prepend="AND" property="startDate">
+			<![CDATA[		
+			   a.BOOKDATE>=to_date(#startDate:VARCHAR#,'YYYY-MM-DD')
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="endDate">
+			<![CDATA[		   
+			a.ENDDATE<=to_date(#endDate:VARCHAR#,'YYYY-MM-DD')
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptid">
+			<![CDATA[		   
+			a.APPLYORDEPTID = #deptid:VARCHAR#
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="conferenceRoom">
+			<![CDATA[		   
+			a.conferenceroom = #conferenceRoom:VARCHAR#
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="key">
+			<![CDATA[	
+			(he1.empid LIKE  '%'||#key:VARCHAR# || '%'   or he1.chinesename LIKE  '%'||#key:VARCHAR# || '%')	 
+			   
+		]]>
+		</isNotEmpty>
+
+		<![CDATA[		 
+		and he.person_id = a.APPLYORID
+		and a.active='1') temp 
+		]]>
+
+	</select>
+
+	<select id="conferenceRoomConfirmListNumber1"
+		parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+SELECT COUNT(*)
+          FROM PU_CONFERENCEROOM_APPLY A
+         WHERE a.ACTIVE < 2
+           
+		]]>
+		<isNotEmpty prepend="AND" property="applerId">
+			<![CDATA[		
+			   A.APPLYORID = #applerId:VARCHAR2#
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ADMIN_ID">
+			<![CDATA[
+				EXISTS ( SELECT SAD.ADMIN_DEPTID
+					   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+					  WHERE SAD.ADMIN_NO = SA.ADMINNO
+					    AND SA.ADMINID = #ADMIN_ID:VARCHAR2#
+					    AND SAD.ADMIN_DEPTID = A.APPLYORDEPTID	
+				   ) 
+			]]>
+		</isNotEmpty>
+		<isEqual prepend="AND" property="qryType" compareValue="0">
+			<![CDATA[
+				a.ISCONFIRM = '0'
+			]]>
+		</isEqual>
+		<isEqual prepend="AND" property="qryType" compareValue="1">
+			<![CDATA[
+				a.ISCONFIRM = '1'
+			]]>
+		</isEqual>
+		<isNotEmpty prepend="AND" property="startDate">
+			<![CDATA[		
+			   a.BOOKDATE>=to_date(#startDate:VARCHAR#,'YYYY-MM-DD')
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="endDate">
+			<![CDATA[		   
+			a.ENDDATE<=to_date(#endDate:VARCHAR#,'YYYY-MM-DD')
+		]]>
+		</isNotEmpty>
+	</select>
+
+	<select id="conferenceRoomConfirmList" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[
+			select to_char(a.BOOKDATE,'yyyy-mm-dd') as BOOKDATE,
+				   to_char(a.ENDDATE,'yyyy-mm-dd') as ENDDATE,
+				   to_char(a.APPLYDATE,'yyyy-mm-dd hh24:mi') as APPLYDATE,
+				   a.BOOKSTARTTIME,
+				   a.BOOKENDTIME,
+				   a.APPLYNO,
+				   a.BOOKNUMBER,
+				   a.CONFERENCEROOM,
+				   a.EQUIPS,
+				   a.PURPOSEOFUSE,
+				   s.code_name as PEOPLECLASS,
+				   a.EQUIPS,
+				   a.ISCONFIRM,
+				   to_char(a.BEFORE_BOOKDATE,'yyyy-mm-dd') as BEFORE_BOOKDATE,
+				   to_char(a.BEFORE_ENDDATE,'yyyy-mm-dd') as BEFORE_ENDDATE,
+				   a.BEFORE_BOOKSTARTTIME,
+				   a.BEFORE_BOOKENDTIME,
+				   a.BEFORE_CONFERENCEROOM,
+				   a.BEFORE_EQUIPS,
+				   a.ISUPDATE,
+				   a.OTHERREQUEST,
+			       room.roomname as roomname,
+			       room1.roomname as BEFORE_ROOMNAME,
+			       to_char(a.applydate, 'yyyy-mm-dd') as applydate,
+			       to_char(a.bookdate, 'yyyy-mm-dd') as bookdate,
+			       hr.chinesename as chinesename,
+			       v.deptname as deptname, 
+			       a.CONFERENCENO,
+			       a.PEOPLECLASS_UP,
+			       AFFIRMORIDEA
+			  from PU_CONFERENCEROOM_APPLY a,
+			       hr_employee             hr,
+			       pu_room                 room,
+			       pu_room                 room1,
+			       hr_department           v,
+			       sy_code				   s
+			 where a.active = '1'
+			   and s.code_id = a.PEOPLECLASS 
+			   and a.conferenceroom = room.id 
+			   and a.BEFORE_CONFERENCEROOM = room1.id 
+			   and hr.person_id(+) = a.applyorid
+			   and v.deptid = a.applyordeptid
+			   and a.cpny_id = #cpnyId:VARCHAR#
+   ]]>
+		<isNotEmpty prepend="AND" property="applerId">
+			<![CDATA[		   
+		 EXISTS ( SELECT SAD.ADMIN_DEPTID
+		   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+		  WHERE SAD.ADMIN_NO = SA.ADMINNO
+		    AND SA.ADMINID = #applerId:VARCHAR2#
+		    AND SAD.ADMIN_DEPTID = v.DEPTID	
+	   ) 
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="applerId">
+			<![CDATA[		   
+		  (ROOM.CONFIRMORID like '%' || #applerId:VARCHAR2# || '%' OR ROOM.CONFIRMORID IS NULL) 
+		]]>
+		</isNotEmpty>
+		<isEqual prepend="AND" property="qryType" compareValue="0">
+			<![CDATA[
+				a.ISCONFIRM = '0'
+			]]>
+		</isEqual>
+		<isEqual prepend="AND" property="qryType" compareValue="1">
+			<![CDATA[
+				a.ISCONFIRM = '1'
+			]]>
+		</isEqual>
+
+		<isNotEmpty prepend="AND" property="startDate">
+			<![CDATA[		
+			   a.BOOKDATE>=to_date(#startDate:VARCHAR#,'YYYY-MM-DD')
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="endDate">
+			<![CDATA[		   
+			a.ENDDATE<=to_date(#endDate:VARCHAR#,'YYYY-MM-DD')
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptid">
+			<![CDATA[		   
+			a.APPLYORDEPTID = #deptid:VARCHAR#
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="conferenceRoom">
+			<![CDATA[		   
+			a.conferenceroom = #conferenceRoom:VARCHAR#
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="key">
+			<![CDATA[	
+			(hr.empid LIKE  '%'||#key:VARCHAR# || '%'   or hr.chinesename LIKE  '%'||#key:VARCHAR# || '%')	 
+			   
+		]]>
+		</isNotEmpty>
+		<![CDATA[
+ 			order by  a.applydate desc,a.bookdate, a.enddate ,a.bookstarttime, a.bookendtime
+		]]>
+
+	</select>
+
+	<select id="conferenceRoomConfirmList1" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[
+select to_char(a.BOOKDATE,'yyyy-mm-dd') as BOOKDATE,
+	   to_char(a.ENDDATE,'yyyy-mm-dd') as ENDDATE,
+	   to_char(a.APPLYDATE,'yyyy-mm-dd hh24:mi') as APPLYDATE,
+	   a.BOOKSTARTTIME,
+	   a.BOOKENDTIME,
+	   a.APPLYNO,
+	   a.APPLYORID,
+	   a.BOOKNUMBER,
+	   a.CONFERENCEROOM,
+	   a.EQUIPS,
+	   a.PURPOSEOFUSE,
+	   s.code_name as PEOPLECLASS,
+	   a.EQUIPS,
+	   a.ISCONFIRM,
+	   to_char(a.BEFORE_BOOKDATE,'yyyy-mm-dd') as BEFORE_BOOKDATE,
+	   to_char(a.BEFORE_ENDDATE,'yyyy-mm-dd') as BEFORE_ENDDATE,
+	   a.BEFORE_BOOKSTARTTIME,
+	   a.BEFORE_BOOKENDTIME,
+	   a.BEFORE_CONFERENCEROOM,
+	   a.BEFORE_EQUIPS,
+	   a.ISUPDATE,
+	   a.OTHERREQUEST,
+       room.roomname as roomname,
+       room1.roomname as BEFORE_ROOMNAME,
+       to_char(a.applydate, 'yyyy-mm-dd') as applydate,
+       to_char(a.bookdate, 'yyyy-mm-dd') as bookdate,
+       hr.chinesename as chinesename,
+       v.deptname as deptname, 
+       a.CONFERENCENO,
+       a.PEOPLECLASS_UP,
+       AFFIRMORIDEA
+  from PU_CONFERENCEROOM_APPLY a,
+       hr_employee             hr,
+       pu_room                 room,
+       pu_room                 room1,
+       hr_department           v,
+       sy_code				   s
+ where s.code_id = a.PEOPLECLASS 
+   and a.conferenceroom = room.id 
+   and a.BEFORE_CONFERENCEROOM = room1.id 
+   and hr.person_id(+) = a.applyorid
+   and v.deptid = a.applyordeptid
+   and a.ACTIVE < 2
+   ]]>
+		<isNotEmpty prepend="AND" property="ADMIN_ID">
+			<![CDATA[
+			EXISTS ( SELECT SAD.ADMIN_DEPTID
+				   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+				  WHERE SAD.ADMIN_NO = SA.ADMINNO
+				    AND SA.ADMINID = #ADMIN_ID:VARCHAR2#
+				    AND SAD.ADMIN_DEPTID = A.APPLYORDEPTID	
+			   ) 
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="applerId">
+			<![CDATA[		
+			   A.APPLYORID = #applerId:VARCHAR2#
+		]]>
+		</isNotEmpty>
+		<isEqual prepend="AND" property="qryType" compareValue="0">
+			<![CDATA[
+				a.ISCONFIRM = '0'
+			]]>
+		</isEqual>
+		<isEqual prepend="AND" property="qryType" compareValue="1">
+			<![CDATA[
+				a.ISCONFIRM = '1'
+			]]>
+		</isEqual>
+		<isNotEmpty prepend="AND" property="startDate">
+			<![CDATA[		
+			   a.BOOKDATE>=to_date(#startDate:VARCHAR#,'YYYY-MM-DD')
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="endDate">
+			<![CDATA[	
+			A.ENDDATE<=to_date(#endDate:VARCHAR#,'YYYY-MM-DD')
+		]]>
+		</isNotEmpty>
+		<![CDATA[
+ order by  a.APPLYDATE desc, a.bookdate  desc , a.enddate  desc ,a.bookstarttime  desc, a.bookendtime  desc
+		]]>
+
+	</select>
+
+	<select id="getviewRoomInfoNumber" parameterClass="SimpleMap"
+		resultClass="int">
+		<![CDATA[
+			select count(*) from PU_CONFERENCEROOM_APPLY a,
+       hr_employee             hr,
+       hr_department           v
+ 		where a.active = '1'
+  		 and hr.person_id(+) = a.applyorid
+  		 and v.deptid = a.applyordeptid
+  		 and a.cpny_id=#cpny_id:VARCHAR#
+  		 ]]>
+		<isEmpty prepend="AND" property="starttime">
+			<isEmpty prepend="" property="endtime">
+				<![CDATA[
+   		a.bookdate > to_date(to_char(SYSDATE, 'yyyy-mm-dd'), 'yyyy-mm-dd')
+   		]]>
+			</isEmpty>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="applerId">
+			<![CDATA[		   
+		 EXISTS ( SELECT SAD.ADMIN_DEPTID
+					   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+					  WHERE SAD.ADMIN_NO = SA.ADMINNO
+					    AND SA.ADMINID = #applerId:VARCHAR2#
+					    AND SAD.ADMIN_DEPTID = v.DEPTID	
+				   ) 
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="starttime">
+			<![CDATA[
+				to_char(bookdate,'yyyy-mm-dd') >= #starttime:VARCHAR# 
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="endtime">
+			<![CDATA[
+				to_char(bookdate,'yyyy-mm-dd') <= #endtime:VARCHAR#
+			]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="conferenceRoom">
+			<![CDATA[
+				a.conferenceRoom = #conferenceRoom:VARCHAR#
+			]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="dept">
+			<![CDATA[
+				v.deptid like '%' || #dept:VARCHAR# || '%'
+			]]>
+		</isNotEmpty>
+	</select>
+
+	<select id="getviewRoomInfoList" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[
+select to_char(a.BOOKDATE,'yyyy-mm-dd') as BOOKDATE,
+	   to_char(a.ENDDATE,'yyyy-mm-dd') as ENDDATE,
+	   to_char(a.APPLYDATE,'yyyy-mm-dd hh24:mi') as APPLYDATE,
+	   a.BOOKSTARTTIME,
+	   a.BOOKENDTIME,
+	   a.APPLYNO,
+	   a.BOOKNUMBER,
+	   a.CONFERENCEROOM,
+	   a.EQUIPS,
+	   a.PURPOSEOFUSE,
+	   sy.code_name PEOPLECLASS,
+	   a.PEOPLECLASS_UP,
+	   a.EQUIPS,
+	   a.ISCONFIRM,
+	   a.OTHERREQUEST,
+	   to_char(a.BEFORE_BOOKDATE,'yyyy-mm-dd') as BEFORE_BOOKDATE,
+	   a.BEFORE_BOOKSTARTTIME,
+	   a.BEFORE_BOOKENDTIME,
+	   a.BEFORE_CONFERENCEROOM,
+	   a.BEFORE_EQUIPS,
+	   a.ISUPDATE,
+       room.roomname as roomname,
+       room1.roomname as BEFORE_ROOMNAME,
+       to_char(a.applydate, 'yyyy-mm-dd') as applydate,
+       to_char(a.bookdate, 'yyyy-mm-dd') as bookdate,
+       hr.chinesename as chinesename,
+       v.deptname as deptname,
+       a.CONFERENCENO
+  from PU_CONFERENCEROOM_APPLY a,
+       hr_employee             hr,
+       pu_room                 room,
+       pu_room                 room1,
+       hr_department           v,
+       sy_code                 sy
+ where a.active = '1'
+   and a.conferenceroom = room.id 
+   and a.BEFORE_CONFERENCEROOM = room1.id 
+   and hr.person_id(+) = a.applyorid
+   and v.deptid = a.applyordeptid
+   and a.PEOPLECLASS=sy.code_id(+)
+   and a.cpny_id=#cpny_id:VARCHAR#
+  		 ]]>
+		<isEmpty prepend="AND" property="starttime">
+			<isEmpty prepend="" property="endtime">
+				<![CDATA[
+   		a.bookdate > to_date(to_char(SYSDATE, 'yyyy-mm-dd'), 'yyyy-mm-dd')
+   		]]>
+			</isEmpty>
+		</isEmpty>
+		<isNotEmpty prepend="AND" property="applerId">
+			<![CDATA[		   
+		 EXISTS ( SELECT SAD.ADMIN_DEPTID
+					   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+					  WHERE SAD.ADMIN_NO = SA.ADMINNO
+					    AND SA.ADMINID = #applerId:VARCHAR2#
+					    AND SAD.ADMIN_DEPTID = v.DEPTID	
+				   ) 
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="starttime">
+			<![CDATA[
+				to_char(bookdate,'yyyy-mm-dd') >= #starttime:VARCHAR# 
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="endtime">
+			<![CDATA[
+				to_char(bookdate,'yyyy-mm-dd') <= #endtime:VARCHAR#
+			]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="conferenceRoom">
+			<![CDATA[
+				a.conferenceRoom = #conferenceRoom:VARCHAR#
+			]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="dept">
+			<![CDATA[
+				v.deptid like '%' || #dept:VARCHAR# || '%'
+			]]>
+		</isNotEmpty>
+		order by a.bookdate desc, a.enddate desc,a.bookstarttime desc,
+		a.bookendtime desc,a.conferenceno
+
+	</select>
+
+
+	<select id="getviewRoomInfoForReport" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[
+select a.CONFERENCENO,
+       to_char(min(a.BOOKDATE), 'yyyy-mm-dd') as BOOKDATE,
+       to_char(max(a.ENDDATE), 'yyyy-mm-dd') as ENDDATE,
+       min(a.BOOKSTARTTIME) BOOKSTARTTIME,
+       max(a.BOOKENDTIME) BOOKENDTIME,
+       a.BOOKNUMBER,
+       a.CONFERENCEROOM,
+       a.EQUIPS,
+       a.PURPOSEOFUSE,
+       sy.code_name PEOPLECLASS,
+       a.PEOPLECLASS_UP,
+       a.EQUIPS,
+       a.ISCONFIRM,
+       a.OTHERREQUEST,       
+       room.roomname as roomname,
+       room1.roomname as BEFORE_ROOMNAME,
+       hr.chinesename as chinesename,
+       v.deptname as deptname
+  from PU_CONFERENCEROOM_APPLY a,
+       hr_employee             hr,
+       pu_room                 room,
+       pu_room                 room1,
+       hr_department           v,
+       sy_code                 sy
+ where a.active = '1'
+   and a.conferenceroom = room.id 
+   and a.BEFORE_CONFERENCEROOM = room1.id 
+   and hr.empid(+) = a.applyorid
+   and v.deptid = a.applyordeptid
+   and a.PEOPLECLASS=sy.code_id(+)
+   and a.cpny_id=#cpny_id:VARCHAR#
+		]]>
+		<isNotEmpty prepend="AND" property="starttime">
+			<![CDATA[
+				to_char(bookdate,'yyyy-mm-dd') >= #starttime:VARCHAR# and to_char(bookdate,'yyyy-mm-dd') <= #endtime:VARCHAR#
+			]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="conferenceRoom">
+			<![CDATA[
+				a.conferenceRoom = #conferenceRoom:VARCHAR#
+			]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="dept">
+			<![CDATA[
+				v.deptname like '%' || #dept:VARCHAR# || '%'
+			]]>
+		</isNotEmpty>
+		group by a.CONFERENCENO, a.BOOKNUMBER, a.CONFERENCEROOM,
+		a.EQUIPS, a.PURPOSEOFUSE, sy.code_name, a.PEOPLECLASS_UP,
+		a.EQUIPS, a.ISCONFIRM, a.OTHERREQUEST, room.roomname,
+		room1.roomname,hr.chinesename, v.deptname order by bookdate
+		desc,enddate desc,bookstarttime desc,bookendtime
+		desc,conferenceno
+
+	</select>
+	<update id="oingConfirmConferenceRoom" parameterClass="SimpleMap">
+		<![CDATA[
+       update pu_conferenceroom_apply t
+        set t.isconfirm=#flag:NUMERIC#,t.confirmorid=#applerId:VARCHAR#,t.confirmdate=SYSDATE,affirmorIdea=#affirmorIdea:varchar#
+        where t.applyno=#applyno:VARCHAR#
+		]]>
+	</update>
+
+	<update id="saveUpdate" parameterClass="SimpleMap">
+		<![CDATA[
+        update pu_conferenceroom_apply
+        set 
+        BOOKDATE=to_date(#bookdate:VARCHAR#,'yyyy-mm-dd'),
+        BOOKSTARTTIME=#bookstarttime:VARCHAR#,
+        BOOKENDTIME=#bookendtime:VARCHAR#,
+        CONFERENCEROOM=#conferenceRoom:VARCHAR#,
+        EQUIPS=#equips:VARCHAR#,
+        ISUPDATE=1,
+        booknumber=#booknumber:NUMERIC#,
+        ENDDATE=to_date(#enddate:varchar#,'YYYY-MM-DD')        
+        where applyno=#applyno:VARCHAR#
+		]]>
+	</update>
+
+	<update id="deleteApply" parameterClass="SimpleMap">
+		<![CDATA[
+        update pu_conferenceroom_apply t
+        set t.active='0',t.confirmorid=#applerId:VARCHAR# ,t.confirmdate=SYSDATE   
+        where applyno=#applyno:VARCHAR#
+		]]>
+	</update>
+
+	<delete id="deleteApplyroom" parameterClass="SimpleMap">
+		<![CDATA[
+        delete pu_conferenceroom_apply t where t.applyno=#applyno:varchar#
+        
+		]]>
+	</delete>
+
+	<select id="roomSetupList" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[
+		select 
+			   t.id,
+			   t.roomname,
+		       t.peoples,
+		       t.equip,
+		       pu_room_get_name(t.id) confirmorname,
+		       t.cpny_id,
+		       t.active
+		  from pu_room t
+		 where t.cpny_id = #cpny_id:VARCHAR#
+		   and t.active = '0'
+		 order by t.roomname
+		]]>
+
+	</select>
+
+	<select id="roomSetupNumber" parameterClass="SimpleMap"
+		resultClass="int">
+		<![CDATA[
+	 select count(*) from pu_room where cpny_id=#cpny_id:VARCHAR# and active='0'
+		]]>
+	</select>
+
+	<insert id="saveRoomSetup" parameterClass="SimpleMap">
+		<![CDATA[
+		insert into pu_room
+			     (id,
+			      roomname,
+			      peoples,
+			      equip,
+			      confirmorid,
+			      CPNY_ID)
+			   values
+			     (PU_ROOM_SEQ.Nextval,
+			     #roomname:VARCHAR#,
+			     #peoples:NUMERIC#,
+			     #equip:VARCHAR#,
+			     #confirmorid:VARCHAR#,
+			     #cpny_id:VARCHAR#)
+	]]>
+	</insert>
+
+	<insert id="saveUpdateRoomSetup" parameterClass="SimpleMap">
+		<![CDATA[
+		update pu_room set roomname = #roomname:VARCHAR#,peoples = #peoples:NUMERIC#,equip = #equip:VARCHAR#,confirmorid = #confirmorid:VARCHAR# 
+		where id = #id:NUMERIC#
+
+	]]>
+	</insert>
+
+	<delete id="delRoomSetup" parameterClass="SimpleMap">
+		<![CDATA[
+		update pu_room set active='1' where id=#id:NUMERIC#
+	]]>
+	</delete>
+
+	<select id="getRoomSetup" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[
+		select 
+		   t.id,
+	       t.cpny_id,
+	       t.active,
+	       t.roomname,
+	       t.peoples,
+	       t.equip,
+	       get_emp_name(t.confirmorid) confirmorname,
+	       t.confirmorid 
+	    from pu_room t where t.id = #id:NUMERIC#
+		]]>
+
+	</select>
+
+	<select id="checkRoomList" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[
+		select pu_conferenceroom_apply.*,hr_department.deptname from pu_conferenceroom_apply where 
+		pu_conferenceroom_apply.applyordeptid = hr_department.deptid and  pu_conferenceroom_apply.active='1' and 
+		(
+		(bookendtime >= #begintime# and bookstarttime <= #endtime#)
+		or (bookendtime >= #begintime# and bookstarttime <= #begintime#)
+		)
+		]]>
+		<isNotEmpty prepend="AND" property="applydate">
+			<![CDATA[
+					to_char(bookdate,'yyyy-mm-dd') = #applydate:VARCHAR#
+				]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="roomname">
+			<![CDATA[
+					conferenceroom = #roomname#
+				]]>
+		</isNotEmpty>
+	</select>
+
+	<select id="CheckRoomCount" parameterClass="SimpleMap"
+		resultClass="int">
+		<![CDATA[
+     select count(*)  from pu_conferenceroom_apply
+     where (bookdate = to_date(#Formatdate:VARCHAR#, 'yyyy-mm-dd') and
+       enddate = to_date(#Formatdate:VARCHAR#, 'yyyy-mm-dd') and
+       to_date(#starttime:VARCHAR#, 'hh24:mi') <=to_date(bookendtime, 'hh24:mi') and
+       to_date(#endtime:VARCHAR#, 'hh24:mi') >= to_date(bookstarttime, 'hh24:mi'))
+	   and active='1'
+		]]>
+
+		<isNotEmpty prepend="AND" property="roomname">
+			<![CDATA[
+					conferenceroom = #roomname#
+				]]>
+		</isNotEmpty>
+	</select>
+
+
+	<select id="CheckRoomCountForupdate" parameterClass="SimpleMap"
+		resultClass="int">
+		<![CDATA[
+     select count(*)  from pu_conferenceroom_apply
+     where (bookdate = to_date(#Formatdate:VARCHAR#, 'yyyy-mm-dd') and
+       enddate = to_date(#Formatdate:VARCHAR#, 'yyyy-mm-dd') and
+       to_date(#starttime:VARCHAR#, 'hh24:mi') <=to_date(bookendtime, 'hh24:mi') and
+       to_date(#endtime:VARCHAR#, 'hh24:mi') >= to_date(bookstarttime, 'hh24:mi'))
+	   and active='1' and applyno<>#applyno:VARCHAR#
+		]]>
+
+		<isNotEmpty prepend="AND" property="roomname">
+			<![CDATA[
+					conferenceroom = #roomname#
+				]]>
+		</isNotEmpty>
+	</select>
+
+	<select id="getequipsCount" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[
+		select count(*) from pu_room where id = #roomid:NUMERIC#
+		]]>
+
+	</select>
+
+	<select id="equipsList" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[
+		select equip from pu_room where id = #roomid:NUMERIC#
+		]]>
+
+	</select>
+
+	<select id="equipsApplyList" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[
+		select equips,before_equips from pu_conferenceroom_apply where applyno = #applyno:NUMERIC#
+		]]>
+
+	</select>
+
+	<select id="getapplyemail" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[	
+select hr.empid,chinesename,hr.email from hr_employee  hr ,pu_conferenceroom_apply apply
+where apply.applyno=#applyno:VARCHAR#
+and apply.applyorid=hr.empid
+    ]]>
+	</select>
+</sqlMap>

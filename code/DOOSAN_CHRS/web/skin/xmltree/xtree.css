@@ -1,0 +1,71 @@
+BODY{
+FONT-SIZE: 9pt;
+COLOR: #000000;
+FONT-FAMILY:  宋体;
+/*scrollbar-face-color: #CEDFFA; 
+scrollbar-highlight-color: #ECF5FD;
+scrollbar-shadow-color: #CEDFFA;
+scrollbar-3dlight-color: #A7C4F6;
+scrollbar-arrow-color:  #6A8CCB;
+scrollbar-track-color: #ECF5FD;
+scrollbar-darkshadow-color: #6A8CCB;
+*/
+
+scrollbar-face-color: #DEE3E7;
+scrollbar-highlight-color: #FFFFFF;
+scrollbar-shadow-color: #DEE3E7;
+scrollbar-3dlight-color: #D1D7DC;
+scrollbar-arrow-color:  #006699;
+scrollbar-track-color: #EFEFEF;
+scrollbar-darkshadow-color: #98AAB1;
+ margin:1;
+}
+
+.webfx-tree-container {
+	margin: 0px;
+	padding: 0px;
+	font: icon;
+	white-space: nowrap;
+}
+
+.webfx-tree-item {
+	padding: 0px;
+	margin: 0px;
+	font: icon;
+	color: WindowText;
+	white-space: nowrap;
+	height: 16px;
+}
+
+.webfx-tree-item a, .webfx-tree-item a:active, .webfx-tree-item a:hover {
+	margin-left: 3px;
+	padding: 0px 2px 1px 2px;
+}
+
+.webfx-tree-item a {
+	vertical-align: middle;
+	font-family: Arial ;
+	color: black;
+	text-decoration: none;
+}
+
+.webfx-tree-item a:hover {
+	color: red;
+	text-decoration: underline;
+}
+
+.webfx-tree-item a:active {
+	background: highlight;
+	color: highlighttext;
+	text-decoration: none;
+}
+
+.webfx-tree-item img {
+	vertical-align: middle;
+	border: 0px;
+}
+
+.webfx-tree-icon {
+	width: 16px;
+	height: 16px;
+}

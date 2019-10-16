@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="ga.smockprovide">
+	<select id="selectSmockProvideList" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[
+				SELECT A.SEQ_NO SEQNO,
+				       A.EMPID PERSONID,
+				       A.SMOCK_NO SMOCKNO,
+				       GET_CODE_NAME(A.MODEL_NUMBER) MODELNUMBER,
+				       A.PERIOD_NUM PERIODNUM,
+				       A.PERIOD_UNIT PERIODUNIT,
+				       A.REMARK REMARK,
+				       GET_CODE_NAME(B.SMOCK_NAME) SMOCKNAME,
+				       B.SMOCK_NAME SMOCK_NAME,
+				       GET_CODE_NAME(B.UNIT) UNITNAME,
+				       C.EMPID EMPID,
+				       C.CHINESENAME CHINESENAME,
+				       GET_CODE_NAME(C.SEX) SEX,
+				       TO_CHAR(C.DATE_STARTED, 'YYYY-MM-DD') DATESTARTED,
+				       D.DEPTNAME DEPTNAME,
+				       GET_DEPT_NAME(D.FOURTHDEPT) FOURTHIDEPT,
+				       CONCAT(TO_CHAR(A.PERIOD_NUM), GET_CODE_NAME(A.PERIOD_UNIT)) PERIOD,
+				       E.CREATE_DATE CREATE_DATE,
+				       C.PERSON_ID PERSONID,
+				       C.DATE_LEFT DATE_LEFT
+				  FROM GA_SMOCK_RELATION A,
+				       GA_SMOCK B,
+				       HR_EMPLOYEE C,
+				       HR_DEPARTMENT D,
+				       (SELECT A.RELATION_NO RELATION_NO,
+				               TO_CHAR(DECODE(B.PERIOD_UNIT,
+				                              'smockPeriodNum001',
+				                              (A.CREATE_DATE + B.PERIOD_NUM),
+				                              'smockPeriodNum002',
+				                              (A.CREATE_DATE + (B.PERIOD_NUM * 7)),
+				                              'smockPeriodNum003',
+				                              ADD_MONTHS(A.CREATE_DATE, B.PERIOD_NUM),
+				                              'smockPeriodNum004',
+				                              ADD_MONTHS(A.CREATE_DATE, (B.PERIOD_NUM * 12)),
+				                              NULL),
+				                       'YYYY-MM-DD') AS CREATE_DATE,
+				               CONCAT(TO_CHAR(B.PERIOD_NUM), GET_CODE_NAME(B.PERIOD_UNIT)) AS PERIOD
+				          FROM (SELECT PRO.RELATION_NO RELATION_NO,
+				                       MAX(PRO.CREATE_DATE) CREATE_DATE
+				                  FROM GA_SMOCK_PROVIDE PRO
+				                 WHERE PRO.ACTIVITY = 1
+				                 GROUP BY PRO.RELATION_NO) A,
+				               GA_SMOCK_RELATION B
+				         WHERE B.SEQ_NO = A.RELATION_NO) E
+				 WHERE A.SMOCK_NO = B.SEQ_NO(+)
+				   AND C.PERSON_ID = A.EMPID(+)
+				   AND C.DEPTID = D.DEPTID(+)
+				   AND E.RELATION_NO(+) = A.SEQ_NO
+				   AND C.ACTIVITY = 1
+				   AND C.STATUS_CODE <>'EmpStatus3' 
+	  	]]>
+		<isNotEmpty prepend="" property="startDate">
+			<isNotEmpty prepend="AND" property="endDate">
+				<![CDATA[		   
+				 	 TO_DATE(E.CREATE_DATE,'YYYY-MM-DD') BETWEEN TO_DATE(#startDate:VARCHAR#,'YYYY-MM-DD') AND TO_DATE(#endDate:VARCHAR#,'YYYY-MM-DD')
+				]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="empId">
+			<![CDATA[		   
+				 	C.EMPID LIKE '%'||#empId#||'%'
+				]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="personId">
+			<![CDATA[		   
+				 	A.EMPID LIKE '%'||#personId#||'%'
+				]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="seqNo">
+			<![CDATA[		   
+				 	 A.SEQ_NO = #seqNo#
+				]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="smockName">
+			<![CDATA[		   
+				 	B.SMOCK_NAME = #smockName#
+				]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DeptId">
+			<![CDATA[		   
+				 	  (D.FOURTHDEPT = #DeptId# OR
+				 	 D.FIFTHLYDEPT = #DeptId# OR
+				 	 D.SIXTHLYDEPT = #DeptId# OR
+				 	 D.deptid = #DeptId#)
+				]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="cpnyId">
+			<![CDATA[		   
+				 	 C.CPNY_ID = #cpnyId#
+				]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="period">
+			<![CDATA[
+				(A.PERIOD_NUM||GET_CODE_NAME(A.PERIOD_UNIT)) = #period:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isEqual prepend="AND" property="provideStatus" compareValue="provideStatus001">
+			<![CDATA[		   
+				 	 C.DATE_LEFT IS NOT NULL
+				]]>
+		</isEqual>
+		<isEqual prepend="AND" property="provideStatus" compareValue="provideStatus003">
+			<![CDATA[		   
+				   C.DATE_LEFT IS NULL
+				   AND C.PERSON_ID NOT IN (SELECT L.PERSON_ID
+									         FROM GA_SMOCK_PROVIDE P, GA_SMOCK_RELATION R, HR_EMPLOYEE L
+									        WHERE P.RELATION_NO = R.SEQ_NO
+									          AND R.EMPID = L.PERSON_ID)
+				]]>
+		</isEqual>
+		<isEqual prepend="AND" property="provideStatus" compareValue="provideStatus002">
+			<![CDATA[		   
+				 	  C.PERSON_ID IN(SELECT L.PERSON_ID
+				                       FROM GA_SMOCK_PROVIDE P,
+				                            GA_SMOCK_RELATION R,
+				                            HR_EMPLOYEE L
+				                      WHERE P.RELATION_NO = R.SEQ_NO
+				                      AND   R.EMPID = L.PERSON_ID)
+				]]>
+		</isEqual>
+		<![CDATA[
+			ORDER BY C.DATE_LEFT DESC,E.CREATE_DATE DESC,C.DATE_STARTED
+		]]>
+	</select>
+
+	<select id="selectSmockProvideCut" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+				SELECT COUNT(*) CUT
+				  FROM GA_SMOCK_RELATION A,
+				       GA_SMOCK B,
+				       HR_EMPLOYEE C,
+				       HR_DEPARTMENT D,
+				       (SELECT A.RELATION_NO RELATION_NO,
+				               TO_CHAR(DECODE(B.PERIOD_UNIT,
+				                              'smockPeriodNum001',
+				                              (A.CREATE_DATE + B.PERIOD_NUM),
+				                              'smockPeriodNum002',
+				                              (A.CREATE_DATE + (B.PERIOD_NUM * 7)),
+				                              'smockPeriodNum003',
+				                              ADD_MONTHS(A.CREATE_DATE, B.PERIOD_NUM),
+				                              'smockPeriodNum004',
+				                              ADD_MONTHS(A.CREATE_DATE, (B.PERIOD_NUM * 12)),
+				                              NULL),
+				                       'YYYY-MM-DD') AS CREATE_DATE,
+				               CONCAT(TO_CHAR(B.PERIOD_NUM), GET_CODE_NAME(B.PERIOD_UNIT)) AS PERIOD
+				          FROM (SELECT PRO.RELATION_NO RELATION_NO,
+				                       MAX(PRO.CREATE_DATE) CREATE_DATE
+				                  FROM GA_SMOCK_PROVIDE PRO
+				                 WHERE PRO.ACTIVITY = 1
+				                 GROUP BY PRO.RELATION_NO) A,
+				               GA_SMOCK_RELATION B
+				         WHERE B.SEQ_NO = A.RELATION_NO) E
+				 WHERE A.SMOCK_NO = B.SEQ_NO(+)
+				   AND C.PERSON_ID = A.EMPID(+)
+				   AND C.DEPTID = D.DEPTID(+)
+				   AND E.RELATION_NO(+) = A.SEQ_NO
+				   AND C.ACTIVITY = 1
+				   AND C.STATUS_CODE <>'EmpStatus3' 
+	  	]]>
+		<isNotEmpty prepend="" property="startDate">
+			<isNotEmpty prepend="AND" property="endDate">
+				<![CDATA[		   
+				 	 TO_DATE(E.CREATE_DATE,'YYYY-MM-DD') BETWEEN TO_DATE(#startDate:VARCHAR#,'YYYY-MM-DD') AND TO_DATE(#endDate:VARCHAR#,'YYYY-MM-DD')
+				]]>
+			</isNotEmpty>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="empId">
+			<![CDATA[		   
+				 	C.EMPID LIKE '%'||#empId#||'%'
+				]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="personId">
+			<![CDATA[		   
+				 	A.EMPID LIKE '%'||#personId#||'%'
+				]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="seqNo">
+			<![CDATA[		   
+				 	 A.SEQ_NO = #seqNo#
+				]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="smockName">
+			<![CDATA[		   
+				 	B.SMOCK_NAME = #smockName#
+				]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DeptId">
+			<![CDATA[		   
+				 	 
+				 	 (D.FOURTHDEPT = #DeptId# OR
+				 	 D.FIFTHLYDEPT = #DeptId# OR
+				 	 D.SIXTHLYDEPT = #DeptId# OR
+				 	 D.deptid = #DeptId#)
+				]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="cpnyId">
+			<![CDATA[		   
+				 	 C.CPNY_ID = #cpnyId#
+				]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="period">
+			<![CDATA[
+				(A.PERIOD_NUM||GET_CODE_NAME(A.PERIOD_UNIT)) = #period:VARCHAR#
+			]]>
+		</isNotEmpty>
+		<isEqual prepend="AND" property="provideStatus" compareValue="provideStatus001">
+			<![CDATA[		   
+				 	 C.DATE_LEFT IS NOT NULL
+				]]>
+		</isEqual>
+		<isEqual prepend="AND" property="provideStatus" compareValue="provideStatus003">
+			<![CDATA[		   
+				   C.DATE_LEFT IS NULL
+				   AND C.PERSON_ID NOT IN (SELECT L.PERSON_ID
+									         FROM GA_SMOCK_PROVIDE P, GA_SMOCK_RELATION R, HR_EMPLOYEE L
+									        WHERE P.RELATION_NO = R.SEQ_NO
+									          AND R.EMPID = L.PERSON_ID)
+				]]>
+		</isEqual>
+		<isEqual prepend="AND" property="provideStatus" compareValue="provideStatus002">
+			<![CDATA[		   
+				 	  C.PERSON_ID IN(SELECT L.PERSON_ID
+				                       FROM GA_SMOCK_PROVIDE P,
+				                            GA_SMOCK_RELATION R,
+				                            HR_EMPLOYEE L
+				                      WHERE P.RELATION_NO = R.SEQ_NO
+				                      AND   R.EMPID = L.PERSON_ID)
+				]]>
+		</isEqual>
+		<![CDATA[
+			ORDER BY C.DATE_LEFT DESC,E.CREATE_DATE DESC,C.DATE_STARTED
+		]]>
+	</select>
+	
+	<select id="selectSmockProvideHistoryRecord" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[
+				SELECT TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD') CREATE_DATE,
+				       C.EMPID EMPID,
+				       C.CHINESENAME CHINESENAME,
+				       GET_CODE_NAME(C.SEX) SEX,
+				       TO_CHAR(C.DATE_STARTED,'YYYY-MM-DD') DATESTARTED,
+				       D.DEPTNAME DEPTNAME,
+				       E.DEPTNAME FOURTHDEPTNAME,
+				       GET_CODE_NAME(F.SMOCK_NAME) SMOCKNAME,
+				       GET_CODE_NAME(B.MODEL_NUMBER) MODELNUMBER,
+				       CONCAT(TO_CHAR(B.PERIOD_NUM),GET_CODE_NAME(B.PERIOD_UNIT)) PERIOD,
+				       B.REMARK REMARK
+				FROM GA_SMOCK_PROVIDE A,
+				     GA_SMOCK_RELATION B,
+				     HR_EMPLOYEE C,
+				     HR_DEPARTMENT D,
+				     HR_DEPARTMENT E,
+				     GA_SMOCK F
+				WHERE A.RELATION_NO = B.SEQ_NO
+				AND   B.EMPID = C.PERSON_ID
+				AND   C.DEPTID = D.DEPTID
+				AND   D.FOURTHDEPT = E.DEPTID
+				AND   B.SMOCK_NO = F.SEQ_NO
+				AND   A.ACTIVITY =1
+				AND   C.PERSON_ID = #personId#
+				AND   F.SMOCK_NAME = #smockName#
+	  	]]>
+	</select>
+
+	<insert id="insertSmockProvide" parameterClass="SimpleMap">
+		<![CDATA[	
+				INSERT  INTO GA_SMOCK_PROVIDE A  
+					 (	A.SEQ_NO,
+						A.RELATION_NO,
+						A.CREATE_DATE,
+						A.CREATED_BY,
+						A.ACTIVITY)
+				VALUES (SEQ_GA_SMOCK_RELATION.NEXTVAL,
+						#seqNo#,
+						SYSDATE,
+						#conPersonId#,
+						1)
+		]]>
+	</insert>
+	
+	<update id="deleteSmockProvide" parameterClass="SimpleMap">
+		<![CDATA[
+			UPDATE GA_SMOCK_PROVIDE A
+			SET	   A.ACTIVITY=0
+			WHERE A.RELATION_NO = #seqNo#
+		]]>
+	</update>
+	
+	<select id="getPeriodNameList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			SELECT DISTINCT 
+			       (A.PERIOD_NUM||GET_CODE_NAME(A.PERIOD_UNIT)) ID,
+			       (A.PERIOD_NUM||GET_CODE_NAME(A.PERIOD_UNIT)) NAME
+			FROM GA_SMOCK_RELATION A
+			WHERE A.CPNY_ID = #cpnyId:VARCHAR#
+			AND A.PERIOD_NUM IS NOT NULL AND A.PERIOD_UNIT IS NOT NULL
+		]]>
+	</select>
+</sqlMap>

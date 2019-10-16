@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMapConfig PUBLIC "-//iBATIS.com//DTD SQL Map Config 2.0//EN" "http://www.ibatis.com/dtd/sql-map-config-2.dtd">
+
+<sqlMapConfig>
+
+	<!--  加载数据源属性文件  -->
+	<properties resource="com/ait/sqlmap/config/dataSource.properties" />
+
+	<!-- 配置SQL MAP CLIENT 参数 -->
+	<settings cacheModelsEnabled="true" enhancementEnabled="true"
+		lazyLoadingEnabled="true" maxRequests="128" maxSessions="80"
+		maxTransactions="60" useStatementNamespaces="true" />
+	
+	<!-- 配置SQL MAP CLIENT 事物管理器 (JNDI方式获得) -->
+	
+	<transactionManager type="JDBC">
+		<!--DICC数据库配置-->
+		<dataSource type="JNDI">
+			<property name="DataSource" value="java:comp/env/jdbc/EM2" />
+		</dataSource>
+	</transactionManager>
+
+
+	<!-- 配置SQL MAP CLIENT 事物管理器  -->
+	<!--   
+		<transactionManager type="JDBC">   -->
+	<!-- 使用ORACLE JDBC DRIVER-->
+	<!-- 
+		<dataSource type="SIMPLE">
+		<property name="JDBC.Driver" value="${driver}" />
+		<property name="JDBC.ConnectionURL" value="${url}" />
+		<property name="JDBC.Username" value="${username}" />
+		<property name="JDBC.Password" value="${password}" /> -->
+
+	<!-- OPTIONAL PROPERTIES BELOW -->
+	<!--
+		<property name="Pool.MaximumActiveConnections" value="10" />
+		<property name="Pool.MaximumIdleConnections" value="5" />
+		<property name="Pool.MaximumCheckoutTime" value="120000" />
+		<property name="Pool.TimeToWait" value="10000" />
+		<property name="Pool.PingQuery" value="select * from dual" />
+		<property name="Pool.PingEnabled" value="false" />
+		<property name="Pool.PingConnectionsOlderThan" value="0" />
+		<property name="Pool.PingConnectionsNotUsedFor" value="0" />
+		</dataSource>
+		</transactionManager> -->
+
+
+	<sqlMap resource="com/ait/sqlmap/config/ibatis_common.xml" />
+
+	<sqlMap resource="com/ait/sqlmap/template/sql/sql.xml" />
+	<sqlMap resource="com/ait/commons/sql/sql.xml" />
+
+	<sqlMap resource="com/ait/hrm/sql/contract/sql.xml" />
+	<sqlMap resource="com/ait/hrm/sql/empinfo/sql.xml" />
+	<sqlMap resource="com/ait/hrm/sql/hrcommand/sql.xml" />
+	<sqlMap resource="com/ait/hrm/sql/report/sql.xml" />
+	<sqlMap resource="com/ait/hrm/sql/common/sql.xml" />
+	<sqlMap resource="com/ait/hrm/sql/tipmessage/sql.xml" />
+	<sqlMap resource="com/ait/hrm/sql/tipmessagesearch/sql.xml" />
+	<sqlMap resource="com/ait/hrm/sql/department/sql.xml" />
+
+	<sqlMap resource="com/ait/ar/sql/common/sql.xml" />
+	<sqlMap resource="com/ait/ar/sql/idcard/sql.xml" />
+	<sqlMap resource="com/ait/ar/sql/vacation/sql.xml" />
+	<sqlMap resource="com/ait/ar/sql/overtimeplan/sql.xml" />
+	<sqlMap resource="com/ait/ar/sql/detaillock/sql.xml" />
+
+	<sqlMap resource="com/ait/ess/sql/common/sql.xml" />
+	<sqlMap resource="com/ait/ess/sql/apply/sql.xml" />
+
+	<sqlMap resource="com/ait/pa/sql/common/sql.xml" />
+	<sqlMap resource="com/ait/pa/sql/util/sql.xml" />
+	<sqlMap resource="com/ait/pa/sql/viewDetail/sql.xml" />
+	<sqlMap resource="com/ait/pa/sql/report/sql.xml" />
+	<sqlMap resource="com/ait/pa/sql/postgrade/sql.xml" />
+	<sqlMap resource="com/ait/pa/sql/vouchertype/sql.xml" />
+    <sqlMap resource="com/ait/pa/sql/payplan/sql.xml" />
+    <sqlMap resource="com/ait/pa/sql/bonus/sql.xml" />
+    <sqlMap resource="com/ait/pa/sql/param/sql.xml" />
+    
+	<sqlMap resource="com/ait/evs/sql/common/sql.xml" />
+
+	<sqlMap resource="com/ait/sys/sql/common/sql.xml" />
+
+	<sqlMap resource="com/ait/gm/sql/gmview/sql.xml" />
+	<!-- new  -->
+	<sqlMap resource="com/ait/gm/sql/waste_sql.xml" />
+	<sqlMap resource="com/ait/gm/sql/eatery_sql.xml" />
+	<sqlMap resource="com/ait/gm/sql/express_sql.xml" />
+	<sqlMap resource="com/ait/gm/sql/sealmanagement/sql.xml" />
+	<sqlMap resource="com/ait/gm/sql/woodProducts/sql.xml" />
+	<sqlMap resource="com/ait/safe/sql/rules_sql.xml" />
+	<sqlMap resource="com/ait/safe/sql/jobHealth_sql.xml" />
+	<sqlMap resource="com/ait/safe/sql/securitychecks/sql.xml" />
+	<sqlMap resource="com/ait/ev/sql/sql.xml" /> 
+	<!--pu -->
+	<sqlMap resource="com/ait/pu/sql/conferenceroom/sql.xml"/>
+	<sqlMap resource="com/ait/pu/sql/visiterManagement/visiterManagement_sql.xml"/>
+	
+	<sqlMap resource="com/ait/ga/sql/visiter/sql.xml" />
+	<sqlMap resource="com/ait/ga/sql/visit/sql.xml" />
+    <sqlMap resource="com/ait/ga/sql/express/sql.xml" />
+    <sqlMap resource="com/ait/ga/sql/conferenceroom/sql.xml" />
+    <sqlMap resource="com/ait/ga/sql/securityenvironment/sql.xml" />
+    <sqlMap resource="com/ait/ga/sql/woodproducts/sql.xml" />
+    <sqlMap resource="com/ait/ga/sql/eatingcard/sql.xml" />
+    <sqlMap resource="com/ait/ga/sql/seal/sql.xml" />
+	<sqlMap resource="com/ait/reports/sql/report_sql.xml" />
+	<sqlMap resource="com/ait/reports/sql/ar_report_sql.xml" />
+	<sqlMap resource="com/ait/reports/sql/pa_report_sql.xml" />
+	<sqlMap resource="com/ait/reports/sql/evs_report_sql.xml" />
+	
+	<sqlMap resource="com/ait/ga/sql/asset/sql.xml" />
+	<sqlMap resource="com/ait/ga/sql/present/sql.xml" />
+	<sqlMap resource="com/ait/ga/sql/check/sql.xml" />
+	<sqlMap resource="com/ait/ga/sql/inspection/sql.xml"/>
+	<sqlMap resource="com/ait/ga/sql/smock/sql.xml"/>
+	<sqlMap resource="com/ait/ga/sql/smockrelation/sql.xml"/>
+	<sqlMap resource="com/ait/ga/sql/smockprovide/sql.xml"/>
+	<sqlMap resource="com/ait/ga/sql/washhouse/sql.xml"/>
+	<sqlMap resource="com/ait/ga/sql/festivalpresent/sql.xml"/>
+	<sqlMap resource="com/ait/ga/sql/certificate/sql.xml"/>
+	<sqlMap resource="com/ait/ga/sql/food/sql.xml"/>
+	
+	<sqlMap resource="com/ait/kpa/sql/common/sql.xml" />
+	<sqlMap resource="com/ait/kpa/sql/util/sql.xml" />
+	<sqlMap resource="com/ait/kpa/sql/report/sql.xml" />
+	<sqlMap resource="com/ait/kpa/sql/postgrade/sql.xml" />
+    <sqlMap resource="com/ait/kpa/sql/payplan/sql.xml" />
+    <sqlMap resource="com/ait/kpa/sql/bonus/sql.xml" />
+    <sqlMap resource="com/ait/kpa/sql/diff/sql.xml" />
+	<sqlMap resource="com/ait/api/sql/sql.xml" />
+
+</sqlMapConfig>

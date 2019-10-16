@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+	<em2>	
+		<!-- Connection Pool Configuration Information -->
+		<default-pool>JNDI</default-pool>
+		<!-- DataSource Configuration Information -->
+		<jndi-datasource name="default">
+			<url>jdbc/EM2</url>
+		</jndi-datasource>
+		<datasource-provider>com.ait.web.TomcatDataSourceProvider</datasource-provider>
+		<EssApplyStrategy>com.ait.ess.dao.EssArDAOHelper</EssApplyStrategy>
+		<!-- SYSCODE PARENT CODE -->
+		<syscode-parent>  
+			<otapply>OTTypeCode</otapply><!-- 加班CODE -->
+			<leaveapply>LeaveTypeCode</leaveapply><!-- 休假CODE -->
+			<evectionapply>EvectionTypeCode</evectionapply><!-- 出差CODE -->
+			<trainingapply>TrainingTypeCode</trainingapply><!-- 教育培训CODE -->
+			<matchapply>MatchTypeCode</matchapply><!-- 值班CODE -->
+		</syscode-parent>
+		<syscode>
+			<annual-code>H9</annual-code>
+			<sickLeave>H29</sickLeave>
+			<reuniteLeave>H33</reuniteLeave>
+			<ot-type-normal>WorkingOtType01</ot-type-normal>
+			<ot-type-weekend>WorkingOtType02</ot-type-weekend>
+			<ot-type-holiday>WorkingOtType03</ot-type-holiday>
+		</syscode>
+		<ar-item-shortname>
+			<normal-work>正常出勤</normal-work>
+			<overtime>OverTimeGroup</overtime> <!-- 加班组CODE -->
+			<leave>休假</leave>
+			<match>值班</match>
+			<rest>休息</rest>
+		</ar-item-shortname>
+	</em2>
+</configuration>

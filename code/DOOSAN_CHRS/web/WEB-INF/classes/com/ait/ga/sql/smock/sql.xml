@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="ga.smock">
+	<select id="selectSmockList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+				SELECT   A.SEQ_NO        SEQNO,
+		                 GET_CODE_NAME(A.SMOCK_NAME)    SMOCKNAME,
+		                 A.SMOCK_NAME  SMOCKNAME_T,
+		                 A.UNIT          UNIT1,
+		                 GET_CODE_NAME(A.UNIT)          UNIT,
+		                 A.REMARK        REMARK,
+		                 TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD')   CREATEDATE,
+		                 GET_EMP_NAME(A.CREATED_BY)    CREATEDBY,
+		                 TO_CHAR(A.UPDATE_DATE,'YYYY-MM-DD')   UPDATEDATE,
+		                 A.UPDATED_BY    UPDATEDBY,
+		                 A.ACTIVITY      ACTIVITY,
+		                 A.CPNY_ID       CPNYID,
+		                 A.SIZE_TYPE     SIZE_TYPE,
+		                 GET_CODE_NAME(A.SIZE_TYPE)     SIZETYPE
+		         FROM GA_SMOCK A
+		         WHERE A.ACTIVITY = 1
+	  	]]>
+	  	<isNotEmpty prepend="AND" property="seqNo">
+				<![CDATA[		   
+				 	 A.SEQ_NO = #seqNo#
+				]]>	
+		</isNotEmpty>
+	  	<isNotEmpty prepend="AND" property="cpnyId">
+				<![CDATA[		   
+				 	 A.CPNY_ID = #cpnyId#
+				]]>	
+		</isNotEmpty>					
+	</select>
+	
+	<select id="selectSmockCut" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+	 		   SELECT  COUNT(*) CUT 
+				 FROM  GA_SMOCK A
+				 WHERE A.ACTIVITY = 1
+	  	]]>
+	  	<isNotEmpty prepend="AND" property="seqNo">
+				<![CDATA[		   
+				 	 A.SEQ_NO = #seqNo#
+				]]>	
+		</isNotEmpty>
+	  	<isNotEmpty prepend="AND" property="cpnyId">
+				<![CDATA[		   
+				 	 A.CPNY_ID = #cpnyId#
+				]]>	
+		</isNotEmpty>
+	</select>
+	<select id="getSmockCodeName" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			SELECT A.CODE_NAME CODENAME,
+				   A.CODE_ID CODEID
+			  FROM SY_CODE A
+			 WHERE A.PARENT_CODE = DECODE(#smockInfo#,
+			                              'smockInfo001',
+			                              'smockSize1',
+			                              'smockInfo002',
+			                              'smockSize2',
+			                              'smockInfo003',
+			                              'smockSize1',
+			                              'smockInfo004',
+			                              'smockSize2',
+			                              'smockInfo005',
+			                              'smockSize3',
+			                              null)
+		]]>
+	</select>
+	
+	<select id="getSmockTotalRecord" parameterClass="SimpleMap" resultClass="SimpleMap" remapResults="true">
+		<![CDATA[
+				SELECT $sql$
+				       GET_CODE_NAME(#smockInfo#) smockName,
+				       DECODE(GROUPING(C.FOURTHDEPT), 1, '合计',GET_DEPT_NAME(C.FOURTHDEPT)) DEPTNAME
+				  FROM 
+				  	   GA_SMOCK_RELATION B,
+				       HR_DEPT_TREE_V C,
+				       HR_EMPLOYEE D,
+				       (SELECT A.RELATION_NO RELATION_NO,
+				               B.SMOCK_NO SMOCK_NO,
+				               DECODE(B.PERIOD_UNIT,
+				                      'smockPeriodNum001',
+				                      (A.CREATE_DATE + B.PERIOD_NUM),
+				                      'smockPeriodNum002',
+				                      (A.CREATE_DATE + (B.PERIOD_NUM * 7)),
+				                      'smockPeriodNum003',
+				                      ADD_MONTHS(A.CREATE_DATE, B.PERIOD_NUM),
+				                      'smockPeriodNum004',
+				                      ADD_MONTHS(A.CREATE_DATE, (B.PERIOD_NUM * 12)),
+				                      NULL) AS CREATE_DATE,
+				               CONCAT(TO_CHAR(B.PERIOD_NUM), GET_CODE_NAME(B.PERIOD_UNIT)) AS PERIOD
+				          FROM (SELECT PRO.RELATION_NO RELATION_NO,
+				                       MAX(PRO.CREATE_DATE) CREATE_DATE
+				                  FROM GA_SMOCK_PROVIDE PRO
+				                 WHERE PRO.ACTIVITY = 1
+				                 GROUP BY PRO.RELATION_NO) A,
+				               GA_SMOCK_RELATION B
+				         WHERE B.SEQ_NO = A.RELATION_NO) E,
+				         GA_SMOCK F
+				 WHERE E.RELATION_NO = B.SEQ_NO
+				   AND B.EMPID = D.PERSON_ID
+				   AND D.DEPTID = C.DEPTID
+				   AND E.SMOCK_NO = F.SEQ_NO
+				   AND E.CREATE_DATE > SYSDATE
+				   AND (D.DATE_LEFT > SYSDATE OR D.DATE_LEFT IS NULL)
+		]]>
+		<isNotEmpty prepend="AND" property="smockInfo">
+				<![CDATA[		   
+					 F.SMOCK_NAME = #smockInfo#
+				]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="cpnyId">
+				<![CDATA[		   
+					 C.CPNY_ID = #cpnyId#
+				]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptId">
+				<![CDATA[		   
+					 C.FOURTHDEPT = #deptId#
+				]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="" property="startDate">
+			<isNotEmpty prepend="AND" property="endDate">
+					<![CDATA[		   
+					 	 E.CREATE_DATE BETWEEN TO_DATE(#startDate#,'YYYY-MM-DD') AND (TO_DATE(#endDate#,'YYYY-MM-DD')+1)
+					]]>	
+			</isNotEmpty>
+		</isNotEmpty>
+		<![CDATA[
+			GROUP BY ROLLUP(C.FOURTHDEPT)
+		]]>	
+	</select>
+	
+	<select id="getSmockProvideRecord" parameterClass="SimpleMap" resultClass="SimpleMap" remapResults="true">
+		<![CDATA[
+				SELECT $sql$
+				       GET_CODE_NAME(#smockInfo#) smockName,
+				       DECODE(GROUPING(C.FOURTHDEPT),
+				              1,
+				              '合计',
+				              GET_DEPT_NAME(C.FOURTHDEPT)) DEPTNAME
+				  FROM GA_SMOCK_PROVIDE  A,
+				       GA_SMOCK_RELATION B,
+				       HR_DEPT_TREE_V    C,
+				       GA_SMOCK          D,
+				       HR_EMPLOYEE       E
+				 WHERE A.RELATION_NO = B.SEQ_NO
+				   AND B.SMOCK_NO = D.SEQ_NO
+				   AND B.EMPID = E.PERSON_ID
+				   AND E.DEPTID = C.DEPTID
+				   AND A.ACTIVITY = 1
+				 
+		]]>
+		<isNotEmpty prepend="AND" property="smockInfo">
+				<![CDATA[		   
+					 D.SMOCK_NAME = #smockInfo#
+				]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="cpnyId">
+				<![CDATA[		   
+					 E.CPNY_ID = #cpnyId#
+				]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptId">
+				<![CDATA[		   
+					 C.FOURTHDEPT = #deptId#
+				]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="" property="startDate">
+			<isNotEmpty prepend="AND" property="endDate">
+					<![CDATA[		   
+					 	 A.CREATE_DATE BETWEEN TO_DATE(#startDate#,'YYYY-MM-DD') AND (TO_DATE(#endDate#,'YYYY-MM-DD')+1)
+					]]>	
+			</isNotEmpty>
+		</isNotEmpty>
+		<![CDATA[
+			GROUP BY ROLLUP(C.FOURTHDEPT)
+		]]>	
+	</select>
+	
+	<insert id="insertSmock" parameterClass="SimpleMap">
+		<![CDATA[	
+				INSERT  INTO GA_SMOCK A  
+					 (	A.SEQ_NO,
+				        A.SMOCK_NAME,
+				        A.UNIT,
+				        A.REMARK,
+				        A.CREATE_DATE,
+				        A.CREATED_BY,
+				        A.ACTIVITY,
+				        A.CPNY_ID,
+				        A.SIZE_TYPE)    
+				VALUES (SEQ_GA_SMOCK.NEXTVAL,
+						#smockName#,
+						#unit#,
+						#remark#,
+						SYSDATE,
+						#personId#,
+						1,
+						#cpnyId#,
+						#sizeType#)
+		]]>
+	</insert>
+	
+	<update id="updateSmock" parameterClass="SimpleMap">
+		<![CDATA[
+				UPDATE 	GA_SMOCK A 
+				SET	    A.SMOCK_NAME   = #smockName#,
+				        A.UNIT         = #unit#,
+				        A.REMARK       = #remark#,
+				        A.UPDATE_DATE  = SYSDATE,
+				        A.UPDATED_BY   = #personId#,
+				        A.CPNY_ID      = #cpnyId#,
+				        A.SIZE_TYPE    = #sizeType#
+				WHERE 	A.SEQ_NO = #seqNo#
+		]]>
+	</update>
+	
+	<update id="deleteSmock" parameterClass="SimpleMap">
+		<![CDATA[
+			UPDATE GA_SMOCK A
+			SET	   A.ACTIVITY=0
+			WHERE A.SEQ_NO = #seqNo#
+		]]>
+	</update>
+	
+	<select id="getSmockPeriodReport" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			SELECT D.EMPID EMPID,
+			       D.CHINESENAME CHINESENAME,
+			       GET_DEPT_NAME(D.DEPTID) DEPTNAME,
+			       GET_DEPT_NAME(E.FOURTHDEPT) FOURDEPTNAME,
+			       GET_CODE_NAME(C.SMOCK_NAME) SMOCK_NAME,
+			       GET_CODE_NAME(B.MODEL_NUMBER) MODEL_NUMBER,
+			       CONCAT(B.PERIOD_NUM, GET_CODE_NAME(B.PERIOD_UNIT)) PERIOD
+			  FROM GA_SMOCK_PROVIDE A, 
+			       GA_SMOCK_RELATION B, 
+			       GA_SMOCK C, 
+			       HR_EMPLOYEE D,
+			       HR_DEPARTMENT E
+			 WHERE A.RELATION_NO = B.SEQ_NO
+			   AND B.SMOCK_NO = C.SEQ_NO
+			   AND B.EMPID = D.PERSON_ID
+			   AND D.DEPTID = E.DEPTID
+
+		]]>
+		<isNotEmpty prepend="AND" property="smockDeptId1">
+				<![CDATA[		   
+					 E.FOURTHDEPT = #smockDeptId1#
+				]]>	
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY B.PERIOD_NUM,B.PERIOD_UNIT
+		]]>
+	</select>
+</sqlMap>

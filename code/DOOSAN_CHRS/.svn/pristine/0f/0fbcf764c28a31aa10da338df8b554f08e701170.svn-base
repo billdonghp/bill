@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="ar.overtimeplan">
+
+	<!-- retrieve overtime plan list -->
+	<select id="retrieveOTPlanRecordList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+			SELECT OT.OT_PLAN_NO,
+			       HR.EMPID,
+			       HR.CHINESENAME,
+			       HR.CHINESE_PINYIN,
+			       HR.POST_CODE,
+			       SY.CODE_NAME AS POST,
+			       HR.DEPTID,
+			       HD.DEPTNAME,
+			       OT.PLAN_MONTH,
+			      
+			       OT.PLAN_WEEKDAY_OT,
+			       OT.PLAN_WEEKEND_OT,
+			       OT.PLAN_HOLIDAY_OT,
+			       OT.LIMIT_OT,
+			       CREATE_EMP.CHINESENAME AS CREATED_BY,
+			       TO_CHAR(OT.CREATE_DATE, 'YYYY-MM-DD HH24:MI') AS CREATE_DATE,
+			       TO_CHAR(OT.UPDATE_DATE, 'YYYY-MM-DD HH24:MI') AS UPDATE_DATE,
+			       UPDATE_EMP.CHINESENAME AS UPDATED_BY,
+			       OT.APPLY_LIMTIDTIME,
+			       OT.START_MONTH START_MONTH,
+       			   OT.END_MONTH END_MONTH
+			  FROM HR_EMPLOYEE      HR,
+			       HR_EMPLOYEE      CREATE_EMP,
+			       HR_EMPLOYEE      UPDATE_EMP,
+			       HR_DEPARTMENT    HD,
+			       SY_CODE          SY,
+			       AR_OVERTIME_PLAN OT
+			 WHERE HR.POST_CODE = SY.CODE_ID(+)
+			   AND OT.EMPID = HR.PERSON_ID(+)
+			   AND HR.DEPTID = HD.DEPTID
+			   AND OT.CREATED_BY = CREATE_EMP.PERSON_ID(+)
+			   AND OT.UPDATED_BY = UPDATE_EMP.PERSON_ID(+)
+			   AND HR.ACTIVITY = 1
+		]]>
+		<!--isNotEmpty prepend="AND" property="planMonth">
+		<![CDATA[ 
+				PLAN_MONTH = #planMonth:VARCHAR#
+		 ]]>
+		</isNotEmpty-->     
+		<isNotEmpty prepend="AND" property="key">
+		<![CDATA[ 
+				(    HR.EMPID LIKE '%' || #key:VARCHAR# || '%'
+		          OR HR.CHINESENAME LIKE '%' || #key:VARCHAR# || '%'
+		          OR UPPER(HR.CHINESE_PINYIN) LIKE '%' || UPPER(#key:VARCHAR#) || '%'
+		         )
+			    
+		 ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="personId">
+		<![CDATA[ 
+				OT.EMPID = #personId:VARCHAR#
+			    
+		 ]]>
+		 </isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[
+		 		HD.DEPTID IN (SELECT DEPTID 
+			                FROM HR_DEPARTMENT 
+			                START WITH DEPTID = #deptid:VARCHAR#
+			                CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID) 
+	    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+		 		  EXISTS ( SELECT *
+	  	 		  	        FROM AR_SUPERVISOR_INFO AR
+						   WHERE HR.DEPTID = AR.SUPERVISED_DEPTID
+	 					     AND AR.AR_SUPERVISOR_ID = #supervisor:VARCHAR#	 					
+	 	 		  	 )   
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[	
+			 ORDER BY OT.PLAN_MONTH DESC,OT.EMPID
+		]]>
+	</select>  
+	
+	<!-- retrieveOTPlan data for update  -->
+	<select id="retrieveDataForUpdateOTPlan" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+			SELECT distinct OT.OT_PLAN_NO,
+                OT.EMPID,
+                HR.CHINESENAME,
+                OT.LIMIT_OT,
+                OT.CREATED_BY,
+                OT.CREATE_DATE,
+                OT.APPLY_LIMTIDTIME,
+                OT.START_MONTH,
+                OT.END_MONTH
+		  FROM HR_EMPLOYEE HR, AR_OVERTIME_PLAN OT
+		 WHERE OT.EMPID = HR.PERSON_ID(+)
+		   AND OT.OT_PLAN_NO = #NO:VARCHAR#
+		   AND HR.ACTIVITY(+) = 1
+		]]>
+	</select> 
+	
+	<!-- retrieve overtime plan list count -->
+	<select id="retrieveOTPlanRecordListCnt" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[	
+			SELECT COUNT(*) CUT
+			  FROM HR_EMPLOYEE      HR,
+			       HR_EMPLOYEE      CREATE_EMP,
+			       HR_EMPLOYEE      UPDATE_EMP,
+			       HR_DEPARTMENT    HD,
+			       SY_CODE          SY,
+			       AR_OVERTIME_PLAN OT
+			 WHERE HR.POST_CODE = SY.CODE_ID(+)
+			   AND OT.EMPID = HR.PERSON_ID(+)
+			   AND HR.DEPTID = HD.DEPTID
+			   AND OT.CREATED_BY = CREATE_EMP.PERSON_ID(+)
+			   AND OT.UPDATED_BY = UPDATE_EMP.PERSON_ID(+)
+			   AND HR.ACTIVITY = 1
+		]]>
+		<!--isNotEmpty prepend="AND" property="planMonth">
+		<![CDATA[ 
+				PLAN_MONTH = #planMonth:VARCHAR#
+		 ]]>
+		</isNotEmpty-->     
+		<isNotEmpty prepend="AND" property="key">
+		<![CDATA[ 
+				(    HR.EMPID LIKE '%' || #key:VARCHAR# || '%'
+		          OR HR.CHINESENAME LIKE '%' || #key:VARCHAR# || '%'
+		          OR UPPER(HR.CHINESE_PINYIN) LIKE '%' || UPPER(#key:VARCHAR#) || '%'
+		         )
+			    
+		 ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="personId">
+		<![CDATA[ 
+				OT.EMPID = #personId:VARCHAR#
+			    
+		 ]]>
+		 </isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptid">
+		<![CDATA[
+		 		HD.DEPTID IN (SELECT DEPTID 
+			                FROM HR_DEPARTMENT 
+			                START WITH DEPTID = #deptid:VARCHAR#
+			                CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID) 
+	    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+		 		  EXISTS ( SELECT *
+	  	 		  	        FROM AR_SUPERVISOR_INFO AR
+						   WHERE HR.DEPTID = AR.SUPERVISED_DEPTID
+	 					     AND AR.AR_SUPERVISOR_ID = #supervisor:VARCHAR#	 					
+	 	 		  	 )   
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[	
+			 ORDER BY OT.PLAN_MONTH DESC,OT.EMPID
+		]]>
+	</select>  
+	
+	<!-- validate empid and plan_month -->
+	<select id="validateOTPlan" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[	
+			SELECT COUNT(*)
+			  FROM AR_OVERTIME_PLAN OT
+			 WHERE OT.EMPID = #empId:VARCHAR#
+			   AND OT.PLAN_MONTH = #planMonth:VARCHAR#
+		]]>
+		
+	</select>
+	
+	<!-- validate Init arMonth -->
+	<select id="validateInitOTPlan" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[	
+			SELECT COUNT(*)
+			  FROM AR_OVERTIME_PLAN OT
+			 WHERE OT.PLAN_MONTH = TO_CHAR(ADD_MONTHS(SYSDATE,1),'YYYYMM')
+		]]>
+		
+	</select>
+	
+	<!-- insert AR_OVERTIME_PLAN data -->
+	<insert id="insertOTPlan" parameterClass="SimpleMap" >
+		<![CDATA[
+			INSERT INTO AR_OVERTIME_PLAN
+				  (EMPID,
+				   LIMIT_OT,
+				   OT_PLAN_NO,
+				   CREATE_DATE,
+				   CREATED_BY,
+				   START_MONTH,
+				   END_MONTH,
+				   APPLY_LIMTIDTIME,
+				   CPNY_ID)
+				VALUES
+				  (#empId:VARCHAR#,
+				   #limit_ot#,
+				   AR_OT_PLAN_SEQ.NEXTVAL,
+				   SYSDATE,
+				   #supervisor:VARCHAR#,
+				   #start_month:VARCHAR#,
+				   #end_month:VARCHAR#,
+				   #applyLimidTime:VARCHAR#,
+				   #cpny_id:varchar#)
+		]]>
+		
+	</insert>
+	
+	<!-- init initOTPlan  -->
+	<insert id="initOTPlan" parameterClass="SimpleMap" >
+		<![CDATA[
+			INSERT INTO AR_OVERTIME_PLAN
+  				   (EMPID, LIMIT_OT, PLAN_MONTH, OT_PLAN_NO, CREATE_DATE) 
+			       (SELECT HR.EMPID,36,TO_CHAR(ADD_MONTHS(TO_DATE(OTMONTH,'YYYYMM'),1),'YYYYMM') OTMONTH,AR_OT_PLAN_SEQ.NEXTVAL,SYSDATE
+	                  FROM HR_EMPLOYEE HR,(SELECT MAX(PLAN_MONTH) OTMONTH FROM AR_OVERTIME_PLAN) OT
+	                 WHERE HR.POST_GRADE_CODE <> 'C_12004_1330054'
+	                   AND HR.POST_GRADE_CODE <> 'C_12004_1324167'
+	                   AND NVL(HR.DATE_LEFT,SYSDATE) >= SYSDATE
+	                   AND HR.STATUS_CODE <> 'C_12001_1330046'
+	                   AND HR.EMP_DIFF_CODE = 'C_12067_1330306'     
+	                   AND HR.ACTIVITY = 1                
+	               )
+		]]>
+	</insert> 
+	
+	<!-- update AR_OVERTIME_PLAN data -->
+	<update id="updateOTPlan" parameterClass="SimpleMap" >
+		<![CDATA[
+			UPDATE AR_OVERTIME_PLAN
+			   SET LIMIT_OT         = #limit_ot:NUMERIC#,
+			       UPDATE_DATE      = SYSDATE,
+			       UPDATED_BY       = #updated_by:VARCHAR#,
+			       APPLY_LIMTIDTIME = #applyLimidTime:VARCHAR#,
+			       START_MONTH      = #start_month:VARCAHR#,
+			       END_MONTH        = #end_month:VARCHAR#
+			 WHERE OT_PLAN_NO = #ot_plan_no:NUMERIC#
+		]]>
+		
+	</update> 
+	
+	<delete id="deleteOTPlan" parameterClass="SimpleMap">
+		<![CDATA[
+			DELETE AR_OVERTIME_PLAN
+			WHERE AR_OVERTIME_PLAN.OT_PLAN_NO = #ot_plan_no:NUMERIC#
+		]]>
+	</delete>
+		
+</sqlMap>
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="hrm.department">
+	<!--
+	comment :�����ű����ʷ���
+	author : liumeng
+	-->
+	<insert id="insertDeparntmentIntoHistory" >    
+		<![CDATA[
+	insert into hr_department_history( 
+    MONTH_STR,DEPTID,NO,DEPTNAME,DEPT_EN_Name,
+    DEPT_KOR_NAME,DEPT_LEVEL,PARENT_DEPT_ID,
+    CPNY_ID,CPNY_NAME,DATE_CREATED,DATE_ENDED,
+    CREATE_DATE,CREATED_BY,UPDATE_DATE,UPDATED_BY,
+    ORDERNO,ACTIVITY,M_NUM,F_NUM)  
+     SELECT to_char(add_months(to_date(TO_CHAR(SYSDATE,'YYYY-MM-DD'),'YYYY-MM-DD'),-1),'YYYYMM') MONTH_STR,
+	  	     A.DEPTID,	  
+	  	     A.DEPTNO,
+	         A.DEPTNAME,
+			 A.DEPT_EN_NAME, 
+			 A.DEPT_KOR_NAME,
+			 A.DEPT_LEVEL,
+			 A.PARENT_DEPT_ID,
+			 A.CPNY_ID,
+			 C.CPNY_NAME,
+			 A.DATE_CREATED,
+			 A.DATE_ENDED,
+             A.CREATE_DATE,
+             A.CREATED_BY,
+             A.UPDATE_DATE,
+             A.UPDATED_BY,
+			 A.ORDERNO,
+             A.ACTIVITY,
+			 SUM(DECODE(B.SEXCODE,'Male',1,0)) M_NUM,
+			 SUM(DECODE(B.SEXCODE,'Female',1,0)) F_NUM
+	    FROM HR_DEPARTMENT A,
+			 (
+			 SELECT B1.EMPID,
+			 		B1.DEPTID,
+					NVL(B2.SEXCODE,'Male') SEXCODE
+			   FROM HR_EMPLOYEE B1,
+			   		HR_PERSONAL_INFO B2 
+			  WHERE (B1.DATE_STARTED IS NULL OR B1.DATE_STARTED < SYSDATE)
+		 	    AND (B1.DATE_LEFT IS NULL OR B1.DATE_LEFT > SYSDATE)
+				AND B1.EMPID = B2.EMPID
+			  ) B,
+			  HR_COMPANY C
+	   WHERE (DATE_CREATED IS NULL OR DATE_CREATED < SYSDATE)
+         AND (DATE_ENDED IS NULL OR DATE_ENDED > SYSDATE)
+	   	 AND A.DEPTID = B.DEPTID(+)  
+		 AND A.CPNY_ID = C.CPNY_ID(+)
+	GROUP BY A.DEPTID,A.DEPTNO,A.DEPTNAME,A.DEPT_EN_NAME,
+			 A.DEPT_KOR_NAME,A.DEPT_LEVEL,A.PARENT_DEPT_ID,
+			 A.CPNY_ID,C.CPNY_NAME,A.DATE_CREATED,A.UPDATED_BY,
+			 A.DATE_ENDED,A.ORDERNO ,A.ACTIVITY , A.DATE_ENDED,
+       A.CREATE_DATE, A.CREATED_BY, A.UPDATE_DATE
+		]]>		
+	</insert>
+	
+	<select id="isExistHistoryData"  parameterClass="string"  resultClass="int">     
+		<![CDATA[
+	
+	   select count(*) from hr_department_history where MONTH_STR=#month#  
+	
+		]]>		
+	</select>
+</sqlMap>

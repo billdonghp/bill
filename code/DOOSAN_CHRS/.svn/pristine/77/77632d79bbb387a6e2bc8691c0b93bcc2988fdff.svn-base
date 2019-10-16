@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="ga.smockrelation">
+	<select id="selectSmockRelationList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+				SELECT A.EMPID EMPID,
+				       D.SEQ_NO SEQNO,
+				       A.PERSON_ID PERSON_ID,
+				       A.CHINESENAME CHINESENAME,
+				       GET_CODE_NAME(A.SEX) SEX,
+				       TO_CHAR(A.DATE_STARTED, 'YYYY-MM-DD') DATESTARTED,
+				       B.DEPTNAME DEPTNAME,
+				       GET_DEPT_NAME(B.FOURTHDEPT) FOURTHIDEPTNAME,
+				       GET_CODE_NAME(E.SMOCK_NAME) SMOCKNAME,
+				       E.SMOCK_NAME SMOCKNAME_T,
+				       D.MODEL_NUMBER MODELNUMBER,
+				       D.PERIOD PERIOD,
+				       D.PERIOD_NUM PERIODNUM,
+				       D.PERIOD_UNIT PERIODUNIT,
+				       D.REMARK REMARK,
+				       D.SMOCK_NO SMOCKNO,
+				       D.SEQ_NO REL_SEQ_NO,
+				       A.DATE_LEFT
+				  FROM HR_EMPLOYEE A,
+				       HR_DEPARTMENT B,
+				       (SELECT A.EMPID EMPID,
+				               A.SEQ_NO SEQ_NO,
+				               GET_CODE_NAME(A.MODEL_NUMBER) MODEL_NUMBER,
+				               CONCAT(TO_CHAR(A.PERIOD_NUM), GET_CODE_NAME(A.PERIOD_UNIT)) PERIOD,
+				               A.PERIOD_NUM PERIOD_NUM,
+				               A.PERIOD_UNIT PERIOD_UNIT,
+				               A.REMARK REMARK,
+				               A.SMOCK_NO SMOCK_NO,
+				               A.SEQ_NO REL_SEQ_NO
+				          FROM GA_SMOCK_RELATION A
+				         WHERE A.ACTIVITY = 1) D,
+				       GA_SMOCK E
+				 WHERE A.DEPTID = B.DEPTID(+)
+				   AND A.PERSON_ID = D.EMPID(+)
+				   AND D.SMOCK_NO = E.SEQ_NO(+)
+				   AND A.ACTIVITY = 1
+				  AND (A.DATE_LEFT > SYSDATE OR A.DATE_LEFT IS NULL)
+	  	]]>
+	  	<isNotEmpty prepend="" property="startDate">
+			<isNotEmpty prepend="AND" property="endDate">
+				<![CDATA[		   
+				 	 A.DATE_STARTED BETWEEN TO_DATE(#startDate:VARCHAR#,'YYYY-MM-DD') AND TO_DATE(#endDate:VARCHAR#,'YYYY-MM-DD')
+				]]>	
+			</isNotEmpty>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="empId">
+				<![CDATA[
+				 	A.EMPID = #empId:VARCHAR#
+			    ]]>
+		</isNotEmpty>
+	  	<isNotEmpty prepend="AND" property="personId">
+				<![CDATA[		   
+				 	 A.PERSON_ID = #personId#
+				]]>	
+		</isNotEmpty>
+	  	<isNotEmpty prepend="AND" property="seqNo">
+				<![CDATA[		   
+				 	 D.SEQ_NO = #seqNo#
+				]]>	
+		</isNotEmpty>
+	  	<isNotEmpty prepend="AND" property="smockName">
+				<![CDATA[		   
+				 	E.SMOCK_NAME = #smockName#
+				]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DeptId">
+				<![CDATA[		   
+				 	 B.DEPTID = #DeptId#
+				]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="cpnyId">
+				<![CDATA[		   
+				 	 B.CPNY_ID = #cpnyId#
+				]]>	
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY E.SMOCK_NAME DESC, A.DATE_STARTED
+		]]>					
+	</select>
+	
+	<select id="selectSmockRelationCut" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+	 		    SELECT COUNT(*) CUT
+				  FROM HR_EMPLOYEE A,
+				       HR_DEPARTMENT B,
+				       (SELECT A.EMPID EMPID,
+				               A.SEQ_NO SEQ_NO,
+				               GET_CODE_NAME(A.MODEL_NUMBER) MODEL_NUMBER,
+				               CONCAT(TO_CHAR(A.PERIOD_NUM), GET_CODE_NAME(A.PERIOD_UNIT)) PERIOD,
+				               A.PERIOD_NUM PERIOD_NUM,
+				               A.PERIOD_UNIT PERIOD_UNIT,
+				               A.REMARK REMARK,
+				               A.SMOCK_NO SMOCK_NO,
+				               A.SEQ_NO REL_SEQ_NO
+				          FROM GA_SMOCK_RELATION A
+				         WHERE A.ACTIVITY = 1) D,
+				       GA_SMOCK E
+				 WHERE A.DEPTID = B.DEPTID(+)
+				   AND A.PERSON_ID = D.EMPID(+)
+				   AND D.SMOCK_NO = E.SEQ_NO(+)
+				   AND A.ACTIVITY = 1
+				  AND (A.DATE_LEFT > SYSDATE OR A.DATE_LEFT IS NULL)
+	  	]]>
+	  	<isNotEmpty prepend="" property="startDate">
+			<isNotEmpty prepend="AND" property="endDate">
+				<![CDATA[		   
+				 	 A.DATE_STARTED BETWEEN TO_DATE(#startDate:VARCHAR#,'YYYY-MM-DD') AND TO_DATE(#endDate:VARCHAR#,'YYYY-MM-DD')
+				]]>	
+			</isNotEmpty>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="empId">
+				<![CDATA[
+				 	A.EMPID = #empId:VARCHAR#
+			    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="personId">
+				<![CDATA[		   
+				 	A.PERSON_ID LIKE '%'||#personId#||'%'
+				]]>	
+		</isNotEmpty>
+	  	<isNotEmpty prepend="AND" property="seqNo">
+				<![CDATA[		   
+				 	 A.PERSON_ID = #seqNo#
+				]]>	
+		</isNotEmpty>
+	  	<isNotEmpty prepend="AND" property="smockName">
+				<![CDATA[		   
+				 	E.SMOCK_NAME = #smockName#
+				]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="DeptId">
+				<![CDATA[		   
+				 	 B.DEPTID = #DeptId#
+				]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="cpnyId">
+				<![CDATA[		   
+				 	 B.CPNY_ID = #cpnyId#
+				]]>	
+		</isNotEmpty>
+		<![CDATA[
+			  ORDER BY E.SMOCK_NAME DESC, A.DATE_STARTED
+		]]>					
+	</select>
+	
+	<insert id="insertSmockRelation" parameterClass="SimpleMap">
+		<![CDATA[	
+				INSERT  INTO GA_SMOCK_RELATION A  
+					 (	A.SEQ_NO,
+						A.EMPID,
+						A.SMOCK_NO,
+						A.MODEL_NUMBER,
+					    A.PERIOD_NUM,
+						A.PERIOD_UNIT,
+					    A.REMARK,
+						A.CREATE_DATE,
+						A.CREATED_BY,
+						A.ACTIVITY,
+						A.CPNY_ID)
+				VALUES (SEQ_GA_SMOCK_RELATION.NEXTVAL,
+						#personId:VARCHAR#,
+						(SELECT B.SEQ_NO SEQNO 
+						 FROM GA_SMOCK B 
+						 WHERE B.SMOCK_NAME = #smockNo:VARCHAR# 
+						 AND B.CPNY_ID = #cpnyId:VARCHAR#),
+						#modelNumber:VARCHAR#,
+						#periodNum:NUMERIC#,
+						#periodUnit:VARCHAR#,
+						#remark:VARCHAR#,
+						SYSDATE,
+						#personId:VARCHAR#,
+						1,
+						#cpnyId:VARCHAR#)
+		]]>
+	</insert>
+	
+	<update id="updateSmockRelation" parameterClass="SimpleMap">
+		<![CDATA[
+			   UPDATE 	GA_SMOCK_RELATION A 
+				  SET   A.EMPID          = #personId:VARCHAR#,
+					    A.SMOCK_NO       = (SELECT A.SEQ_NO SEQNO FROM GA_SMOCK A WHERE A.SMOCK_NAME = #smockName0# AND A.CPNY_ID = #cpnyId#),
+					    A.MODEL_NUMBER   = #modelNumber:VARCHAR#,
+					    A.PERIOD_NUM     = #periodNum0:NUMERIC#,
+					    A.PERIOD_UNIT    = #periodUnit0:VARCHAR#,
+					    A.REMARK         = #remark0:VARCHAR#,
+					    A.UPDATE_DATE    = SYSDATE,
+					    A.UPDATED_BY     = #uppersonId:VARCHAR#
+				WHERE 	A.SEQ_NO = #relSeqNo:VARCHAR#
+		]]>
+	</update>
+	
+	<update id="deleteSmockRelation" parameterClass="SimpleMap">
+		<![CDATA[
+			UPDATE GA_SMOCK_RELATION A
+			SET	   A.ACTIVITY=0
+			WHERE A.SEQ_NO = #seqNo#
+		]]>
+	</update>
+	
+	<select id="getSmockName" resultClass="SimpleMap">
+		<![CDATA[
+			SELECT A.SEQ_NO  ID,
+        		   A.SMOCK_NAME  NAME      
+			FROM   GA_SMOCK A
+		]]>
+	</select>
+	
+	<select id="getEmployeeInfo" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			SELECT A.CHINESENAME 		CHINESENAME,
+			       GET_CODE_NAME(A.SEX) SEX,
+			       TO_CHAR(A.DATE_STARTED,'YYYY-MM-DD') DATESTARTED,
+			       B.DEPTNAME 			DEPTNAME,
+			       C.DEPTNAME 			FOURTHDEPT
+			  FROM HR_EMPLOYEE A, HR_DEPARTMENT B, HR_DEPARTMENT C
+			 WHERE A.DEPTID = B.DEPTID
+			   AND B.FOURTHDEPT = C.DEPTID
+			   AND A.PERSON_ID  = #personId#
+			   AND A.CPNY_ID    = #cpnyId#
+		]]>
+	</select>
+	
+	<select id="getSmockRelationUnit" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			SELECT GET_CODE_NAME(A.UNIT) UNITNAME,
+				   A.SIZE_TYPE   SIZETYPE
+			FROM   GA_SMOCK A
+			WHERE  A.SMOCK_NAME = #smockName#
+			AND A.CPNY_ID    = #cpnyId#
+		]]>
+	</select>
+</sqlMap>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="report.gm.eat">
+	<select id="eateryType" resultClass="SimpleMap">
+		<![CDATA[
+			select gm_id , gm_type from gm_eatery
+		]]>
+	</select>
+	
+	<select id="empid" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			select t.empid from hr_employee t where t.date_left is null AND T.ACTIVITY = 1
+		]]>
+	</select>
+	
+		<select id="getSaleWastesCom" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			select t.CPNY_NAME,t.ECN,t.CPNY_ADDR,t.CORPORATIONBEHALF from HR_COMPANY t where t.cpny_id=#cpny_id:varchar#
+		]]>
+	</select>
+</sqlMap>
+

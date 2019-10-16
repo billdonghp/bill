@@ -1,0 +1,690 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="ga.washhouse">
+
+	<!-- retrieve clothing list -->
+	<select id="retrieveClothingList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+			   SELECT A.SEQ_NO,
+					  A.WASH_NAME WASH_ID,
+					  C.CODE_NAME WASH_NAME,
+					  A.UNIT,
+					  GET_CODE_NAME(A.UNIT) UNIT_NAME,
+					  A.UNIT_PRICE,
+					  TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD') CREATE_DATE,
+					  A.CREATED_BY,
+					  B.CHINESENAME CREATED_NAME,
+					  A.UPDATE_DATE,
+					  A.UPDATED_BY,
+					  A.ACTIVITY,
+					  A.CPNY_ID
+				FROM GA_WASHHOUSE A,
+					 HR_EMPLOYEE B,
+					 SY_CODE C
+			   WHERE A.CREATED_BY = B.PERSON_ID
+				 AND A.CPNY_ID = #cpnyId:VARCHAR#
+				 AND A.ACTIVITY = 1
+				 AND A.WASH_NAME = C.CODE_ID(+)
+	  ]]>
+
+		<isNotEmpty prepend="AND" property="clothingId">
+			<![CDATA[
+			 		 A.WASH_NAME = #clothingId:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="SEQ_NO">
+			<![CDATA[
+			 		 A.SEQ_NO = #SEQ_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+	</select>
+	
+	<!-- retrieve clothing list count -->
+	<select id="retrieveClothingListCnt" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[	
+			   SELECT COUNT(*) CNT
+				FROM GA_WASHHOUSE A
+			   WHERE A.CPNY_ID = #cpnyId:VARCHAR#
+				 AND A.ACTIVITY = 1
+	  ]]>
+
+		<isNotEmpty prepend="AND" property="clothingId">
+			<![CDATA[
+			 		 A.WASH_NAME = #"clothingId":VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="SEQ_NO">
+			<![CDATA[
+			 		 A.SEQ_NO = #SEQ_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+	</select>
+	
+	<!-- retrieve clothing code -->
+	<select id="retrieveClothingCode" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+			   SELECT A.SEQ_NO ID,
+					  B.CODE_NAME NAME
+				FROM GA_WASHHOUSE A,
+					 SY_CODE B
+			   WHERE A.CPNY_ID = #cpnyId:VARCHAR#
+				 AND A.ACTIVITY = 1
+				 AND A.WASH_NAME = B.CODE_ID
+	  ]]>
+	</select>
+	  
+	<!-- insert clothing data -->
+	<insert id="insertClothing" parameterClass="SimpleMap">
+		<![CDATA[	
+		    INSERT INTO GA_WASHHOUSE A
+		   		  	   (A.SEQ_NO,
+				  	    A.WASH_NAME,
+				  		A.UNIT,
+				  		A.UNIT_PRICE,
+				  		A.CREATE_DATE,
+				  		A.CREATED_BY,
+				  		A.ACTIVITY,
+				  		A.CPNY_ID)
+				VALUES (GA_WASHHOUSE_SEQ.NEXTVAL,
+					    #WASH_NAME:VARCHAR#,
+						#UNIT:VARCHAR#,
+						#UNIT_PRICE:VARCHAR#,
+						SYSDATE,
+						#adminId:VARCHAR#,
+						1,
+						#cpnyId:VARCHAR#
+						)
+
+	  ]]>
+	</insert>
+	
+	<!-- update clothing data -->
+	<update id="updateClothing" parameterClass="SimpleMap">
+		<![CDATA[
+				 UPDATE GA_WASHHOUSE A
+				    SET A.WASH_NAME = NVL(#WASH_NAME:VARCHAR#,A.WASH_NAME),
+				  		A.UNIT = NVL(#UNIT:VARCHAR#,A.UNIT),
+				  		A.UNIT_PRICE = NVL(#UNIT_PRICE:VARCHAR#,A.UNIT_PRICE),
+						A.UPDATE_DATE = SYSDATE,
+					    A.UPDATED_BY = NVL(#adminId:VARCHAR#,A.UPDATED_BY),
+				  		A.ACTIVITY = NVL(#ACTIVITY:NUMERIC#,A.ACTIVITY),
+				  		A.CPNY_ID = NVL(#cpnyId:VARCHAR#,A.CPNY_ID)
+				  WHERE A.SEQ_NO = #SEQ_NO:NUMERIC#
+	 	]]>
+	</update>
+
+	<!-- delete clothing data -->
+	<delete id="deleteClothing" parameterClass="SimpleMap">
+		<![CDATA[
+			   DELETE FROM GA_WASHHOUSE A
+				     WHERE A.SEQ_NO = #SEQ_NO:NUMERIC#
+	 	]]>
+	</delete>
+	
+	<!-- retrieve wash apply list -->
+	<select id="retrieveWashApplyList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+			  SELECT  A.SEQ_NO,
+					  A.AFFIRM_FLAG,
+					  A.CONFIRM_FLAG,
+					  DECODE(A.CONFIRM_FLAG,0,'未确认',1,'已通过','已否决') CONFIRM_FLAG_NAME,
+					  A.CONFIRM_OPITION,
+					  A.REMARK,
+					  TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD') CREATE_DATE,
+					  A.CREATED_BY,
+					  B.EMPID,
+					  B.CHINESENAME,
+					  GET_DEPT_NAME(B.DEPTID) DEPT_NAME,
+					  A.UPDATE_DATE,
+					  A.UPDATED_BY,
+					  C.CHINESENAME CONFIRMOR,
+					  A.ACTIVITY
+				 FROM GA_WASHHOUSE_APPLY A,
+				 	  HR_EMPLOYEE B,
+					  HR_EMPLOYEE C
+			    WHERE A.CREATED_BY = B.PERSON_ID
+				  AND A.UPDATED_BY = C.PERSON_ID(+)
+				  AND A.ACTIVITY = 1
+	  ]]>
+
+		<isNotEmpty prepend="AND" property="ADMINID">
+			<![CDATA[
+		            EXISTS (SELECT SAD.ADMIN_DEPTID
+					          FROM SY_ADMIN_DEPTID SAD, 
+					          	   SY_ADMIN SA
+					         WHERE SAD.ADMIN_NO = SA.ADMINNO
+					           AND SA.ADMINID = #ADMINID:VARCHAR#
+					           AND SAD.ADMIN_DEPTID = B.DEPTID) 
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="deptId">
+			<![CDATA[
+			 		 B.DEPTID = #deptId:VARCHAR#
+		    ]]>
+		</isNotEmpty>	
+		<isNotEmpty prepend="AND" property="cpnyId">
+			<![CDATA[		   
+			 B.CPNY_ID=#cpnyId:VARCHAR#
+			]]>	
+		</isNotEmpty>	
+		<isNotEmpty prepend="AND" property="SEQ_NO">
+			<![CDATA[
+			 		 A.SEQ_NO = #SEQ_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="startDate">
+
+			<isNotEmpty prepend="" property="endDate">
+				<![CDATA[
+			 		 TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD') BETWEEN #startDate:VARCHAR# AND #endDate:VARCHAR#
+		    ]]>
+			</isNotEmpty>
+
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="empId">
+			<![CDATA[
+			 		 (A.CREATED_BY = #personId:VARCHAR#
+			 		  OR
+			 		  B.EMPID = #empId:VARCHAR#
+			 		  )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="applicant">
+			<![CDATA[
+			 		 A.CREATED_BY = #applicant:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="flag">
+			<![CDATA[
+			 		 A.CONFIRM_FLAG = DECODE(#flag:VARCHAR#,'ConfirmType001',0,'ConfirmType002',1,2)
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="active">
+			<![CDATA[
+			 		 A.AFFIRM_FLAG = #active:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY A.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<!-- retrieve wash apply list count -->
+	<select id="retrieveWashApplyCnt" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[	
+			  SELECT  COUNT(*) CNT
+				 FROM GA_WASHHOUSE_APPLY A,
+				 	  HR_EMPLOYEE B,
+					  HR_EMPLOYEE C
+			    WHERE A.CREATED_BY = B.PERSON_ID
+				  AND A.UPDATED_BY = C.PERSON_ID(+)
+				  AND A.ACTIVITY = 1
+	  ]]>
+
+		<isNotEmpty prepend="AND" property="ADMINID">
+			<![CDATA[
+		            EXISTS (SELECT SAD.ADMIN_DEPTID
+					          FROM SY_ADMIN_DEPTID SAD, 
+					          	   SY_ADMIN SA
+					         WHERE SAD.ADMIN_NO = SA.ADMINNO
+					           AND SA.ADMINID = #ADMINID:VARCHAR#
+					           AND SAD.ADMIN_DEPTID = B.DEPTID) 
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="deptId">
+			<![CDATA[
+			 		 B.DEPTID = #deptId:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="cpnyId">
+			<![CDATA[		   
+			 B.CPNY_ID=#cpnyId:VARCHAR#
+			]]>	
+		</isNotEmpty>	
+
+		<isNotEmpty prepend="AND" property="SEQ_NO">
+			<![CDATA[
+			 		 A.SEQ_NO = #SEQ_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="startDate">
+
+			<isNotEmpty prepend="" property="endDate">
+				<![CDATA[
+			 		 TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD') BETWEEN #startDate:VARCHAR# AND #endDate:VARCHAR#
+		    ]]>
+			</isNotEmpty>
+
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="empId">
+			<![CDATA[
+			 		 (A.CREATED_BY = #personId:VARCHAR#
+			 		  OR
+			 		  B.EMPID = #empId:VARCHAR#
+			 		  )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="applicant">
+			<![CDATA[
+			 		 A.CREATED_BY = #applicant:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="flag">
+			<![CDATA[
+			 		 A.CONFIRM_FLAG = DECODE(#flag:VARCHAR#,'ConfirmType001',0,'ConfirmType002',1,2)
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="active">
+			<![CDATA[
+			 		 A.AFFIRM_FLAG = #active:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+
+	</select>
+	
+	<!-- retrieve wash apply detail -->
+	<select id="retrieveWashApplyDetail" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+			   SELECT A.SEQ_NO,
+					  A.APPLY_NO,
+					  A.WASH_NO,
+					  B.WASH_NAME WASH_ID,
+					  C.CODE_NAME WASH_NAME,
+					  B.UNIT,
+					  GET_CODE_NAME(B.UNIT) UNIT_NAME,
+					  B.UNIT_PRICE,
+					  A.QUENTITY,
+					  ROUND(A.QUENTITY * B.UNIT_PRICE,2) AMOUNT,
+					  A.REMARK,
+					  A.CREATE_DATE,
+					  A.CREATED_BY,
+					  A.UPDATE_DATE,
+					  A.UPDATED_BY,
+					  A.ACTIVITY
+				 FROM GA_WASHHOUSE_APPLY_DETAIL A,
+				 	  GA_WASHHOUSE B,
+				 	  SY_CODE C
+				WHERE A.WASH_NO = B.SEQ_NO
+				  AND B.WASH_NAME = C.CODE_ID
+	  ]]>
+
+		<isNotEmpty prepend="AND" property="applyNo">
+			<![CDATA[
+			 		 A.APPLY_NO = #applyNo:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="SEQ_NO">
+			<![CDATA[
+			 		 A.SEQ_NO = #SEQ_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+	</select>
+	
+	<!-- retrieve wash apply excel list -->
+	<select id="retrieveWashApplyExcelList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+			     SELECT 
+			              B1.EMPID,
+			              B1.CHINESENAME,
+			              GET_DEPT_NAME(B1.DEPTID) DEPT_NAME,
+			              A1.REMARK AS REMARK1,
+			              A.SEQ_NO,
+						  A.APPLY_NO,
+						  A.WASH_NO,
+						  B.WASH_NAME WASH_ID,
+						  C.CODE_NAME WASH_NAME,
+						  B.UNIT,
+						  GET_CODE_NAME(B.UNIT) UNIT_NAME,
+						  B.UNIT_PRICE,
+						  A.QUENTITY,
+						  ROUND(A.QUENTITY * B.UNIT_PRICE,2) AMOUNT,
+						  A.REMARK,
+						  A.CREATE_DATE,
+						  A.CREATED_BY,
+						  A.UPDATE_DATE,
+						  A.UPDATED_BY,
+						  A.ACTIVITY
+	            
+					 FROM GA_WASHHOUSE_APPLY_DETAIL A,
+					 	  GA_WASHHOUSE B,
+					 	  SY_CODE C,
+	                      GA_WASHHOUSE_APPLY A1,
+	                      HR_EMPLOYEE B1
+	
+					WHERE A.WASH_NO = B.SEQ_NO
+					  AND B.WASH_NAME = C.CODE_ID
+	          AND A1.SEQ_NO = A.APPLY_NO
+	          AND A1.CREATED_BY = B1.PERSON_ID
+	          AND A1.ACTIVITY = 1
+	  ]]>
+
+		<isNotEmpty prepend="AND" property="ADMINID">
+			<![CDATA[
+		            EXISTS (SELECT SAD.ADMIN_DEPTID
+					          FROM SY_ADMIN_DEPTID SAD, 
+					          	   SY_ADMIN SA
+					         WHERE SAD.ADMIN_NO = SA.ADMINNO
+					           AND SA.ADMINID = #ADMINID:VARCHAR#
+					           AND SAD.ADMIN_DEPTID = B1.DEPTID) 
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="deptId">
+			<![CDATA[
+			 		 B1.DEPTID = #deptId:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="cpnyId">
+			<![CDATA[		   
+			 B1.CPNY_ID=#cpnyId:VARCHAR#
+			]]>	
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="SEQ_NO">
+			<![CDATA[
+			 		 A1.SEQ_NO = #SEQ_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="startDate">
+
+			<isNotEmpty prepend="" property="endDate">
+				<![CDATA[
+			 		 TO_CHAR(A1.CREATE_DATE,'YYYY-MM-DD') BETWEEN #startDate:VARCHAR# AND #endDate:VARCHAR#
+		    ]]>
+			</isNotEmpty>
+
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="empId">
+			<![CDATA[
+			 		 (A1.CREATED_BY = #personId:VARCHAR#
+			 		  OR
+			 		  B1.EMPID = #empId:VARCHAR#
+			 		  )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="applicant">
+			<![CDATA[
+			 		 A1.CREATED_BY = #applicant:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="flag">
+			<![CDATA[
+			 		 A1.CONFIRM_FLAG = DECODE(#flag:VARCHAR#,'ConfirmType001',0,'ConfirmType002',1,2)
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="active">
+			<![CDATA[
+			 		 A1.AFFIRM_FLAG = #active:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY A1.CREATE_DATE DESC
+		]]>
+	</select>
+	
+	<!-- insert wash apply -->
+	<insert id="insertWashApply" parameterClass="SimpleMap">
+		<![CDATA[
+			 INSERT INTO GA_WASHHOUSE_APPLY A
+				   		 (A.SEQ_NO,
+						  A.AFFIRM_FLAG,
+						  A.CONFIRM_FLAG,
+						  A.CONFIRM_OPITION,
+						  A.REMARK,
+						  A.CREATE_DATE,
+						  A.CREATED_BY,
+						  A.ACTIVITY)
+				  VALUES (GA_WASHHOUSE_APPLY_SEQ.NEXTVAL,
+				  		  1,
+						  0,
+						  '',
+						  #REMARK:VARCHAR#,
+						  SYSDATE,
+						  #adminId:VARCHAR#,
+						  1)
+	 	]]>
+	</insert>
+	
+	<!-- insert wash apply detail -->
+	<insert id="insertWashApplyDetail" parameterClass="SimpleMap">
+		<![CDATA[
+				 INSERT INTO GA_WASHHOUSE_APPLY_DETAIL A		 
+						 	 (A.SEQ_NO,
+							  A.APPLY_NO,
+							  A.WASH_NO,
+							  A.QUENTITY,
+							  A.REMARK,
+							  A.CREATE_DATE,
+							  A.CREATED_BY,
+							  A.ACTIVITY)
+					  VALUES (GA_WASHHOUSE_APPLY_DETAIL_SEQ.NEXTVAL,
+					  		  GA_WASHHOUSE_APPLY_SEQ.CURRVAL,
+							  #WASH_NO:NUMERIC#,
+							  #QUENTITY:NUMERIC#,
+							  #REMARK:VARCHAR#,
+							  SYSDATE,
+							  #adminId:VARCHAR#,
+							  1)
+	 	]]>
+	</insert>
+	
+	<!-- get current apply no -->
+	<select id="getCurrApplyNo" resultClass="SimpleMap">
+		<![CDATA[	
+					SELECT GA_WASHHOUSE_APPLY_SEQ.CURRVAL APPLY_NO
+				      FROM DUAL
+	 ]]>
+	 </select>
+	 
+	<!-- update wash apply -->
+	<update id="updateWashApply" parameterClass="SimpleMap">
+		<![CDATA[
+                  UPDATE GA_WASHHOUSE_APPLY A
+				   SET A.AFFIRM_FLAG = NVL(#AFFIRM_FLAG:NUMERIC#,A.AFFIRM_FLAG),
+					   A.CONFIRM_FLAG = NVL(#CONFIRM_FLAG:NUMERIC#,A.CONFIRM_FLAG),
+					   A.CONFIRM_OPITION = NVL(#CONFIRM_OPITION:VARCHAR#,A.CONFIRM_OPITION),
+					   A.REMARK = NVL(#REMARK:VARCHAR#,A.REMARK),
+					   A.UPDATE_DATE = SYSDATE,
+					   A.UPDATED_BY = #confirmor:VARCHAR#,
+					   A.ACTIVITY = NVL(#ACTIVITY:NUMERIC#,A.ACTIVITY)
+				 WHERE A.SEQ_NO = #SEQ_NO:NUMERIC#
+	 	]]>
+		
+	</update>
+	
+	<!-- update wash detail -->
+	<update id="updateWashDetail" parameterClass="SimpleMap">
+		<![CDATA[
+				UPDATE GA_WASHHOUSE_APPLY_DETAIL A
+				   SET A.WASH_NO = NVL(#WASH_NO:NUMERIC#,A.WASH_NO),
+					   A.QUENTITY = NVL(#QUENTITY:NUMERIC#,A.QUENTITY),
+					   A.REMARK = NVL(#REMARK:VARCHAR#,A.REMARK),
+					   A.UPDATE_DATE = SYSDATE,
+					   A.UPDATED_BY = #adminId:VARCHAR#,
+					   A.ACTIVITY = NVL(#ACTIVITY:NUMERIC#,A.ACTIVITY)
+				 WHERE SEQ_NO = #detailNo:VARCHAR#
+	 	]]>
+	</update>
+	
+	<!-- get apply affirm mail -->
+	<select id="getAffirmMail" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+		    SELECT *
+		      FROM (	   			  
+					SELECT A.SEQ_NO APPLY_NO,
+						   0 AFFIRM_LEVEL,
+						   B.PERSON_ID,
+						   B.EMPID,
+						   B.CHINESENAME,
+						   B.EMAIL,
+						   GET_EMP_NAME(A.CREATED_BY) APPLY_NAME,
+						   TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD') APPLY_DATE,
+						   A.REMARK
+					  FROM GA_WASHHOUSE_APPLY A,
+					  	   HR_EMPLOYEE B
+					 WHERE A.CREATED_BY = B.PERSON_ID
+					   AND A.SEQ_NO = #applyNO:VARCHAR#
+				) WHERE 1 = 1
+	  	]]>
+
+	 	<isNotEmpty prepend="AND" property="applyLevel">
+				<![CDATA[
+				 		AFFIRM_LEVEL = #applyLevel:NUMERIC#
+			    ]]>
+		</isNotEmpty>
+	
+	</select>
+	
+	<!-- get wash apply Statistics by person -->
+	<select id="getWashStatisticsByPerson" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+		      SELECT F.SEQ_NO,
+			  		 NVL2(F.SEQ_NO,MAX(F.CHINESENAME),'') CHINESENAME,
+					 NVL2(F.SEQ_NO,MAX(F.DEPT_NAME),'合计') DEPT_NAME,
+					 $sql$
+					 SUM(F.AMOUNT) AS TOTAL_PRICE,
+					 NVL2(F.SEQ_NO,MAX(F.CREATE_DATE),'') CREATE_DATE
+			    FROM (	  
+					  SELECT  A.SEQ_NO,
+							  A.REMARK,
+							  TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD') CREATE_DATE,
+							  A.CREATED_BY,
+							  B.EMPID,
+							  B.CHINESENAME,
+							  B.DEPTID,
+							  GET_DEPT_NAME(B.DEPTID) DEPT_NAME,
+							  C.WASH_NO,
+							  D.WASH_NAME WASH_ID,
+							  E.CODE_NAME WASH_NAME,
+							  D.UNIT,
+							  GET_CODE_NAME(D.UNIT) UNIT_NAME,
+							  D.UNIT_PRICE,
+							  C.QUENTITY,
+							  ROUND(C.QUENTITY * D.UNIT_PRICE,2) AMOUNT,
+							  C.REMARK DETAIL_REMARK
+						 FROM GA_WASHHOUSE_APPLY A,
+						 	  HR_EMPLOYEE B,
+							  GA_WASHHOUSE_APPLY_DETAIL C,
+							  GA_WASHHOUSE D,
+							  SY_CODE E
+					    WHERE A.CREATED_BY = B.PERSON_ID
+						  AND A.ACTIVITY = 1
+						  AND A.CONFIRM_FLAG = 1
+						  AND A.SEQ_NO = C.APPLY_NO
+						  AND C.WASH_NO = D.SEQ_NO
+						  AND D.WASH_NAME = E.CODE_ID
+						  AND EXISTS(SELECT SAD.ADMIN_DEPTID
+							          FROM SY_ADMIN_DEPTID SAD, 
+							          	   SY_ADMIN SA
+							         WHERE SAD.ADMIN_NO = SA.ADMINNO
+							           AND SA.ADMINID = #adminId:VARCHAR#
+							           AND SAD.ADMIN_DEPTID = B.DEPTID) 
+					 ORDER BY A.CREATE_DATE,A.CREATED_BY) F
+					 WHERE 1=1
+	  	]]>
+		
+		<isNotEmpty prepend="AND" property="washStartDate_person">
+		 	<isNotEmpty prepend="" property="washEndDate_person">
+				<![CDATA[
+				 		F.CREATE_DATE BETWEEN #washStartDate_person:VARCHAR# AND #washEndDate_person:VARCHAR# 
+			    ]]>
+		    </isNotEmpty>
+		 </isNotEmpty>
+		 
+		<![CDATA[	
+		 			GROUP BY ROLLUP(F.SEQ_NO)
+		 ]]>
+		 
+	</select>
+	
+	<!-- get wash apply Statistics by department -->
+	<select id="getWashStatisticsByDept" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+		      SELECT F.DEPTID,
+					 $sql$
+					 SUM(F.AMOUNT) AS TOTAL_PRICE,
+					 DECODE(GROUPING(F.DEPTID),1,'合计',GET_DEPT_NAME(F.DEPTID)) DEPT_NAME
+			    FROM (	  
+					  SELECT  A.SEQ_NO,
+							  A.REMARK,
+							  TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD') CREATE_DATE,
+							  A.CREATED_BY,
+							  B.EMPID,
+							  B.CHINESENAME,
+							  B.DEPTID,
+							  GET_DEPT_NAME(B.DEPTID) DEPT_NAME,
+							  C.WASH_NO,
+							  D.WASH_NAME WASH_ID,
+							  E.CODE_NAME WASH_NAME,
+							  D.UNIT,
+							  GET_CODE_NAME(D.UNIT) UNIT_NAME,
+							  D.UNIT_PRICE,
+							  C.QUENTITY,
+							  ROUND(C.QUENTITY * D.UNIT_PRICE,2) AMOUNT,
+							  C.REMARK DETAIL_REMARK
+						 FROM GA_WASHHOUSE_APPLY A,
+						 	  HR_EMPLOYEE B,
+							  GA_WASHHOUSE_APPLY_DETAIL C,
+							  GA_WASHHOUSE D,
+							  SY_CODE E
+					    WHERE A.CREATED_BY = B.PERSON_ID
+						  AND A.ACTIVITY = 1
+						  AND A.CONFIRM_FLAG = 1
+						  AND A.SEQ_NO = C.APPLY_NO
+						  AND C.WASH_NO = D.SEQ_NO
+						  AND D.WASH_NAME = E.CODE_ID
+						  AND EXISTS(SELECT SAD.ADMIN_DEPTID
+							          FROM SY_ADMIN_DEPTID SAD, 
+							          	   SY_ADMIN SA
+							         WHERE SAD.ADMIN_NO = SA.ADMINNO
+							           AND SA.ADMINID = #adminId:VARCHAR#
+							           AND SAD.ADMIN_DEPTID = B.DEPTID) 
+					 ORDER BY A.CREATE_DATE,A.CREATED_BY) F
+						WHERE 1=1
+	  	]]>
+		
+		<isNotEmpty prepend="AND" property="washStartDate_dept">
+		 	<isNotEmpty prepend="" property="washEndDate_dept">
+				<![CDATA[
+				 		F.CREATE_DATE BETWEEN #washStartDate_dept:VARCHAR# AND #washEndDate_dept:VARCHAR# 
+			    ]]>
+		    </isNotEmpty>
+		 </isNotEmpty>
+		 
+	 	<isNotEmpty prepend="AND" property="washDeptId">
+			<![CDATA[
+			 		F.DEPTID = #washDeptId:VARCHAR# 
+		    ]]>
+	    </isNotEmpty>
+		 
+		<![CDATA[	
+		 			GROUP BY ROLLUP(F.DEPTID)
+		 ]]>
+		 
+	</select>
+	
+</sqlMap>

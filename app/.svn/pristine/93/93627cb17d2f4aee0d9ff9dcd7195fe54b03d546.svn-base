@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <title>main</title>
+    <link rel="stylesheet" type="text/css" href="../css/api.css" />
+    <link rel="stylesheet" type="text/css" href="../css/wkd_main_wap.css" />
+    <style>
+        header {
+            background-color: #7885F8;
+        }
+
+        h1 {
+            height: 50px;
+            line-height: 50px;
+            color: #ffffff;
+            font-size: 20px;
+            text-align: center;
+            font-weight: normal;
+        }
+
+        .back {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 50px;
+            height: 50px;
+            background: url(../image/back.png) center center no-repeat;
+            background-size: 50px auto;
+        }
+
+        .highlight {
+            opacity: 0.7;
+        }
+
+        footer {
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-box-orient: horizontal;
+            -webkit-flex-flow: row;
+            flex-flow: row;
+            width: 100%;
+            height: 50px;
+            background-color: #000;
+            border-top: 1px solid #d1d1d1;
+        }
+    </style>
+</head>
+
+<body>
+    <header id="header">
+        <div class="back event-back"></div>
+        <h1>勤态等待裁决</h1>
+        <span class="righttext" id="plcj" tapmode onclick="plBtn();">批量</span>
+    </header>
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/common.js"></script>
+<script type="text/javascript" src="../script/jquery-3.1.1.js"></script>
+<script type="text/javascript">
+    apiready = function() {
+        fnReady();
+        fnReadyFrame();
+    };
+
+    function plBtn() {
+      api.sendEvent({
+          name: 'plopration'
+      });
+    }
+
+    function cgPl() {
+        $("#plcj").toggleClass("none");
+    }
+</script>
+
+</html>

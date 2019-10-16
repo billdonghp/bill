@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="hrm.report">
+	<!--
+	comment : 搜索类型
+	author : aqing
+	-->
+	<select id="getInfoType" resultClass="InfoType">
+		<![CDATA[
+			SELECT 
+			
+				 TYPE_ID 	typeId,
+				 TYPE_NAME 	typeName	
+		         FROM INFO_TYPE 
+		    ORDER BY TYPE_SEQ
+			 	
+		]]>
+	</select>
+	
+	<!--
+	comment : 搜索类型表
+	author : aqing
+	-->
+	<select id="getInfoTable" parameterClass="SimpleMap" resultClass="InfoTable">
+		<![CDATA[
+			SELECT 
+				 INFO_TYPE		infoType,
+				 TABLE_ID 		tableId,
+				 TABLE_NAME 	tableName	
+		         FROM INFO_TABLE 
+		  ]]>       
+		 <isNotEmpty prepend="WHERE" property="TYPEID" >
+			<![CDATA[
+    		     INFO_TYPE=#TYPEID#
+			]]>
+		</isNotEmpty>       
+		<![CDATA[ 
+		    ORDER BY TABLE_SEQ
+			 	
+		]]>
+	</select>
+	
+	<!--
+	comment : 搜索类型表列
+	author : aqing
+	-->
+	<select id="getInfoField" parameterClass="SimpleMap" resultClass="InfoField">
+		<![CDATA[
+			SELECT 
+				 TABLE_ID		tableId,
+				 FIELD_ID 		fieldId,
+				 FIELD_NAME 	fieldName	
+		         FROM INFO_FIELD
+		  ]]>       
+		 <isNotEmpty prepend="WHERE" property="TABLEID" >
+			<![CDATA[
+    		     TABLE_ID=#TABLEID#
+			]]>
+		</isNotEmpty>       
+		<![CDATA[ 
+		    ORDER BY FIELD_SEQ
+			 	
+		]]>
+	</select>
+</sqlMap>
