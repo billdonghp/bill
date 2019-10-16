@@ -1,0 +1,705 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="safe.jobHealth">
+
+	<select id="JobHealthInformation" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			select distinct j.JOB_POSITION_ID,
+			       h.empid,
+			       h.person_id,
+			       h.chinesename,
+			       d.deptname,
+			       s2.code_name as JOB_POSITION,
+			       s1.code_name DISEASE,
+			       to_char(h.date_started, 'yyyy-MM-dd') as date_started,
+			       to_char(J.START_TIME, 'yyyy-MM-dd') as START_TIME,
+			       nvl(substr(h.BIRTH_YMD, 0, 4), '某') || '年' ||
+			       nvl(substr(h.BIRTH_YMD, 5, 2), '某') || '月' ||
+			       nvl(substr(h.BIRTH_YMD, 7, 2), '某') || '日' birth_ymd,
+			       j.job_position_name_code,
+			       J.DOCUMENTNO ,
+			       (SELECT MEDICAL_FLAG
+          FROM (SELECT ROW_NUMBER() OVER(PARTITION BY T.emp_id ORDER BY T.MEDICAL_YEAR desc) AS NUM,
+                       T.*
+                  FROM SE_MEDICAL T ) R
+         WHERE NUM = 1
+           AND R.emp_id = h.person_id
+           AND R.JOB_POSITION_ID = j.JOB_POSITION_ID
+           AND R.JOB_POSITION_CODE = j.job_position_name_code
+           ]]>
+			<isNotEmpty prepend="AND" property="medicalflag">
+				<![CDATA[
+			 			R.medical_flag = #medicalflag:VARCHAR#
+				]]>
+			</isNotEmpty>
+           <![CDATA[
+           
+           ) as medicalFlag,
+        to_char((SELECT MEDICAL_YEAR
+          FROM (SELECT ROW_NUMBER() OVER(PARTITION BY T.emp_id ORDER BY T.MEDICAL_YEAR desc) AS NUM,
+                       T.*
+                  FROM SE_MEDICAL T ) R
+         WHERE NUM = 1
+           AND R.emp_id = h.person_id
+           AND R.JOB_POSITION_ID = j.JOB_POSITION_ID
+           AND R.JOB_POSITION_CODE = j.job_position_name_code
+           ]]>
+			<isNotEmpty prepend="AND" property="medicalflag">
+				<![CDATA[
+			 			R.medical_flag = #medicalflag:VARCHAR#
+				]]>
+			</isNotEmpty>
+           <![CDATA[
+           
+           ),'YYYY-MM-DD') as MEDICAL_YEAR
+			  from hr_employee             h,
+			  	(select distinct t.emp_id,t.JOB_POSITION_ID,t.JOB_POSITION_CODE,medical_flag  from se_medical t)  me,
+			       hr_department           d,
+			       hr_job_position         j,
+			        sy_code                 s1,
+			       sy_code                 s2,
+			       se_position_dis_distype position,
+			       se_position_dis_distype DISEASE
+			 where h.deptid = d.deptid(+)
+			   and h.person_id(+) = j.emp_id
+			   and h.cpny_id= #cpny_id:varchar#
+			   and position.relations_id=j.job_position_name_code
+			   and position.jobposition_code=s2.code_id(+)
+			   and DISEASE.relations_id=j.job_position_name_code
+			   and position.disease_code=s1.code_id(+)	
+			   AND me.emp_id = h.person_id
+	           AND me.JOB_POSITION_ID = j.JOB_POSITION_ID
+	           AND me.JOB_POSITION_CODE = j.job_position_name_code	    
+		]]>
+		<isNotEmpty prepend="AND" property="medicalflag">
+				<![CDATA[
+			 			me.medical_flag = #medicalflag:VARCHAR#
+				]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="empName">
+			<![CDATA[
+		 		(h.chinesename like '%'||#empName:VARCHAR#||'%' or h.empid like '%'||#empName:VARCHAR#||'%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="empId">
+			<![CDATA[
+		 		(h.empid = #empId:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="POSITION">
+			<![CDATA[
+		 		(position.relations_id = #POSITION:NUMERIC#)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="StartDate">
+			<![CDATA[
+		 		(to_char(j.start_time,'yyyy-MM-dd') >= #StartDate:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EndDate">
+			<![CDATA[
+		 		(to_char(j.start_time,'yyyy-MM-dd') <= #EndDate:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptId">
+			<![CDATA[
+		 		(d.deptid = #deptId:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			order by MEDICAL_YEAR desc
+		]]>
+	</select>
+	
+	<select id="JobHealthInformationCount" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+			select  count(*)
+			     from hr_employee             h,
+			       hr_department           d,
+			       hr_job_position         j,
+			       sy_code                 s2,
+			       se_position_dis_distype position
+			  where h.deptid = d.deptid(+)
+			   and h.person_id(+) = j.emp_id
+			   and h.cpny_id=#cpny_id:varchar#
+			   and position.relations_id=j.job_position_name_code
+			   and position.jobposition_code=s2.code_id(+)        		
+		]]>
+		
+		<isNotEmpty prepend="AND" property="empName">
+			<![CDATA[
+		 		(h.chinesename like '%'||#empName:VARCHAR#||'%' or h.empid like '%'||#empName:VARCHAR#||'%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="empId">
+			<![CDATA[
+		 		(h.person_id = #empId:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="POSITION">
+			<![CDATA[
+		 		(position.relations_id = #POSITION:NUMERIC#)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="StartDate">
+			<![CDATA[
+		 		(to_char(j.start_time,'yyyy-MM-dd') >= #StartDate:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EndDate">
+			<![CDATA[
+		 		(to_char(j.start_time,'yyyy-MM-dd') <= #EndDate:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptId">
+			<![CDATA[
+		 		(d.deptid = #deptId:VARCHAR#)
+			]]>
+		</isNotEmpty>
+	</select>
+	
+	
+	<select id="JobHealthInformationReport" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			select distinct j.JOB_POSITION_ID,
+			       h.empid,
+			       h.person_id,
+			       h.chinesename,
+			       d.deptname,
+			       s2.code_name as JOB_POSITION,
+			       s1.code_name DISEASE,
+			       to_char(h.date_started, 'yyyy-MM-dd') as date_started,
+			       to_char(J.START_TIME, 'yyyy-MM-dd') as START_TIME,
+			       nvl(substr(h.BIRTH_YMD, 0, 4), '某') || '年' ||
+			       nvl(substr(h.BIRTH_YMD, 5, 2), '某') || '月' ||
+			       nvl(substr(h.BIRTH_YMD, 7, 2), '某') || '日' birth_ymd,
+			       j.job_position_name_code,
+			       J.DOCUMENTNO ,
+			       to_char((me.medical_year),'YYYY-MM-DD') MEDICAL_YEAR,
+                   me.medical_flag as medicalFlag
+			  from hr_employee             h,
+			  	(select distinct t.emp_id,t.JOB_POSITION_ID,t.JOB_POSITION_CODE,t.medical_year,t.medical_flag  from se_medical t)  me,
+			       hr_department           d,
+			       hr_job_position         j,
+			        sy_code                 s1,
+			       sy_code                 s2,
+			       se_position_dis_distype position,
+			       se_position_dis_distype DISEASE
+			 where h.deptid = d.deptid(+)
+			   and h.person_id(+) = j.emp_id
+			   and h.cpny_id= #cpny_id:varchar#
+			   and position.relations_id=j.job_position_name_code
+			   and position.jobposition_code=s2.code_id(+)
+			   and DISEASE.relations_id=j.job_position_name_code
+			   and position.disease_code=s1.code_id(+)	
+			   AND me.emp_id = h.person_id
+	           AND me.JOB_POSITION_ID = j.JOB_POSITION_ID
+	           AND me.JOB_POSITION_CODE = j.job_position_name_code	    
+		]]>
+		<isNotEmpty prepend="AND" property="medicalflag">
+				<![CDATA[
+			 			me.medical_flag = #medicalflag:VARCHAR#
+				]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="empName">
+			<![CDATA[
+		 		(h.chinesename like '%'||#empName:VARCHAR#||'%' or h.empid like '%'||#empName:VARCHAR#||'%')
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="empId">
+			<![CDATA[
+		 		(h.empid = #empId:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="POSITION">
+			<![CDATA[
+		 		(position.relations_id = #POSITION:NUMERIC#)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="StartDate">
+			<![CDATA[
+		 		(to_char(j.start_time,'yyyy-MM-dd') >= #StartDate:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="EndDate">
+			<![CDATA[
+		 		(to_char(j.start_time,'yyyy-MM-dd') <= #EndDate:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptId">
+			<![CDATA[
+		 		(d.deptid = #deptId:VARCHAR#)
+			]]>
+		</isNotEmpty>
+		<![CDATA[
+			order by MEDICAL_YEAR desc
+		]]>
+	</select>
+	
+	
+	<select id="getMedicalFlag" parameterClass="SimpleMap" resultClass="string">
+		<![CDATA[
+	         select * from (select aa.medical_flag
+			  from (select M.*
+			          from se_medical m
+			        where m.emp_id = #employeeId:VARCHAR#
+			         AND m.JOB_POSITION_ID=#JOB_POSITION_ID:NUMBERIC#
+			         AND m.JOB_POSITION_CODE=#job_position_name_code:VARCHAR#
+			         order by m.medical_year desc) aa
+			 where rownum = 1)  
+		]]>
+		<dynamic prepend="WHERE">
+			<isNotEmpty prepend="AND" property="medicalflag">
+				<![CDATA[
+			 			medical_flag = #medicalflag:VARCHAR#
+				]]>
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="getJobPositionInformation" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			select t.job_position_id,
+			       s1.code_name as job_position_name,
+             	   t.job_position_name_code,
+			       t.emp_id,
+			       to_char(t.start_time,'yyyy-MM-dd') as start_time,
+			       to_char(t.create_date,'yyyy-MM-dd') as create_date,
+			       t.create_by			        
+			  from hr_job_position t , sy_code s1 
+			  where  s1.code_id = t.job_position_name_code
+		]]>
+	</select>
+	
+	<select id="getPositionInformation" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			  select t.relations_id, t.jobposition_code, sy.code_name
+               from se_position_dis_distype t, sy_code sy
+               where t.jobposition_code = sy.code_id and t.cpny_id=#cpny_id:varchar#
+		]]>
+	</select>
+	
+	<select id="getDiseaseInformation" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			  select * from sy_code s where s.parent_code = 'DISEASE' and (s.cpny_id=#cpny_id:varchar# or s.cpny_id is null)
+		]]>
+	</select>
+	
+	<select id="getjob_poditionInformation" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+		  select * from sy_code s where s.parent_code = 'JOB_POSITION' and (s.cpny_id=#cpny_id:varchar# or s.cpny_id is null)
+	]]>
+	</select>
+	
+	<select id="getDiseaseTypeInformation" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			  select * from sy_code s where s.parent_code = 'JOB_DISEASE_TYPE' and (s.cpny_id=#cpny_id:varchar# or s.cpny_id is null)
+		]]>
+	</select>
+	
+	<select id="getPositionDiseaseDiseaseType" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			  select t.relations_id,
+			       s.code_id as positionId,
+			       s.code_name as positionName,
+			       s1.code_id as diseaseId,
+			       s1.code_name as diseaseName,
+			       s2.code_id as diseaseTypeId,
+			       s2.code_name as diseaseTypeName
+			  from se_position_dis_distype t, sy_code s, sy_code s1, sy_code s2
+			 where t.jobposition_code = s.code_id
+			   and t.disease_code = s1.code_id
+			   and t.diseasetype_code = s2.code_id
+			   and t.cpny_id=#cpny_id:varchar#
+		]]>
+	</select>
+	
+	<select id="empInformation" parameterClass="SimpleMap" resultClass="BasicInfo">
+		<![CDATA[
+			SELECT A.EMPID								    	empID,
+			 		A.CHINESENAME        						chineseName,
+                    NVL(A.CHINESE_PINYIN,' ')    				pinyinName,
+					TO_CHAR(A.DATE_LEFT,'YYYY-MM-DD')           dateLeft,
+					TO_CHAR(A.DATE_STARTED,'YYYY-MM-DD')        joinDate,
+                    B.DEPTNAME            						department,
+                    A.DEPTID            						deptID,
+                    A.POSITION_CODE        						positionCode,
+                    E.CODE_NAME            						position,
+                    A.POST_COEF            						postCoef,
+                    A.POST_GRADE_CODE      						postGradeCode,
+                    F.CODE_NAME            						postGrade,
+				    J.CODE_NAME									status,
+				    A.STATUS_CODE								statusCode,
+				    nvl(substr(A.BIRTH_YMD, 0, 4), '某') || '年' ||
+                    nvl(substr(A.BIRTH_YMD, 5, 2), '某') || '月' ||
+                    nvl(substr(A.BIRTH_YMD, 7, 2), '某') || '日'  birth_ymd
+               FROM HR_EMPLOYEE A,
+                    HR_DEPARTMENT B,
+                    SY_CODE E,
+                    SY_CODE F,
+					SY_CODE J
+               WHERE A.DEPTID = B.DEPTID(+)             
+                 AND A.POSITION_CODE = E.CODE_ID(+)
+                 AND A.POST_GRADE_CODE = F.CODE_ID(+)
+			     AND A.STATUS_CODE=J.CODE_ID(+)
+			     AND A.STATUS_CODE <> 'EmpStatus3' and a.empid = #empID:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getDisease" parameterClass="SimpleMap" resultClass="PositionInfo">
+		<![CDATA[			       
+			       select  t.disease_code DISEASECODE , sy.code_name DISEASE
+                      from se_position_dis_distype t, sy_code sy
+                      where t.disease_code = sy.code_id
+                      and t.relations_id=#opsitionId:VARCHAR#
+			     
+		]]>
+	</select>
+	
+	<select id="getDiseaseType" parameterClass="SimpleMap" resultClass="PositionInfo">
+		<![CDATA[
+		select  t.diseasetype_code JOB_DISEASE_TYPE_CODE, sy.code_name DISEASETYPE
+              from se_position_dis_distype t, sy_code sy
+              where t.diseasetype_code = sy.code_id
+              and t.relations_id=#opsitionId:VARCHAR#		  
+		]]>
+	</select>
+	
+	<select id="getJPSeq" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+			select hr_job_position_seq.nextval from dual
+		]]>
+	</select>
+	
+	<insert id="addPositionInformation" parameterClass="SimpleMap">
+		<![CDATA[
+			insert into hr_job_position t
+			        (t.job_position_id,
+			         t.job_position_name_code,
+			         t.emp_id,
+			         t.start_time,
+			         t.create_date,
+			         t.create_by,
+			         DOCUMENTNO			        
+			        )
+			      values
+			        (#seq:NUMERIC#,
+			        #Position:VARCHAR#,
+			        #empiD:VARCHAR#,
+			        to_date(#StartDates:VARCHAR#,'yyyy-MM-dd'),
+			        sysdate,
+			        #supervisor:VARCHAR#,
+			        #DOCUMENTNO:VARCHAR#)
+		]]>
+	</insert>
+	
+	<delete id="delMedicalInformation" parameterClass="SimpleMap">
+		delete se_medical where emp_id=#empiD:VARCHAR#
+	</delete>
+	
+	<insert id="addMedicalInformation" parameterClass="SimpleMap">
+		<![CDATA[
+			insert into se_medical t
+				  (t.se_medical_id,
+				   t.emp_id,
+				   t.medical_year,
+				   t.medical_flag,
+				   t.medical_result,
+				   t.medical_state,
+				   t.JOB_POSITION_ID,				   
+				   t.job_position_code,
+				   MEDICAL_UNIT,
+				   t.medical_remark)
+				values
+				  (se_medical_seq.nextval, 
+				  #empiD:VARCHAR#, 
+				  to_date(#medicalDate:VARCHAR#,'yyyy-MM-dd'), 
+				  #medicalflag:VARCHAR#, 
+				  #remark:VARCHAR#,
+				  #medicalstate:VARCHAR#,
+				  #seq:NUMERIC#,				  
+				  #Position:VARCHAR#,
+				  #jobHealth:varchar#,
+				  #remarkText:VARCHAR#)
+		]]>
+	</insert>
+	
+	<insert id="jobPosition" parameterClass="SimpleMap">
+		<![CDATA[
+			insert into SE_POSITION t
+				  (t.JOB_POSITION_ID,
+				   t.POSITION_DIS_DISTYPE_ID,
+				   t.START_DATE,
+				   t.EMPID,
+				   t.CREATE_DATE
+				   )
+				values
+				  (#seq:NUMERIC#, 
+				  #Position:NUMERIC#, 
+				  to_date(#StartDates:VARCHAR#,'yyyy-MM-dd'),
+				  #empiD:VARCHAR#,
+				  SYSDATE 			  
+				  )
+		]]>
+	</insert>
+	
+	<insert id="updateJobPosition" parameterClass="SimpleMap">
+		<![CDATA[
+			update hr_job_position t set t.job_position_name_code=#Position:NUMBERIC#,
+			t.start_time= to_date(#StartDates:VARCHAR#,'yyyy-MM-dd')
+			where t.job_position_id=#seq:NUMERIC#
+		]]>
+	</insert>
+	
+	
+	<update id="updateAddPositionInformation" parameterClass="SimpleMap">
+		<![CDATA[
+			update hr_job_position t
+			    set t.start_time = to_date(#StartDates:VARCHAR#,'yyyy-MM-dd'),
+			    t.documentno=#DOCUMENTNO:VARCHAR#,t.JOB_POSITION_NAME_CODE = #Position:VARCHAR#,t.EMP_ID = #empiD:VARCHAR#
+			where t.job_position_id=#seq:NUMBERIC#
+		]]>
+	</update>
+	
+	<update id="updateMedicalInformation" parameterClass="SimpleMap">
+		<![CDATA[
+		update se_medical t
+		set
+		  t.medical_year = to_date(#medicalDate:VARCHAR#, 'yyyy-MM-dd'),
+		   t.medical_flag = #medicalflag:VARCHAR#,
+		   t.medical_result = #remark:VARCHAR#
+		   where t.emp_id = #empID:VARCHAR#
+		]]>
+	</update>
+	
+	<insert id="getPositionDiseaseDiseaseTypeAdd" parameterClass="SimpleMap">
+		<![CDATA[
+			insert into se_position_dis_distype t
+				     (t.relations_id,
+				      t.jobposition_code,
+				      t.disease_code,
+				      t.diseasetype_code,
+				      t.create_date,
+				      t.create_by,
+				      t.cpny_id)
+				   values
+				     (SE_POSITION_DIS_DISTYPE_SEQ.Nextval,
+				     #POSITION:VARCHAR#,
+				     #DISEASE:VARCHAR#,
+				     #DISEASETYPE:VARCHAR#,
+				     SYSDATE,
+				     #supervisor:VARCHAR#,
+				     #cpny_id:varchar#)
+		]]>
+	</insert>
+	
+	<select id="getAllPositionInformation" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			 select h.empid,
+			 		h.person_id,
+			       h.chinesename,
+			       d.deptname,
+			       to_char(h.date_started, 'yyyy-MM-dd') as date_started,
+			       t.job_position_name_code,
+			       s.code_name as job_position_name,
+			       to_char(t.start_time, 'yyyy-MM-dd') as start_time,
+			       s1.code_id disease_code,
+			       s1.code_name as disease,
+			       s2.code_id job_disease_type_code,
+			       s2.code_name as job_disease_type,
+			       nvl(substr(h.BIRTH_YMD, 0, 4), '某') || '年' ||
+			       nvl(substr(h.BIRTH_YMD, 5, 2), '某') || '月' ||
+			       nvl(substr(h.BIRTH_YMD, 7, 2), '某') || '日' birth_ymd,
+			       t.documentno
+			from hr_employee     h,
+			       hr_job_position t,
+			       sy_code         s,
+			       sy_code         s1,
+			       sy_code         s2,
+			       hr_department   d,
+			       se_position_dis_distype dis
+			 where  dis.relations_id=t.job_position_name_code
+			   and dis.jobposition_code=s.code_id
+			   and dis.disease_code=s1.code_id
+			   and dis.diseasetype_code=s2.code_id
+			   and h.person_id = t.emp_id
+			   and h.deptid = d.deptid
+			   and h.person_id = #EMPID:VARCHAR#
+			   and t.JOB_POSITION_ID = #tempjobId:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getAllMedicalInformation" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			select m.se_medical_id,
+			       m.emp_id,
+			       to_char(m.medical_year,'yyyy-MM-dd') as medical_year,
+			       m.medical_flag,
+			       nvl(m.medical_result,'无') as medical_result,
+             		m.medical_state,
+             		M.MEDICAL_UNIT,
+             		nvl(m.medical_remark,'无') as medical_remark
+			  from se_medical m
+			  where m.emp_id = #EMPID:VARCHAR#
+			  AND m.job_position_code=#positionCode:VARCHAR#
+			  and m.job_position_id=#tempjobId:VARCHAR#
+
+			       order by m.medical_year
+		]]>
+	</select>
+	<select id="getThisFlagMedicalInformation" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			select m.se_medical_id,
+		       m.emp_id,
+		       to_char(m.medical_year, 'yyyy-MM-dd') as medical_year,
+		       m.medical_flag,
+		       nvl(m.medical_result, '无') as medical_result,
+		       nvl(m.medical_remark, '无') as medical_remark,
+		       m.medical_state
+		       from se_medical m
+			  where m.emp_id = #EMPID:VARCHAR#			  
+			   AND  m.Job_Position_Code=#orderFlag:VARCHAR#
+			       order by m.medical_year
+		]]>
+	</select>
+	
+	<select id="getJobHealthDetail" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			select J.JOB_POSITION_ID,
+       h.empid,
+       h.person_id,
+       h.chinesename,
+       d.deptname,       
+       to_char(h.date_started, 'yyyy-MM-dd') as date_started,
+       to_char(J.START_TIME, 'yyyy-MM-dd') as START_TIME,
+       nvl(substr(h.BIRTH_YMD, 0, 4), '某') || '年' ||
+       nvl(substr(h.BIRTH_YMD, 5, 2), '某') || '月' ||
+       nvl(substr(h.BIRTH_YMD, 7, 2), '某') || '日' birth_ymd,
+       j.documentno
+       from hr_employee     h,
+       hr_department   d,
+       hr_job_position j       
+	 where h.deptid = d.deptid(+)
+	   and h.person_id = j.emp_id
+	   and h.person_id = #EMPID:VARCHAR#
+	   and j.job_position_id=#jobpositionid:NUMBERIC#
+			   
+		]]>
+	</select>
+	
+	<select id="getSingleInformation" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			select t.relations_id,
+			       s.code_id as positionId,
+			       s.code_name as positionName,
+			       s1.code_id as diseaseId,
+			       s1.code_name as diseaseName,
+			       s2.code_id as diseaseTypeId,
+			       s2.code_name as diseaseTypeName
+			  from se_position_dis_distype t, sy_code s, sy_code s1, sy_code s2
+			 where t.jobposition_code = s.code_id
+			   and t.disease_code = s1.code_id
+			   and t.diseasetype_code = s2.code_id
+         			and t.relations_id = #relations_id:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getAllEmpid" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			select emp_id from hr_job_position t 
+		]]>
+	</select>
+	
+	
+	
+	<delete id="deletePositionInformation" parameterClass="SimpleMap">
+		<![CDATA[
+			delete hr_job_position t where t.emp_id = #empID:VARCHAR#
+		]]>
+	</delete>
+	
+	<delete id="deleteMedicalInformation" parameterClass="SimpleMap">
+		<![CDATA[
+			delete from se_medical t where t.emp_id = #EMPID:VARCHAR#
+		]]>
+	</delete>
+	
+	<delete id="position" parameterClass="SimpleMap">
+		<![CDATA[
+			delete from se_position t where t.empid = #EMPID:VARCHAR#
+		]]>
+	</delete>
+	
+	<delete id="deletePositionDiseaseDiseaseType" parameterClass="SimpleMap">
+		<![CDATA[
+			delete se_position_dis_distype t where t.jobposition_code = #POSITION:VARCHAR# and cpny_id=#cpny_id:varchar#
+		]]>
+	</delete>
+	
+	<delete id="getPositionDiseaseDiseaseTypeUpdate" parameterClass="SimpleMap">
+		<![CDATA[
+			update se_position_dis_distype t set t.JOBPOSITION_CODE = #POSITION:VARCHAR#,t.DISEASE_CODE=#DISEASE:varchar#,t.DISEASETYPE_CODE=#DISEASETYPE:varchar#
+			where t.RELATIONS_ID = #relations_id:varchar#
+		]]>
+	</delete>
+	
+	<delete id="deletePositionDiseaseDiseaseTypeguanxi" parameterClass="SimpleMap">
+		<![CDATA[
+			 delete se_position_dis_distype t where t.relations_id = #relations_id:VARCHAR#
+		]]>
+	</delete>
+	
+	<delete id="deletejobHealthView" parameterClass="SimpleMap">
+		<![CDATA[
+			 delete from hr_job_position t where T.EMP_ID = #EMPID:NUMERIC#
+		]]>
+	</delete>
+	
+	<select id="getCHANGE_POSITION_ORDER_FLAG" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+			 SELECT T.CHANGE_POSITION_ORDER_FLAG FROM HR_JOB_POSITION T 
+			 WHERE T.JOB_POSITION_ID = #tempjobId:NUMERIC#
+		]]>
+	</select>
+	
+	<update id="updatePositionCHANGE_POSITION_FLAG" parameterClass="SimpleMap">
+		<![CDATA[
+			update hr_job_position t
+				set
+			  t.change_position_flag = '0'
+			   where t.job_position_id = #tempjobId:NUMERIC#
+		]]>
+	</update>
+	
+	<select id="getPositionOrder" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			select distinct se.empid, sy.code_name,se.position_dis_distype_id from se_position se,se_position_dis_distype position,sy_code sy
+            where se.position_dis_distype_id=position.relations_id
+                 and sy.code_id=position.jobposition_code
+			     and se.empid = #EMPID:VARCHAR#
+		]]>
+	</select>
+	
+	<select id="getPositionInfo" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			select s.code_name as JOB_POSITION,
+               s1.code_name as disease,
+              s2.code_name as job_disease_type,
+               to_char(J.START_TIME, 'yyyy-MM-dd') as START_TIME
+	       from hr_employee     h,
+	       hr_department   d,
+	       hr_job_position j,
+	       sy_code         s,
+	       sy_code         s1,
+	       sy_code         s2,
+	       se_position_dis_distype dis1
+		where h.deptid = d.deptid
+			   and h.person_id = j.emp_id			  
+			   and dis1.jobposition_code=s.code_id
+			   and dis1.disease_code=s1.code_id
+			   and dis1.diseasetype_code=s2.code_id
+			   AND h.person_id = #EMPID:VARCHAR#
+			   AND dis1.relations_id= #orderFlag:NUMERIC#
+		]]>
+	</select>
+</sqlMap>

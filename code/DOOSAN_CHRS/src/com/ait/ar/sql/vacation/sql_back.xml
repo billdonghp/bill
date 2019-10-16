@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="ar.vacation">
+	 
+	<procedure id="InitVacationEmp">
+		{call AR_CREATE_VACATIONEMP }
+	</procedure>
+	 
+	<!-- retrieve VacationEmpREST_VAC_CNT -->
+	<select id="RetrieveVacationEmpREST_VAC_CNT" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+					select t.work_year,
+						   t.tot_vac_cnt allTotVaction,
+			               t.tot_vac_cnt -
+					       (select nvl(sum(a.quantity), 0) / 8
+					          from ar_detail a
+					         where a.empid = t.empid
+					           and a.ar_item_no = 14
+					           and a.ar_date_str between to_char(t.strt_date, 'yyyy/mm/dd') and
+					               to_char(t.end_date, 'yyyy/mm/dd')) as lastTotVaction,
+					                t.vac_id,
+					               to_char(t.strt_date,'YYYY-MM-DD') strt_date,
+                                  to_char(t.end_date,'YYYY-MM-DD') end_date
+					  from ar_vac_emp t
+					 where t.empid = #adminId#
+					    and t.vac_id=#sysYear:VARCHAR#
+			   			and to_date(to_char(sysdate,'yyyy-mm-dd'),'yyyy-mm-dd') between t.strt_date and t.end_date
+		
+		]]>
+		<isEmpty prepend="AND" property="VacType">
+			<![CDATA[
+				t.vac_tp='VacType10'
+			]]>
+		</isEmpty>
+		<isEqual property="VacType" compareValue="scikLeave">
+			<![CDATA[
+				and t.vac_tp='VacType30'
+			]]>
+		</isEqual>
+		<isEqual property="VacType" compareValue="reuniteLeave">
+			<![CDATA[
+				and t.vac_tp='VacType40'
+			]]>
+		</isEqual>
+		<isEqual property="VacType" compareValue="lastAnnualVacation">
+			<![CDATA[
+				and t.vac_tp='VacType50'
+			]]>
+		</isEqual>
+	</select>
+	 
+	 
+	<!-- retrieve vacationEmp count -->
+	<select id="RetrieveVacationEmpCnt" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[	
+			  select count(*) 
+			  		from ar_vac_emp 	A,
+			  		     hr_employee   	B,
+			  		     hr_department  C,
+			  		     HR_EMPLOYEE    D,
+			  		     sy_code 		S
+			  		where A.activity = 1 
+			  		  and A.EMPID  = B.PERSON_ID(+)
+			  		  AND B.DEPTID = C.DEPTID(+)
+			  		  AND A.VAC_TP = S.CODE_ID(+)
+			  		  and a.UPDATED_BY = D.PERSON_ID(+)
+		]]>
+		
+		<isNotEmpty prepend="AND" property="supervisor">
+		<![CDATA[
+		 		 (EXISTS ( SELECT *
+	  	 		  	        FROM AR_SUPERVISOR_INFO F
+						   WHERE C.DEPTID = F.SUPERVISED_DEPTID
+	 					     AND F.AR_SUPERVISOR_ID = #supervisor#
+	 	 		  	 	) OR B.EMPID = #supervisor# )
+	    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="key">
+			<![CDATA[
+			        A.empid = #key#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="deptid">
+			<![CDATA[
+			        B.deptid in (select hd.deptid from hr_department hd start with hd.deptid = #deptid# CONNECT BY PRIOR deptid = parent_dept_id) 
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="vac_id">
+			<![CDATA[
+			 		 A.vac_id = #vac_id#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="vac_tp">
+			<![CDATA[
+			        A.vac_tp = #vac_tp#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY A.empid
+			
+		]]>
+
+	</select>
+	 
+	<!-- retrieve vacationEmp list -->
+	<select id="RetrieveVacationEmpList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+			  select
+			  		a.vacation_no, 
+					B.empid,
+					B.CHINESENAME,
+				    B.CHINESE_PINYIN,
+				    B.ENGLISHNAME,
+				    B.KOREANNAME,
+				    B.DEPTID,
+				    to_char(B.DATE_STARTED,'yyyy-mm-dd')   DATE_STARTED,
+				    C.DEPTNAME,
+				    C.DEPT_EN_NAME,
+				    C.DEPT_KOR_NAME,
+				    S.code_name                				vac_tp_cn,
+			       	S.code_en_name             				vac_tp_en,
+			       	S.code_kor_name            				vac_tp_kor,
+				    A.VAC_ID,
+				    to_char(A.STRT_DATE,'yyyy-mm-dd') 		strt_date,
+				    to_char(A.END_DATE,'yyyy-mm-dd')		end_date,
+				    A.TOT_VAC_CNT,
+				    (select nvl(sum(quantity),0)/8 from (select * from ar_detail union all select * from ar_detail_history) t where t.empid = a.empid and t.ar_item_no = decode(a.vac_tp,'VacType30','72','VacType40','76','VacType50','83','14') and t.ar_date_str between to_char(a.strt_date,'yyyy/mm/dd') and to_char(a.end_date,'yyyy/mm/dd'))          USE_VAC_CNT,
+                    A.TOT_VAC_CNT - (select nvl(sum(quantity),0)/8 from (select * from ar_detail union all select * from ar_detail_history) t where t.empid = a.empid and t.ar_item_no = decode(a.vac_tp,'VacType30','72','VacType40','76','VacType50','83','14') and t.ar_date_str between to_char(a.strt_date,'yyyy/mm/dd') and to_char(a.end_date,'yyyy/mm/dd'))  REST_VAC_CNT,
+            		to_char(A.CREATE_DATE,'yyyy-mm-dd')		CREATE_DATE,
+					A.CREATED_BY,
+					to_char(A.UPDATE_DATE,'yyyy-mm-dd')		UPDATE_DATE,
+					A.UPDATED_BY,
+					D.CHINESENAME			   				OPERATOR_NAME,
+				    D.CHINESE_PINYIN		   				OPERATOR_PINYIN,
+				    D.ENGLISHNAME			   				OPERATOR_EN_NAME,
+				    D.KOREANNAME			   				OPERATOR_KOR_NAME,
+					A.ACTIVITY,
+					A.WORK_YEAR
+			  		from ar_vac_emp 	A,
+			  		     hr_employee   	B,
+			  		     hr_department  C,
+			  		     HR_EMPLOYEE    D,
+			  		     sy_code 		S
+			  		where A.activity = 1 
+			  		  and A.EMPID  = B.PERSON_ID(+)
+			  		  AND B.DEPTID = C.DEPTID(+)
+			  		  AND A.VAC_TP = S.CODE_ID(+)
+			  		  and a.UPDATED_BY = D.PERSON_ID(+)
+		]]>
+		
+		<isNotEmpty prepend="AND" property="supervisor">
+		<![CDATA[
+		 		 (EXISTS ( SELECT *
+	  	 		  	        FROM AR_SUPERVISOR_INFO F
+						   WHERE C.DEPTID = F.SUPERVISED_DEPTID
+	 					     AND F.AR_SUPERVISOR_ID = #supervisor#
+	 	 		  	 	)  OR B.EMPID = #supervisor# )
+	    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="key">
+			<![CDATA[
+			        A.empid = GET_PERSONID2(#key:varchar#,#cpnyId:varchar#)
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="deptid">
+			<![CDATA[
+			        B.deptid in (select hd.deptid from hr_department hd start with hd.deptid = #deptid# CONNECT BY PRIOR deptid = parent_dept_id) 
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="vac_id">
+			<![CDATA[
+			 		 A.vac_id = #vac_id#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="vac_tp">
+			<![CDATA[
+			        A.vac_tp = #vac_tp#
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY A.empid
+			
+		]]>
+	</select>
+	
+	
+	 
+	<!-- retrieve RetrieveArFactroyTotal list -->
+	<select id="RetrieveArFactroyTotalList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+			   SELECT t.ar_month,
+				       join_type,
+				       sum(t.a_work + t.b_work + t.work) * 8 worktime,
+				       sum(T.TOTAL_WEEKDAY_OT + T.TOTAL_WEEKEND_OT + T.TOTAL_HOLIDAY_OT) ottime
+				  FROM ar_history T
+				 WHERE (t.join_type = '直接工人' or t.join_type = '间接工人')   
+				   AND T.ATTENDANCE_PERIOD = '工厂'   
+				   AND T.CPNY_ID = '78000000' 
+				 group by t.ar_month, t.join_type
+				 order by t.ar_month desc
+
+
+		]]>
+		
+		
+	</select>
+	
+	
+	 
+	<!-- retrieve RetrieveArFactroyTotal sum -->
+	<select id="RetrieveArFactroyTotalListSum" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+			   SELECT t.ar_month
+				  FROM ar_history T
+				 WHERE (t.join_type = '直接工人' or t.join_type = '间接工人')   
+				   AND T.ATTENDANCE_PERIOD = '工厂'   
+				   AND T.CPNY_ID = '78000000' 
+				 group by t.ar_month, t.join_type
+				 order by t.ar_month desc
+
+		]]>
+		
+	</select>
+	
+	<!-- add vacationEmp data -->
+	 <insert id="insertVacationEmp" parameterClass="SimpleMap" >
+		<![CDATA[	
+		INSERT INTO AR_VAC_EMP
+					( VACATION_NO,
+					  EMPID,
+					  VAC_TP,
+					  VAC_ID,
+					  STRT_DATE,
+					  END_DATE,
+					  TOT_VAC_CNT,
+					  CREATE_DATE,
+					  CREATED_BY,
+					  UPDATE_DATE,
+					  UPDATED_BY,
+					  ACTIVITY,
+					  WORK_YEAR)
+			   		values (AR_VACATION_SEQ.Nextval,
+			   		  #key#,
+			   		  #vac_tp#,
+			   		  #vac_id#,
+			   		  to_date(#strt_date#,'yyyy-mm-dd'),
+			   		  to_date(#end_date#,'yyyy-mm-dd'),
+			   		  #tot_vac_cnt:numeric#,
+			   		  sysdate,
+			   		  #supervisor#,
+			   		  sysdate,
+			   		  #supervisor#,
+			   		  1,
+			   		  NVL(#work_year:NUMERIC# , 0))
+		  ]]>
+	 </insert>
+	 
+	 <!-- retrieve retrieveDataForUpdateVacationEmp list -->
+	<select id="retrieveDataForUpdateVacationEmp" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+			 select 
+			    	VACATION_NO,
+					B.EMPID,
+			        B.CHINESENAME,
+			        B.CHINESE_PINYIN,
+			        B.ENGLISHNAME,
+					VAC_TP,
+					s.code_name                         vac_tp_cn,
+			        s.code_en_name                      vac_tp_en,
+			        s.code_kor_name                     vac_tp_kor,
+					VAC_ID,
+					to_char(STRT_DATE,'yyyy-mm-dd') 	STRT_DATE,
+					to_char(END_DATE,'yyyy-mm-dd')  	END_DATE,
+					TOT_VAC_CNT,
+					A.CREATE_DATE,
+					A.CREATED_BY,
+					A.UPDATE_DATE,
+					A.UPDATED_BY,
+					A.ACTIVITY,
+					A.WORK_YEAR
+			  from AR_VAC_EMP A,
+             	   HR_EMPLOYEE B, 
+             	   SY_CODE S
+			       where A.VACATION_NO = #vacation_no#
+               		 AND A.EMPID = B.PERSON_ID(+)
+               		 and a.VAC_TP = S.code_id(+)
+		]]>
+	</select>
+	
+	<!-- update vacationEmp data -->
+	 <update id="updateVacationEmp" parameterClass="SimpleMap" >
+		<![CDATA[	
+				update AR_VAC_EMP set 
+					  TOT_VAC_CNT = #tot_vac_cnt:NUMERIC#,
+					  UPDATED_BY = #updated_by#,
+					  UPDATE_DATE = sysdate,
+					  WORK_YEAR = NVL(#work_year:NUMERIC# , 0)
+			   		where VACATION_NO= #vacation_no#
+		  ]]>
+	 </update>
+	
+	<!-- validate validateVacationEmp list -->
+	<select id="validateVacationEmp" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[	
+			 select count(t.vacation_no)
+					  from ar_vac_emp t
+					 where t.empid = #key#
+					   and t.vac_tp = #vac_tp#
+					   and t.vac_id=#vac_id#
+					   and to_date(#strt_date#, 'yyyy-mm-dd') <= t.end_date 
+					   and to_date(#end_date#, 'yyyy-mm-dd')  >= t.strt_date
+		]]>
+		
+	</select>
+	
+	<!-- validate validateVacationEmpByUpdate -->
+	<select id="validateVacationEmpByUpdate" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[	
+			 select (select nvl(sum(ad.quantity), 0) / 8
+			          from ar_detail ad
+			         where ad.empid = v.empid
+			           and ad.ar_date_str between to_char(v.strt_date, 'yyyy/mm/dd') and
+			               to_char(v.end_date, 'yyyy/mm/dd') and ad.ar_item_no = (case when v.vac_tp='VacType10' then 14 else 76 end))
+			  from ar_vac_emp v
+			 where v.vacation_no = #vacation_no#
+		]]>
+		
+	</select>
+	 
+	 <!-- delete vacationEmp data -->
+	 <delete id="deleteVacationEmp" parameterClass="int">
+		<![CDATA[
+		
+		　 delete ar_vac_emp t WHERE t.vacation_no = #vacation_no#
+		]]>
+	　</delete>
+	 
+	 <!-- retrieve vacation count -->
+	<select id="RetrieveVacationCnt" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[	
+			  select count(t.vac_no) 
+			  		from ar_vac_master t 
+			  		where t.activity = 1
+		]]>
+		
+		<isNotEmpty prepend="AND" property="strt_month">
+			<![CDATA[
+			 		 t.strt_month = #strt_month#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="vac_tp">
+			<![CDATA[
+			        t.vac_tp = #vac_tp#
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	<!-- retrieve vacation list -->
+	<select id="RetrieveVacationList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+			 select 
+			       t.vac_no                               vac_no,
+			       s.code_name                            vac_tp_cn,
+			       s.code_en_name                         vac_tp_en,
+			       s.code_kor_name                        vac_tp_kor,
+			       t.strt_month                           strt_month,
+			       t.end_month                            end_month,
+			       t.vac_day_cnt                          vac_day_cnt,
+			       to_char(t.create_date,'yyyy-mm-dd')    create_date,
+			       t.created_by                           created_by,
+			       to_char(t.update_date,'yyyy-mm-dd')    update_date,
+			       t.updated_by                           updated_by,
+			       t.activity                             activity
+			  from ar_vac_master t,sy_code s
+			       where t.vac_tp = s.code_id(+)
+		]]>
+		
+		<isNotEmpty prepend="AND" property="strt_month">
+			<![CDATA[
+			 		 t.strt_month = #strt_month#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="vac_tp">
+			<![CDATA[
+			        t.vac_tp = #vac_tp#
+		    ]]>
+		</isNotEmpty>
+			         
+	   <![CDATA[
+			ORDER BY vac_no
+			
+		]]>
+	</select>
+	
+	<!-- retrieve retrieveDataForUpdateVacation list -->
+	<select id="retrieveDataForUpdateVacation" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+			 select 
+			       t.vac_no                               vac_no,
+			       t.vac_tp		                          vac_tp,
+			       t.strt_month                           strt_month,
+			       t.end_month                            end_month,
+			       t.vac_day_cnt                          vac_day_cnt,
+			       to_char(t.create_date,'yyyy-mm-dd')    create_date,
+			       t.created_by                           created_by,
+			       to_char(t.update_date,'yyyy-mm-dd')    update_date,
+			       t.updated_by                           updated_by,
+			       t.activity                             activity
+			  from ar_vac_master t
+			       where vac_no = #vac_no#
+		]]>
+	</select>
+	
+	<!-- retrieve vacation strt_month-->
+	<select id="retrieveVacationStrt_month" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+				 SELECT strt_month ID, 
+				 		strt_month NAME
+				   FROM ar_vac_master 
+				  WHERE activity = 1
+		]]>
+
+	</select>
+	
+	<!-- add vacation data -->
+	 <insert id="insertVacation" parameterClass="SimpleMap" >
+		<![CDATA[	
+		INSERT INTO AR_VAC_MASTER
+					( VAC_NO,
+					  VAC_TP,
+					  STRT_MONTH,
+					  END_MONTH,
+					  VAC_DAY_CNT,
+					  CREATED_BY,
+					  ACTIVITY)
+			   		values (AR_VACATION_MASTER_SEQ.Nextval,
+			   		  #vac_tp#,
+			   		  #strt_month#,
+			   		  #end_month#,
+			   		  #vac_day_cnt#,
+			   		  #supervisor#,
+			   		  1)
+		  ]]>
+	 </insert>
+	
+	
+		<!-- update vacation data -->
+	 <update id="updateVacation" parameterClass="SimpleMap" >
+		<![CDATA[	
+		update AR_VAC_MASTER set 
+					  VAC_TP = #vac_tp#,
+					  STRT_MONTH = #strt_month#,
+					  END_MONTH = #end_month#,
+					  VAC_DAY_CNT = #vac_day_cnt:NUMERIC#,
+					  UPDATED_BY = #updated_by#,
+					  UPDATE_DATE = sysdate
+			   		where VAC_NO= #vac_no#
+		  ]]>
+	 </update>
+	
+	 <!-- delete vacation data -->
+	 <delete id="deleteVacation" parameterClass="int">
+		<![CDATA[
+		
+		　 delete ar_vac_master WHERE vac_no = #vac_no#
+		]]>
+	　</delete>
+	
+</sqlMap>

@@ -1,0 +1,3814 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="ess.apply">
+	<!-- NEW 取出申请人的部门 -->
+	<select id="retrieveApplyorDeptList" parameterClass="SimpleMap" resultClass="SimpleMap"> 
+		<![CDATA[
+				SELECT D.DEPTID
+					  FROM HR_DEPARTMENT D,
+					       (SELECT HD.DEPTID,
+					               HD.DEPTNAME,
+					               LTRIM(SYS_CONNECT_BY_PATH(HD.DEPTID, ','), ',') AS DEPT_ID
+					          FROM HR_DEPARTMENT HD
+					         WHERE HD.DEPTID =
+					               (SELECT DEPTID FROM HR_EMPLOYEE HR WHERE HR.Person_Id = #EMPID:VARCHAR#)
+					         START WITH HD.DEPT_LEVEL =
+					                    (SELECT MIN(DEPT_LEVEL) FROM HR_DEPARTMENT)
+					        CONNECT BY PRIOR HD.DEPTID = HD.PARENT_DEPT_ID) A
+					 WHERE INSTR(A.DEPT_ID, D.DEPTID) > 0
+					 ORDER BY D.DEPT_LEVEL DESC
+
+		]]>		
+		
+	</select>
+	<!-- NEW 取出休假申请的参数 -->
+	<select id="retrieveLeaveParam" parameterClass="SimpleMap" resultClass="SimpleMap"> 
+		<![CDATA[
+				SELECT REFERENCN_FLAG,
+				       REFERENCN_FROM_FLAG,
+				       REFERENCN_FROM_OFFSET,
+				       REFERENCN_FROM_RELATION,
+				       REFERENCN_TO_FLAG,
+				       REFERENCN_TO_OFFSET,
+				       REFERENCN_TO_RELATION,
+				       APPLY_TYPE,
+				       AFFIRM_LEVEL
+				  FROM ESS_LEAVE_APPLY_PARAM ESS
+				 WHERE ESS.APPLY_TYPE = #LEAVETYPE:VARCHAR#
+				     AND ESS.CPNY_ID= #CPNY_ID:VARCHAR#
+				     AND  ESS.DEPTID=#DEPTID:VARCHAR#
+				     
+		]]>		
+	</select>
+	
+	
+	<!-- NEW 取出休假申请的参数个人 -->
+	<select id="retrieveLeaveEmpIdParam" parameterClass="SimpleMap" resultClass="SimpleMap"> 
+		<![CDATA[
+				SELECT REFERENCN_FLAG,
+				       REFERENCN_FROM_FLAG,
+				       REFERENCN_FROM_OFFSET,
+				       REFERENCN_FROM_RELATION,
+				       REFERENCN_TO_FLAG,
+				       REFERENCN_TO_OFFSET,
+				       REFERENCN_TO_RELATION,
+				       APPLY_TYPE,
+				       AFFIRM_LEVEL
+				  FROM ESS_LEAVE_APPLY_PARAM ESS
+				 WHERE ESS.APPLY_TYPE = #LEAVETYPE:VARCHAR#
+				     AND ESS.CPNY_ID= #CPNY_ID:VARCHAR#
+				     AND ESS.PERSON_ID = #EMPID:VARCHAR#
+				     
+		]]>		
+	</select>
+	
+	<!-- NEW 取出加班申请的参数 -->
+	<select id="retrieveOvertimeParam" parameterClass="SimpleMap" resultClass="SimpleMap"> 
+		<![CDATA[
+				SELECT 
+				       REFERENCN_FLAG,
+				       REFERENCN_FROM_FLAG,
+				       REFERENCN_FROM_OFFSET,
+				       REFERENCN_FROM_RELATION,
+				       REFERENCN_TO_FLAG,
+				       REFERENCN_TO_OFFSET,
+				       REFERENCN_TO_RELATION,
+				       CONDITION_TYPE,
+				       AFFIRM_LEVEL,
+				       OVERTIME_TYPE,
+				       OVERTIME_TOTAL
+				  FROM ESS_OVERTIME_APPLY_PARAM ESS
+				 WHERE 
+				
+				    ESS.CPNY_ID = #CPNY_ID:VARCHAR#
+				   AND ESS.DEPTID = #DEPTID:VARCHAR#	     
+		]]>		
+	</select>
+	<!-- NEW 取出休假申请的参数 无部门时 -->
+	<select id="retrieveLeaveParamDeptIsNull" parameterClass="SimpleMap" resultClass="SimpleMap"> 
+		<![CDATA[
+				SELECT REFERENCN_FLAG,
+				       REFERENCN_FROM_FLAG,
+				       REFERENCN_FROM_OFFSET,
+				       REFERENCN_FROM_RELATION,
+				       REFERENCN_TO_FLAG,
+				       REFERENCN_TO_OFFSET,
+				       REFERENCN_TO_RELATION,
+				       APPLY_TYPE,
+				       AFFIRM_LEVEL
+				  FROM ESS_LEAVE_APPLY_PARAM ESS
+				 WHERE ESS.APPLY_TYPE = #LEAVETYPE:VARCHAR#
+				     AND ESS.CPNY_ID= #CPNY_ID:VARCHAR#
+				     AND ESS.PERSON_ID IS NULL
+				     AND ESS.DEPTID IS NULL
+				     
+		]]>		
+	</select>
+	
+	<!-- NEW 取出加班申请的参数 无部门时 -->
+	<select id="retrieveOvertimeParamDeptIsNull" parameterClass="SimpleMap" resultClass="SimpleMap"> 
+		<![CDATA[
+				     
+				 SELECT 
+				 	   REFERENCN_FLAG,
+				       REFERENCN_FROM_FLAG,
+				       REFERENCN_FROM_OFFSET,
+				       REFERENCN_FROM_RELATION,
+				       REFERENCN_TO_FLAG,
+				       REFERENCN_TO_OFFSET,
+				       REFERENCN_TO_RELATION,
+				       CONDITION_TYPE,
+				       AFFIRM_LEVEL,
+				       OVERTIME_TYPE,
+				       OVERTIME_TOTAL
+				  FROM ESS_OVERTIME_APPLY_PARAM ESS
+				 WHERE 
+				 
+				   ESS.CPNY_ID = #CPNY_ID:VARCHAR#
+				   AND ESS.DEPTID IS NULL 
+				     
+		]]>		
+	</select>
+	
+	
+	<!-- NEW 当前申请人所能申请的休假长度 -->
+	<select id="retrieveApplyLeaveLength" parameterClass="SimpleMap" resultClass="string"> 
+		<![CDATA[
+				  SELECT ESS_GET_LEAVE_LENGTH(#EMPID:VARCHAR#,#STARTDATE:VARCHAR#,#ENDDATE:VARCHAR#,#LEAVETYPE:VARCHAR#,#CPNY_ID:VARCHAR#) AS LEAVE_LENGTH
+					FROM DUAL
+		]]>		
+		
+	</select>
+	
+	<!-- NEW 当前申请人所能申请,人数 -->
+	<select id="retrieveApplyPersonCnt" parameterClass="SimpleMap" resultClass="int"> 
+		<![CDATA[
+				  SELECT COUNT(HR.EMPID)
+					FROM HR_EMPLOYEE HR ,
+					     HR_DEPARTMENT HD 
+				   WHERE HR.DEPTID = HD.DEPTID
+				     AND NVL(HR.DATE_LEFT,TO_DATE('2999-12-31','YYYY-MM-DD')) > SYSDATE
+				     AND HR.ACTIVITY = 1
+		]]>		
+		
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+		 		  (EXISTS ( SELECT * 
+		 		             FROM AR_SUPERVISOR_INFO 
+		 		            WHERE SUPERVISED_DEPTID = HR.DEPTID
+		 		  			  AND AR_SUPERVISOR_ID = #supervisor:VARCHAR# 
+	 					   )
+	 	 		  	 OR HR.PERSON_ID= #supervisor:VARCHAR# 
+	 	 		    )   
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="empId">
+			<![CDATA[
+		 		    HR.EMPID = #empId:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="key">
+			<![CDATA[
+		 		    (HR.EMPID LIKE '%' || #key:VARCHAR# || '%' OR HR.CHINESENAME LIKE '%' || #key:VARCHAR# || '%')  
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="deptID">
+		<![CDATA[			   
+				   EXISTS
+					 (SELECT *
+					          FROM HR_DEPARTMENT B1
+					         WHERE B1.DEPTID = HR.DEPTID
+					         START WITH B1.DEPTID = #deptID:VARCHAR#
+					        CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID)
+		]]>
+		</isNotEmpty>
+		
+	</select>
+	
+	<!-- NEW 当前申请人所能加班申请,人数 -->
+	<select id="retrieveApplyOTPersonCnt" parameterClass="SimpleMap" resultClass="int"> 
+		<![CDATA[
+				  SELECT COUNT(HR.EMPID)
+				    FROM HR_EMPLOYEE HR ,
+						 HR_DEPARTMENT HD 
+				   WHERE HR.DEPTID = HD.DEPTID
+				     AND NVL(HR.DATE_LEFT,TO_DATE('2999-12-31','YYYY-MM-DD')) > SYSDATE
+		]]>
+		<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DICI -->
+		<![CDATA[
+	   			   AND HR.EMP_DIFF_CODE = 'C_12067_1330306' 
+	   	]]>
+		</isEqual>
+		<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DICI -->
+		<![CDATA[
+	   			   AND HR.EMP_DIFF_CODE = 'C_12067_1330306' 
+	   	]]>
+		</isEqual>
+		<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DICI -->
+		<![CDATA[
+	   			   AND HR.EMP_DIFF_CODE = 'C_12067_1330306' 
+	   	]]>
+		</isEqual>
+		<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICI -->
+		<![CDATA[
+	   			   AND HR.EMP_DIFF_CODE in ( 'C_12067_1330306','C_12067_1330307','C_12067_1330308') 
+	   	]]>
+		</isEqual>
+		<![CDATA[
+				    
+				     AND HR.ACTIVITY = 1
+		]]>		
+		
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+		 		  (EXISTS ( SELECT * 
+		 		             FROM AR_SUPERVISOR_INFO 
+		 		            WHERE SUPERVISED_DEPTID = HR.DEPTID
+		 		  			  AND AR_SUPERVISOR_ID = #supervisor:VARCHAR#
+	 	 		  	 ) OR HR.PERSON_ID= #supervisor:VARCHAR# )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="empId">
+			<![CDATA[
+		 		    HR.EMPID = #empId:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="key">
+			<![CDATA[
+		 		    (HR.EMPID LIKE '%' || #key:VARCHAR# || '%' OR HR.CHINESENAME LIKE '%' || #key:VARCHAR# || '%')  
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="deptID">
+		<![CDATA[			   
+				   EXISTS
+					 (SELECT *
+					          FROM HR_DEPARTMENT B1
+					         WHERE B1.DEPTID = HR.DEPTID
+					         START WITH B1.DEPTID = #deptID:VARCHAR#
+					        CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID)
+		]]>
+		</isNotEmpty>	
+		
+	</select>
+	
+	<!-- NEW 当前申请人所能申请加班,所有人的数据 -->
+	<select id="retrieveApplyOTPerson" parameterClass="SimpleMap" resultClass="EssOverTimeBean"> 
+		<![CDATA[
+				  SELECT HR.EMPID								    				AS empId,
+				  		 HR.CHINESENAME												AS chineseName,
+				  		 HR.DEPTID 													AS deptId,
+       					 HR.deptname 												AS deptName,
+       					 HR.FOURTHDEPTNAME											AS fourthDeptName,
+				         NVL(OT.LIMIT_OT,-1) 										AS limit_ot,
+				         HR.POST_GRADE_CODE											AS postGradeCode,
+				         '$applyDate$' 												AS otDate,
+				          Apply_Limtidtime                                          AS applyLimtidtime,
+       				     HR.WAGES_TYPE_CODE 										AS wages,				
+				         hr.PERSON_ID 												as person_id
+					FROM HR_EMP_V HR ,
+						 AR_OVERTIME_PLAN OT
+				   WHERE HR.person_id = OT.EMPID(+)
+				     AND NVL(DATE_LEFT,TO_DATE('2999-12-31','YYYY-MM-DD')) > SYSDATE
+		]]>
+		<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DICI -->
+		<![CDATA[
+	   			   AND HR.EMP_DIFF_CODE = 'C_12067_1330306' 
+	   	]]>
+		</isEqual>
+		<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DICI -->
+		<![CDATA[
+	   			   AND HR.EMP_DIFF_CODE = 'C_12067_1330306' 
+	   	]]>
+		</isEqual>
+		<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DICI -->
+		<![CDATA[
+	   			   AND HR.EMP_DIFF_CODE = 'C_12067_1330306' 
+	   	]]>
+		</isEqual>
+		<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICI -->
+		<![CDATA[
+	   			   AND HR.EMP_DIFF_CODE in ( 'C_12067_1330306','C_12067_1330307','C_12067_1330308') 
+	   	]]>
+		</isEqual>
+	
+		<![CDATA[
+				     AND HR.ACTIVITY = 1
+		]]>
+		
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+		 		  (EXISTS ( SELECT * 
+		 		             FROM AR_SUPERVISOR_INFO 
+		 		            WHERE SUPERVISED_DEPTID = HR.DEPTID
+		 		  			  AND AR_SUPERVISOR_ID = #supervisor:VARCHAR# 
+	 	 		  	 ) OR HR.PERSON_ID= #supervisor:VARCHAR#)
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="deptID">
+		<![CDATA[			   
+				   EXISTS
+					 (SELECT *
+					          FROM HR_DEPARTMENT B1
+					         WHERE B1.DEPTID = HR.DEPTID
+					         START WITH B1.DEPTID = #deptID:VARCHAR#
+					        CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID)
+		]]>
+		</isNotEmpty>	
+		
+		<isNotEmpty prepend="AND" property="empId">
+			<![CDATA[
+		 		    HR.person_id = #empId:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="key">
+			<![CDATA[
+		 		    (HR.EMPID LIKE '%' || #key:VARCHAR# || '%' OR CHINESENAME LIKE '%' || #key:VARCHAR# || '%')  
+		    ]]>
+		</isNotEmpty>
+		
+		<![CDATA[
+		 		  ORDER BY HR.DEPTID,HR.EMPID   
+		    ]]>
+		
+	</select>
+	
+	<!-- NEW 当前申请人区间内的加班总时间 -->
+	<select id="retrieveApplyArMonth" parameterClass="SimpleMap" resultClass="string"> 
+		<![CDATA[
+				SELECT get_armonth_stattype(TO_DATE(#applyDate:VARCHAR#, 'YYYY-MM-DD'), 'C_12067_1330306',#cpnyId:VARCHAR#) AS AR_MONTH FROM DUAL
+		]]>
+	</select>
+	
+	<!-- NEW 当前申请人所能申请休假,所有人的数据 -->
+	<select id="retrieveApplyLeavePerson" parameterClass="SimpleMap" resultClass="EssLeaveBean"> 
+		<![CDATA[
+				SELECT HR.EMPID AS empId,
+				       HR.CHINESENAME AS chineseName,
+				       HR.DEPTID AS deptId,
+				       HR.deptname AS deptName,
+       				   HR.FOURTHDEPTNAME AS fourthDeptName,	      
+				       HR.POST_GRADE_CODE					         AS postGradeCode,
+				       TO_CHAR(SYSDATE,'YYYY-MM-DD')				 AS createDate,
+      				   hr.person_id                                  AS  person_id,
+      				   '08:00'                                       AS leaveFromTime,
+      				   '17:00'                                       AS leaveToTime
+				  FROM HR_EMP_V HR
+				 WHERE NVL(HR.DATE_LEFT,TO_DATE('2999-12-31','YYYY-MM-DD')) > SYSDATE
+				   AND HR.ACTIVITY = 1
+                   AND HR.CALC_FLAG = 'Y'
+		]]>
+		
+		<isNotEmpty prepend="AND" property="empId">
+			<![CDATA[
+		 		    HR.person_id = #empId:VARCHAR# 
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="key">
+			<![CDATA[
+		 		    (HR.EMPID LIKE '%' || #key:VARCHAR# || '%' OR HR.CHINESENAME LIKE '%' || #key:VARCHAR# || '%')  
+		    ]]>
+		</isNotEmpty>
+				
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+		 		 (EXISTS ( SELECT * 
+		 		             FROM AR_SUPERVISOR_INFO 
+		 		            WHERE SUPERVISED_DEPTID = HR.DEPTID
+		 		  			  AND AR_SUPERVISOR_ID = #supervisor:VARCHAR#
+	 	 		  	 ) OR HR.PERSON_ID= #supervisor:VARCHAR# )  
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="deptID">
+		<![CDATA[			   
+				   EXISTS
+					 (SELECT *
+					          FROM HR_DEPARTMENT B1
+					         WHERE B1.DEPTID = HR.DEPTID
+					         START WITH B1.DEPTID = #deptID:VARCHAR#
+					        CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID)
+		]]>
+		</isNotEmpty>	
+		
+		<![CDATA[
+		 		  ORDER BY HR.FOURTHDEPTID,HR.DEPTID,HR.EMPID   
+		    ]]>
+		
+	</select>
+	
+	<!-- NEW 当前申请人所能加班上限申请,人数 -->
+	<select id="retrieveApplyOTTopLimitPersonCnt" parameterClass="SimpleMap" resultClass="int"> 
+		<![CDATA[
+				  SELECT COUNT(HR.EMPID)
+				    FROM HR_EMPLOYEE HR,
+				       	 HR_DEPARTMENT HD,
+				       	 AR_OVERTIME_PLAN OT
+			      WHERE HR.EMPID = OT.EMPID(+)
+			        AND HR.DEPTID = HD.DEPTID
+			        AND NVL(HR.DATE_LEFT,TO_DATE('2999-12-31','YYYY-MM-DD')) > SYSDATE
+			        AND HR.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="planMonth">
+			<![CDATA[
+		 		 OT.PLAN_MONTH = #planMonth:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="planMonth">
+			<![CDATA[
+		 		 OT.PLAN_MONTH = (SELECT MAX(PLAN_MONTH) FROM AR_OVERTIME_PLAN)
+		    ]]>
+		</isEmpty>		
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+		 		  (EXISTS ( SELECT * 
+		 		             FROM AR_SUPERVISOR_INFO 
+		 		            WHERE SUPERVISED_DEPTID = HR.DEPTID
+		 		  			  AND AR_SUPERVISOR_ID = #supervisor:VARCHAR#
+		 		  		   )
+	 					  OR HR.EMPID= #supervisor:VARCHAR# 
+	 	 		   )   
+		    ]]>
+		</isNotEmpty>
+	</select>
+	
+	<!-- NEW 当前申请人所能加班上限申请,所有人的数据 -->
+	<select id="retrieveApplyOTTopLimitPerson" parameterClass="SimpleMap" resultClass="EssOverTimeBean"> 
+		<![CDATA[
+				SELECT HR.EMPID 						AS empId,
+				       HR.CHINESENAME 					AS chineseName,
+				       HD.DEPTID 						AS deptId,
+				       HD.DEPTNAME 						AS deptName,
+				       SY.CODE_NAME 					AS position,
+				       NVL(OT.LIMIT_OT,0) 				AS limit_ot,
+				       OT.PLAN_MONTH	  				AS otPlanMonth,													
+					   TO_CHAR(TO_DATE(OT.PLAN_MONTH,'YYYYMM'),'YYYY-MM-DD')						AS otPlanStartDate,
+	       			   TO_CHAR(ADD_MONTHS(TO_DATE(OT.PLAN_MONTH,'YYYYMM'),1) - 1,'YYYY-MM-DD')		AS otPlanEndDate,
+				       OT.OT_PLAN_NO	  															AS otPlanNo,
+				       ESS_GET_AFFIRM_NAMES(HR.EMPID,'OtTopLimitApply')    						    AS affirmData
+				       FROM HR_EMPLOYEE HR,
+				       		HR_DEPARTMENT HD,
+				            SY_CODE SY,
+				            AR_OVERTIME_PLAN OT
+				      WHERE HR.POSITION_CODE = SY.CODE_ID(+)
+				        AND HR.EMPID = OT.EMPID(+)
+				        AND HR.DEPTID = HD.DEPTID
+				        AND NVL(HR.DATE_LEFT,TO_DATE('2999-12-31','YYYY-MM-DD')) > SYSDATE
+				        AND HR.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="planMonth">
+			<![CDATA[
+		 		 OT.PLAN_MONTH = #planMonth:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		<isEmpty prepend="AND" property="planMonth">
+			<![CDATA[
+		 		 OT.PLAN_MONTH = (SELECT MAX(PLAN_MONTH) FROM AR_OVERTIME_PLAN)
+		    ]]>
+		</isEmpty>	
+		<isNotEmpty prepend="AND" property="empId">
+			<![CDATA[
+		 		    HR.EMPID = #empId:VARCHAR# AND OT.PLAN_MONTH = #otPlanMonth:VARCHAR#  
+		    ]]>
+		</isNotEmpty>
+				
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+		 		  (EXISTS ( SELECT * 
+		 		             FROM AR_SUPERVISOR_INFO 
+		 		            WHERE SUPERVISED_DEPTID = HR.DEPTID
+		 		  			  AND AR_SUPERVISOR_ID = #supervisor:VARCHAR#
+		 		  		   )
+	 				      OR HR.EMPID= #supervisor:VARCHAR# 
+	 	 		   )   
+		    ]]>
+		</isNotEmpty>
+		
+		<![CDATA[
+		 		  ORDER BY HR.EMPID   
+		    ]]>	
+	</select>
+
+	 <!-- NEW 得到取得加班上限的最近两个月 -->
+	<select id="retrieveApplyOTTopLimitMonthList" parameterClass="SimpleMap" resultClass="SimpleMap"> 
+		<![CDATA[
+				SELECT PLAN_MONTH FROM 
+					(SELECT DISTINCT OT.PLAN_MONTH FROM AR_OVERTIME_PLAN OT ORDER BY OT.PLAN_MONTH DESC) WHERE ROWNUM < 3
+		]]>
+		
+		
+    </select>
+
+    <!-- NEW 得到取得某个申请，比当前人决裁级别大的和，用来判断是否可以决裁 -->
+	<select id="retrieveApplyAffirmNextFlag" parameterClass="SimpleMap" resultClass="int"> 
+		<![CDATA[
+				SELECT NVL(SUM(EA.AFFIRM_FLAG),0) FROM ESS_AFFIRM EA WHERE EA.APPLY_NO = #applyNo:NUMERIC# AND EA.AFFIRM_LEVEL > #level:NUMERIC#
+		]]>
+		
+		
+    </select>
+	
+	<!-- NEW insert overtime toplimit apply information -->
+	<insert id="insertOvertimeTopLimitApply" parameterClass="EssOverTimeBean"> 
+		<![CDATA[
+		  INSERT INTO ESS_APPLY_OTTOPLIMIT 
+					   (APPLY_NO,
+						EMPID,
+						OT_PLAN_NO,
+						APPLY_LENGTN,
+						CREATE_DATE,
+						CREATED_BY,
+						ACTIVITY,
+						REMARK,
+						APPLY_GROUP_NO,
+						LIMIT_OT,
+						PLAN_MONTH
+						)
+			    VALUES (ESS_OTAPPLY_SEQ.NEXTVAL, 
+						#empId:VARCHAR#, 
+						#otPlanNo:NUMERIC#,
+						#otLength:NUMERIC#, 
+						SYSDATE, 
+						#createdBy:VARCHAR#,             
+						0, 
+						#otRemark:VARCHAR#, 
+						#applyGroupSeq:NUMERIC#,
+						#limit_ot#,
+						#otPlanMonth#
+						)
+			]]>
+	</insert>
+	
+	<!-- NEW retrieve OT TopLimit affirm list information -->
+	<select id="retrieveOtTopLimitAffirmListCnt" parameterClass="SimpleMap" resultClass="int"> 
+		<![CDATA[
+				    SELECT COUNT(ESS.APPLY_NO)
+					  FROM ESS_APPLY_OTTOPLIMIT ESS,
+					       HR_EMPLOYEE,
+					       HR_DEPARTMENT,
+					       ESS_AFFIRM
+					 WHERE ESS.EMPID = HR_EMPLOYEE.EMPID
+					   AND ESS_AFFIRM.APPLY_TYPE = 'OtTopLimitApply'
+					   AND HR_EMPLOYEE.DEPTID = HR_DEPARTMENT.DEPTID
+					   AND ESS.APPLY_NO = ESS_AFFIRM.APPLY_NO
+					   AND ESS_AFFIRM.AFFIRMOR_ID = #supervisor:VARCHAR#
+					   AND NVL(HR_EMPLOYEE.DATE_LEFT,TO_DATE('2999-12-31','YYYY-MM-DD')) > SYSDATE
+		]]>			   
+					   
+		<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+				   (
+			   		   ESS.EMPID                         LIKE #key:VARCHAR# || '%' 
+			   		OR HR_EMPLOYEE.CHINESENAME           LIKE #key:VARCHAR# || '%'
+			   		OR UPPER(HR_EMPLOYEE.CHINESE_PINYIN) LIKE UPPER(#key:VARCHAR#) || '%' 
+			    	)
+		]]>	
+		</isNotEmpty>		  
+		<isNotEmpty prepend="AND" property="apply_date">
+		<![CDATA[
+				 ESS.CREATE_DATE = TO_DATE(#apply_date:VARCHAR#,'YYYY-MM-DD')				   
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptID">
+		<![CDATA[			   
+				   EXISTS
+					 (SELECT *
+					          FROM HR_DEPARTMENT B1
+					         WHERE B1.DEPTID = HR_EMPLOYEE.DEPTID
+					         START WITH B1.DEPTID = #deptID:VARCHAR#
+					        CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID)
+		]]>
+		</isNotEmpty>		
+		<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁过的，无论是通过还是否决 -->
+		<![CDATA[
+				 affirm_flag != 0
+		]]>
+		</isEqual>		
+		<isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 未决裁 -->
+		<![CDATA[
+				 affirm_flag = 0
+		]]>
+		</isEqual>
+		
+	</select>
+	
+	<!-- NEW retrieve OT TopLimit affirm list information -->
+	<select id="retrieveOtTopLimitAffirmList" parameterClass="SimpleMap" resultClass="EssOverTimeBean"> 
+		<![CDATA[
+				    SELECT ESS.APPLY_NO 								AS otNo,
+					       ESS.EMPID 									AS empId,
+					       HR_EMPLOYEE.CHINESENAME 						AS chineseName,
+					       SY_POSITION.CODE_NAME 						AS position,
+					       ESS_AFFIRM.AFFIRM_LEVEL 						AS affirmLevel,
+					       ESS_AFFIRM.AFFIRM_FLAG 						AS affirm_flag,
+					       HR_DEPARTMENT.DEPTNAME 						AS deptName,
+					       ESS.LIMIT_OT  			                    AS limit_ot,
+					       ESS.APPLY_LENGTN 							AS otLength,
+					       ESS.REMARK 									AS otRemark,
+					       TO_CHAR(ESS.CREATE_DATE, 'YYYY-MM-DD') 		AS createDate,
+					       ESS.PLAN_MONTH								AS otPlanMonth,
+					       ESS.ACTIVITY 								AS activity
+					  FROM ESS_APPLY_OTTOPLIMIT ESS,
+					       HR_EMPLOYEE,
+					       (SELECT CODE_ID,CODE_NAME FROM SY_CODE SY WHERE SY.PARENT_CODE = 'PositionCode') SY_POSITION,
+					       HR_DEPARTMENT,
+					       ESS_AFFIRM
+					 WHERE ESS.EMPID = HR_EMPLOYEE.EMPID
+					   AND ESS_AFFIRM.APPLY_TYPE = 'OtTopLimitApply'
+					   AND HR_EMPLOYEE.POST_CODE = SY_POSITION.CODE_ID(+)
+					   AND HR_EMPLOYEE.DEPTID = HR_DEPARTMENT.DEPTID
+					   AND ESS.APPLY_NO = ESS_AFFIRM.APPLY_NO
+					   AND ESS_AFFIRM.AFFIRMOR_ID = #supervisor:VARCHAR#
+					   AND NVL(HR_EMPLOYEE.DATE_LEFT,TO_DATE('2999-12-31','YYYY-MM-DD')) > SYSDATE
+		]]>			   
+					   
+		<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+				   (
+			   		   ESS.EMPID                         LIKE #key:VARCHAR# || '%' 
+			   		OR HR_EMPLOYEE.CHINESENAME           LIKE #key:VARCHAR# || '%'
+			   		OR UPPER(HR_EMPLOYEE.CHINESE_PINYIN) LIKE UPPER(#key:VARCHAR#) || '%' 
+			    	)
+		]]>	
+		</isNotEmpty>		  
+		<isNotEmpty prepend="AND" property="planMonth">
+		<![CDATA[
+				 ESS.PLAN_MONTH = #planMonth#	   
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptID">
+		<![CDATA[			   
+				   EXISTS
+					 (SELECT *
+					          FROM HR_DEPARTMENT B1
+					         WHERE B1.DEPTID = HR_EMPLOYEE.DEPTID
+					         START WITH B1.DEPTID = #deptID:VARCHAR#
+					        CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID)
+		]]>
+		</isNotEmpty>		
+		<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁过的，无论是通过还是否决 -->
+		<![CDATA[
+				 affirm_flag != 0
+		]]>
+		</isEqual>		
+		<isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 未决裁 -->
+		<![CDATA[
+				 affirm_flag = 0
+		]]>
+		</isEqual>
+		
+		<![CDATA[					        
+					 ORDER BY DECODE(ACTIVITY, 0, 1, ACTIVITY),AFFIRM_FLAG,createDate DESC,DEPTNAME,EMPID
+			]]>
+	</select>
+	
+	<!-- NEW retrieve OT affirm list information -->
+	<select id="retrieveOtAffirmList" parameterClass="SimpleMap" resultClass="EssOverTimeBean"> 
+		<![CDATA[
+				    SELECT ESS_APPLY_OT.APPLY_OT_NO 										     AS otNo,
+					       HR_EMPLOYEE.EMPID                                                     AS empId,
+      					   ESS_APPLY_OT.EMPID                                                    AS person_id,
+					       HR_EMPLOYEE.CHINESENAME											     AS chineseName,
+					       HY.CHINESENAME											     		 AS crechineseName,
+					       SY_POSITION.CODE_NAME 											     AS position,
+					       SY_POST_GRADE.CODE_NAME 											     AS postGradeCode,	
+					       ESS_AFFIRM.AFFIRM_LEVEL											     AS affirmLevel,
+					       ESS_AFFIRM.AFFIRM_FLAG											     AS affirm_flag,
+					       ESS_AFFIRM.AFFIRM_REMARKS                                             AS REMARK,
+					       /*HR_EMPLOYEE.deptname 											     AS deptName,*/
+       					   /*HR_EMPLOYEE.FOURTHDEPTNAME										     AS fourthDeptName,*/
+       					   get_dept_name(HR_EMPLOYEE.DEPTID)									 AS deptName,
+       					   hr_get_level_deptname(HR_EMPLOYEE.DEPTID,4)							 AS fourthDeptName,
+					       ApplyType.CODE_NAME 												     AS otTypeName,
+					       ApplyType.CODE_ID												     AS otTypeCode,
+					       TO_CHAR(ESS_APPLY_OT.APPLY_OT_DATE - OT_NIGHT_FLAG, 'YYYY-MM-DD')     AS otDate,
+					       TO_CHAR(ESS_APPLY_OT.APPLY_OT_DATE, 'YYYY-MM-DD ') || ESS_APPLY_OT.OT_FROM_TIME  AS otFromTime,
+					       TO_CHAR(ESS_APPLY_OT.APPLY_OT_DATE + ESS_APPLY_OT.APPLY_OT_FLAG,'YYYY-MM-DD ') || ESS_APPLY_OT.OT_TO_TIME AS otToTime,
+					       CASE WHEN OT_LENGTH > 0
+					       	    THEN OT_LENGTH
+					       	    ELSE
+					       (TO_DATE(TO_CHAR(ESS_APPLY_OT.APPLY_OT_DATE + ESS_APPLY_OT.APPLY_OT_FLAG,'YYYY-MM-DD ') || ESS_APPLY_OT.OT_TO_TIME,
+					                'YYYY-MM-DD HH24:MI') - TO_DATE(TO_CHAR(ESS_APPLY_OT.APPLY_OT_DATE, 'YYYY-MM-DD ') || ESS_APPLY_OT.OT_FROM_TIME,
+					                'YYYY-MM-DD HH24:MI')) * 24 - ESS_APPLY_OT.OT_DEDUCT_TIME 
+					            END AS otLength,
+					       ESS_APPLY_OT.APPLY_OT_REMARK 									  AS otRemark,
+					       ESS_APPLY_OT.APPLY_OT_FLAG   									  AS otNextDays,
+					       TO_CHAR(ESS_APPLY_OT.CREATE_DATE, 'YYYY-MM-DD') 					  AS createDate,
+					       ESS_APPLY_OT.ACTIVITY 											  AS activity,
+					       ESS_APPLY_OT.OT_DEDUCT_TIME 										  AS otDeduct,
+					       ESS_APPLY_OT.APPLY_OT_AFFIRM 									  AS forceType,
+					       NVL(ESS_AFFIRM.UP_AFFIRM_FLAG,1) 							      AS up_flag,
+					       NVL(ESS_AFFIRM.NEXT_AFFIRM_FLAG,0) 							      AS next_flag,
+					       NVL(ESS_AFFIRM.MAX_LEVEL_FLAG,0)								      AS maxLevel_flag
+					  FROM ESS_APPLY_OT,
+					       /*HR_EMP_V HR_EMPLOYEE,*/
+					       HR_EMPLOYEE HR_EMPLOYEE,
+					       HR_EMPLOYEE HY,
+					       SY_CODE APPLYTYPE,
+         				   SY_CODE SY_POSITION,
+         				   SY_CODE SY_POST_GRADE,
+					       (  SELECT ESS_AFFIRM.*, UP_AFFIRM.AFFIRM_FLAG AS UP_AFFIRM_FLAG,
+					                 UP_AFFIRM.AFFIRMOR_ID AS UP_AFFIRMOR_ID,
+					                 0 AS NEXT_AFFIRM_FLAG,
+					                 (CASE
+					                     WHEN ESS_AFFIRM.AFFIRM_LEVEL = ESS_AFFIRM_MAX_LEVEL.MAXLEVEL
+					                        THEN 1
+					                     ELSE 0
+					                  END
+					                 ) MAX_LEVEL_FLAG
+					            FROM (SELECT ESS_AFFIRM.*,
+					                         ESS_AFFIRM.AFFIRM_LEVEL - 1 AS UP_LEVEL,
+					                         ESS_AFFIRM.AFFIRM_LEVEL + 1 AS NEXT_LEVEL
+					                    FROM ESS_AFFIRM
+					                   WHERE APPLY_TYPE = 'OtApply'
+									     AND AFFIRMOR_ID = #supervisor:VARCHAR#) ESS_AFFIRM,
+									   
+					                 (SELECT   T.APPLY_NO, T.APPLY_TYPE,
+					                           MAX (T.AFFIRM_LEVEL) MAXLEVEL
+					                      FROM ESS_AFFIRM T
+					                     WHERE T.APPLY_TYPE = 'OtApply'
+					                       AND EXISTS (SELECT APPLY_NO FROM ESS_AFFIRM T2 WHERE T2.AFFIRMOR_ID = #supervisor:VARCHAR# AND T2.APPLY_NO = T.APPLY_NO)
+					                  GROUP BY T.APPLY_NO, T.APPLY_TYPE) ESS_AFFIRM_MAX_LEVEL,
+									  
+					                 (SELECT T.APPLY_NO, T.APPLY_TYPE, T.AFFIRM_LEVEL,
+					                         T.AFFIRMOR_ID, T.AFFIRM_FLAG
+					                    FROM ESS_AFFIRM T
+					                   WHERE APPLY_TYPE = 'OtApply'
+					                      AND EXISTS (SELECT APPLY_NO FROM ESS_AFFIRM T2 WHERE T2.AFFIRMOR_ID = #supervisor:VARCHAR# AND T2.APPLY_NO = T.APPLY_NO)
+									      ) UP_AFFIRM
+					           WHERE ESS_AFFIRM.APPLY_TYPE = 'OtApply'
+					             AND ESS_AFFIRM.APPLY_NO = UP_AFFIRM.APPLY_NO(+)
+					             AND ESS_AFFIRM.UP_LEVEL = UP_AFFIRM.AFFIRM_LEVEL(+)
+					             AND ESS_AFFIRM.APPLY_NO = ESS_AFFIRM_MAX_LEVEL.APPLY_NO(+)
+							   ) ESS_AFFIRM
+					 WHERE ESS_APPLY_OT.EMPID = HR_EMPLOYEE.person_id	
+					 	 AND ESS_APPLY_OT.CREATED_BY = HY.person_id
+					     AND HR_EMPLOYEE.POST_CODE = SY_POSITION.CODE_ID(+)
+					     AND HR_EMPLOYEE.POST_GRADE_CODE = SY_POST_GRADE.CODE_ID(+)
+					     AND ESS_APPLY_OT.APPLY_OT_TYPE_CODE = APPLYTYPE.CODE_ID(+)
+					     AND ESS_APPLY_OT.APPLY_OT_NO = ESS_AFFIRM.APPLY_NO
+						 AND APPLYTYPE.PARENT_CODE = 'OTTypeCode'
+						  /*AND SY_POSITION.PARENT_CODE = 'PositionCode'*/
+					     AND ESS_AFFIRM.AFFIRMOR_ID = #supervisor:VARCHAR#
+					     AND NVL (ESS_AFFIRM.UP_AFFIRM_FLAG, 1) = 1
+						 AND HR_EMPLOYEE.CPNY_ID = (SELECT CPNY_ID FROM HR_EMPLOYEE WHERE PERSON_ID = #supervisor:VARCHAR#)		  
+		]]>			   
+					   
+		<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+				   (
+			   		   HR_EMPLOYEE.EMPID                LIKE #key:VARCHAR# || '%' 
+			   		OR HR_EMPLOYEE.CHINESENAME           LIKE #key:VARCHAR# || '%'
+			   		OR UPPER(HR_EMPLOYEE.CHINESE_PINYIN) LIKE UPPER(#key:VARCHAR#) || '%' 
+			    	)
+		]]>	
+		</isNotEmpty>		  
+		<isNotEmpty prepend="AND" property="sDate">
+		<![CDATA[				   
+				 ESS_APPLY_OT.APPLY_OT_DATE BETWEEN TO_DATE(NVL(#sDate:VARCHAR#,'1900-01-01'), 'YYYY-MM-DD') AND TO_DATE(NVL(#eDate:VARCHAR#,'2999-12-31') || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptID">
+		<![CDATA[			   
+				   EXISTS
+					 (SELECT *
+					          FROM HR_DEPARTMENT B1
+					         WHERE B1.DEPTID = HR_EMPLOYEE.DEPTID
+					         START WITH B1.DEPTID = #deptID:VARCHAR#
+					        CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID)
+		]]>
+		</isNotEmpty>		
+	<isNotEqual prepend="" property="qryType" compareValue="0"> 				
+		<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁过的，无论是通过还是否决 -->
+		<![CDATA[
+				 affirm_flag > 0 
+		]]>
+		</isEqual>		
+		<isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 未决裁 -->
+		<![CDATA[
+				 affirm_flag = 0 AND ESS_APPLY_OT.ACTIVITY = 0
+				 
+		]]>
+		</isEqual>
+    </isNotEqual>
+		
+		<![CDATA[					        
+					 ORDER BY DECODE(ACTIVITY, 0, 1, ACTIVITY),AFFIRM_FLAG,APPLY_OT_DATE DESC,DEPTNAME,EMPID
+			]]>
+	</select>
+	
+	<!-- NEW retrieve affirm dept list -->
+	<select id="retrieveAffirmDeptList" parameterClass="SimpleMap" resultClass="SimpleMap"> 
+		<![CDATA[
+				    SELECT * FROM (
+				    SELECT HD.DEPTID,HD.DEPTNAME,HD.DEPT_LEVEL
+					  FROM HR_DEPARTMENT HD
+					 WHERE HD.ACTIVITY='1' 
+					 START WITH HD.DEPT_LEVEL IN (SELECT MIN(DEPT_LEVEL) FROM HR_DEPARTMENT)
+					CONNECT BY PRIOR HD.DEPTID = HD.PARENT_DEPT_ID)A
+					WHERE A.DEPTID IN (SELECT SY.AFFIRM_DEPTID 
+					       FROM SY_AFFIRM_RELATION_TB_AUTO SY
+					       WHERE SY.AFFIRMOR_ID = #supervisor:VARCHAR# )
+		]]>
+	</select>
+	
+	<!-- NEW retrieve OT affirm list count -->
+	<select id="retrieveOtAffirmListCnt" parameterClass="SimpleMap" resultClass="int"> 
+		<![CDATA[
+					   
+				  SELECT   COUNT(0)
+				    FROM ESS_APPLY_OT,
+				         HR_EMPLOYEE HR_EMPLOYEE,
+				         (SELECT ESS_AFFIRM.*, UP_AFFIRM.AFFIRM_FLAG AS UP_AFFIRM_FLAG,
+				                 UP_AFFIRM.AFFIRMOR_ID AS UP_AFFIRMOR_ID,
+				                 0 AS NEXT_AFFIRM_FLAG,
+				                 (CASE
+				                     WHEN ESS_AFFIRM.AFFIRM_LEVEL = ESS_AFFIRM_MAX_LEVEL.MAXLEVEL
+				                        THEN 1
+				                     ELSE 0
+				                  END
+				                 ) MAX_LEVEL_FLAG
+				            FROM (SELECT ESS_AFFIRM.*,
+				                         ESS_AFFIRM.AFFIRM_LEVEL - 1 AS UP_LEVEL,
+				                         ESS_AFFIRM.AFFIRM_LEVEL + 1 AS NEXT_LEVEL
+				                    FROM ESS_AFFIRM
+				                   WHERE APPLY_TYPE = 'OtApply'
+								     AND AFFIRMOR_ID = #supervisor:VARCHAR#) ESS_AFFIRM,
+								   
+				                 (SELECT   T.APPLY_NO, T.APPLY_TYPE,
+				                           MAX (T.AFFIRM_LEVEL) MAXLEVEL
+				                      FROM ESS_AFFIRM T
+				                     WHERE T.APPLY_TYPE = 'OtApply'
+				                       AND EXISTS (SELECT APPLY_NO FROM ESS_AFFIRM T2 WHERE T2.AFFIRMOR_ID = #supervisor:VARCHAR# AND T2.APPLY_NO = T.APPLY_NO)
+									  
+				                  GROUP BY T.APPLY_NO, T.APPLY_TYPE) ESS_AFFIRM_MAX_LEVEL,
+								  
+				                 (SELECT T.APPLY_NO, T.APPLY_TYPE, T.AFFIRM_LEVEL,
+				                         T.AFFIRMOR_ID, T.AFFIRM_FLAG
+				                    FROM ESS_AFFIRM T
+				                   WHERE APPLY_TYPE = 'OtApply'
+				                     AND EXISTS (SELECT APPLY_NO FROM ESS_AFFIRM T2 WHERE T2.AFFIRMOR_ID = #supervisor:VARCHAR# AND T2.APPLY_NO = T.APPLY_NO)
+								     ) UP_AFFIRM
+				           WHERE ESS_AFFIRM.APPLY_TYPE = 'OtApply'
+				             AND ESS_AFFIRM.APPLY_NO = UP_AFFIRM.APPLY_NO(+)
+				             AND ESS_AFFIRM.UP_LEVEL = UP_AFFIRM.AFFIRM_LEVEL(+)
+				             AND ESS_AFFIRM.APPLY_NO = ESS_AFFIRM_MAX_LEVEL.APPLY_NO(+)
+							 ) ESS_AFFIRM
+				   WHERE ESS_APPLY_OT.EMPID = HR_EMPLOYEE.PERSON_ID
+				     AND ESS_APPLY_OT.APPLY_OT_NO = ESS_AFFIRM.APPLY_NO
+				     AND ESS_AFFIRM.AFFIRMOR_ID = #supervisor:VARCHAR#
+				     AND NVL (ESS_AFFIRM.UP_AFFIRM_FLAG, 1) = 1
+					 AND HR_EMPLOYEE.CPNY_ID = (SELECT CPNY_ID FROM HR_EMPLOYEE WHERE PERSON_ID = #supervisor:VARCHAR#)
+		]]>
+		<isNotEmpty prepend="AND" property="key">
+		<![CDATA[		   
+				   (
+			   		   HR_EMPLOYEE.EMPID                LIKE #key:VARCHAR# || '%' 
+			   		OR HR_EMPLOYEE.CHINESENAME           LIKE #key:VARCHAR# || '%'
+			   		OR UPPER(HR_EMPLOYEE.CHINESE_PINYIN) LIKE UPPER(#key:VARCHAR#) || '%' 
+			    	)
+		]]>	
+		</isNotEmpty>		  
+		<isNotEmpty prepend="AND" property="sDate">
+		<![CDATA[
+				 ESS_APPLY_OT.APPLY_OT_DATE BETWEEN TO_DATE(NVL(#sDate:VARCHAR#,'1900-01-01'), 'YYYY-MM-DD') AND TO_DATE(NVL(#eDate:VARCHAR#,'2999-12-31') || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')				   
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptID">
+		<![CDATA[			   
+			   EXISTS
+				 (SELECT *
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTID = HR_EMPLOYEE.DEPTID
+				         START WITH B1.DEPTID = #deptID:VARCHAR#
+				        CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID)
+		]]>
+		</isNotEmpty>	
+	<isNotEqual prepend="" property="qryType" compareValue="0"> 				
+		<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁过的，无论是通过还是否决 -->
+		<![CDATA[
+				 affirm_flag > 0 
+		]]>
+		</isEqual>		
+		<isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 未决裁 -->
+		<![CDATA[
+				 affirm_flag = 0 AND ESS_APPLY_OT.ACTIVITY = 0
+				 
+		]]>
+		</isEqual>
+    </isNotEqual>
+	</select>
+	
+	<!-- NEW retrieve Leave affirm list information -->
+	<select id="retrieveLeaveAffirmList" parameterClass="SimpleMap" resultClass="EssLeaveBean"> 
+		<![CDATA[
+				    SELECT ESS_LEAVE_APPLY_TB.LEAVE_NO										  AS leaveNo,
+				    	   (select e.empid from hr_employee e where e.person_id=ESS_LEAVE_APPLY_TB.LEAVE_EMPID) AS empId,
+					       ESS_LEAVE_APPLY_TB.LEAVE_EMPID									  AS person_id,
+					       HR_EMPLOYEE.CHINESENAME											  AS chineseName,
+					       HY.CHINESENAME													  AS crechineseName,
+					       SY_POSITION.CODE_NAME 											  AS position,	
+					       SY_GRADE_CODE.CODE_NAME                                            AS postGradeCode,
+					       HR_EMPLOYEE.deptname 											  AS deptName,
+       					   HR_EMPLOYEE.FOURTHDEPTNAME										  AS fourthDeptName,
+					       ESS_AFFIRM.AFFIRM_LEVEL											  AS affirmLevel,
+					       ESS_AFFIRM.AFFIRM_FLAG											  AS affirm_flag,
+					       ESS_AFFIRM.AFFIRM_REMARKS										  AS remark,
+					       ESS_LEAVE_APPLY_TB.LEAVE_TYPE									  AS leaveTypeCode,
+					       ApplyType.CODE_NAME 								  				  AS leaveTypeName,
+					       TO_CHAR(ESS_LEAVE_APPLY_TB.CREATE_DATE, 'YYYY-MM-DD') 	  		  AS createDate,
+					       TO_CHAR(ESS_LEAVE_APPLY_TB.LEAVE_FROM_TIME, 'YYYY-MM-DD HH24:MI')  AS leaveFromTime,
+					       TO_CHAR(ESS_LEAVE_APPLY_TB.LEAVE_TO_TIME, 'YYYY-MM-DD HH24:MI')    AS leaveToTime,
+					       ESS_LEAVE_APPLY_TB.LEAVE_REASON									  AS leaveReason,
+					       ESS_LEAVE_APPLY_TB.ACTIVITY										  AS activity,
+					       ESS_LEAVE_APPLY_TB.REMARK										  AS remark,
+					       NVL(ESS_AFFIRM.UP_AFFIRM_FLAG,1) 							      AS up_flag,
+					       NVL(ESS_AFFIRM.NEXT_AFFIRM_FLAG,0) 							      AS next_flag,
+					       NVL(ESS_AFFIRM.MAX_LEVEL_FLAG,0)								      AS maxLevel_flag,
+					       ALTYPE.CODE_NAME                                                   as applyLeaveType,
+					       MAX_AFFIRMOR_FLAG.AFFIRM_FLAG 									  AS max_affirm_flag,
+					       ESS_LEAVE_APPLY_TB.FILE_UPLOAD_FLAG								  AS fileUploadFlag
+					  FROM ESS_LEAVE_APPLY_TB,
+					       (SELECT CODE_ID,CODE_NAME FROM SY_CODE SY WHERE SY.PARENT_CODE = 'LeaveTypeCode') ApplyType,
+					       (SELECT CODE_ID,CODE_NAME FROM SY_CODE SY WHERE SY.PARENT_CODE = 'PositionCode') SY_POSITION,
+					       (SELECT CODE_ID,CODE_NAME FROM SY_CODE SY WHERE SY.PARENT_CODE = 'PostGradeCode') SY_GRADE_CODE,
+					       HR_EMP_V HR_EMPLOYEE,
+					       HR_EMPLOYEE HY,
+					       SY_CODE ALTYPE,
+					       (SELECT ESS_AFFIRM.*,
+							       UP_AFFIRM.AFFIRM_FLAG AS UP_AFFIRM_FLAG,
+							       UP_AFFIRM.AFFIRMOR_ID AS UP_AFFIRMOR_ID,
+							       NEXT_AFFIRM.AFFIRM_FLAG AS NEXT_AFFIRM_FLAG,
+							       (CASE WHEN ESS_AFFIRM.AFFIRM_LEVEL = ESS_AFFIRM_MAX_LEVEL.MAXLEVEL THEN 1 ELSE 0 END) MAX_LEVEL_FLAG
+							  FROM (SELECT ESS_AFFIRM.*,ESS_AFFIRM.AFFIRM_LEVEL - 1 AS UP_LEVEL,ESS_AFFIRM.AFFIRM_LEVEL + 1 AS NEXT_LEVEL
+							          FROM ESS_AFFIRM
+							         WHERE APPLY_TYPE = 'LeaveApply') ESS_AFFIRM,
+							       (SELECT T.APPLY_NO, T.APPLY_TYPE, MAX(T.AFFIRM_LEVEL) MAXLEVEL
+							          FROM ESS_AFFIRM T
+							         WHERE T.APPLY_TYPE = 'LeaveApply'
+							         GROUP BY T.APPLY_NO, T.APPLY_TYPE) ESS_AFFIRM_MAX_LEVEL,
+							       (SELECT T.APPLY_NO,T.APPLY_TYPE,T.AFFIRM_LEVEL,T.AFFIRMOR_ID,T.AFFIRM_FLAG
+							          FROM ESS_AFFIRM T
+							         WHERE APPLY_TYPE = 'LeaveApply') UP_AFFIRM,
+							       (SELECT A.APPLY_NO, A.APPLY_TYPE, MAX(A.AFFIRM_FLAG) AS AFFIRM_FLAG
+							          FROM ESS_AFFIRM A,
+							               (SELECT T.APPLY_NO, T.AFFIRMOR_ID, T.AFFIRM_LEVEL
+							                  FROM ESS_AFFIRM T
+							                 WHERE T.AFFIRMOR_ID = #supervisor:VARCHAR#
+							                   AND T.APPLY_TYPE = 'LeaveApply') B
+							         WHERE A.APPLY_TYPE = 'LeaveApply'
+							           AND A.APPLY_NO = B.APPLY_NO
+							           AND A.AFFIRM_LEVEL > B.AFFIRM_LEVEL
+							         GROUP BY A.APPLY_NO, A.APPLY_TYPE) NEXT_AFFIRM
+							 WHERE ESS_AFFIRM.APPLY_TYPE = 'LeaveApply'
+							   AND ESS_AFFIRM.APPLY_TYPE = UP_AFFIRM.APPLY_TYPE(+)
+							   AND ESS_AFFIRM.APPLY_NO = UP_AFFIRM.APPLY_NO(+)
+							   AND ESS_AFFIRM.UP_LEVEL = UP_AFFIRM.AFFIRM_LEVEL(+)
+							   AND ESS_AFFIRM.APPLY_TYPE = NEXT_AFFIRM.APPLY_TYPE(+)
+							   AND ESS_AFFIRM.APPLY_NO = NEXT_AFFIRM.APPLY_NO(+)
+							   AND ESS_AFFIRM.APPLY_NO = ESS_AFFIRM_MAX_LEVEL.APPLY_NO(+)
+							   AND ESS_AFFIRM.APPLY_TYPE = ESS_AFFIRM_MAX_LEVEL.APPLY_TYPE(+)
+							   ) ESS_AFFIRM,
+							   (SELECT ESS_AFFIRM.AFFIRM_FLAG, ESS_AFFIRM.APPLY_NO
+          FROM ESS_AFFIRM,
+               (SELECT MAX(ESS_AFFIRM.AFFIRM_LEVEL),
+                       MAX(ESS_AFFIRM.ESS_AFFIRM_NO) AFFIRM_NO
+                  FROM ESS_AFFIRM
+                 WHERE ESS_AFFIRM.APPLY_TYPE = 'LeaveApply'
+                 GROUP BY ESS_AFFIRM.APPLY_NO) HH
+         WHERE ESS_AFFIRM.ESS_AFFIRM_NO = HH.AFFIRM_NO) MAX_AFFIRMOR_FLAG
+					 WHERE ESS_AFFIRM.APPLY_TYPE = 'LeaveApply'
+					   AND ESS_LEAVE_APPLY_TB.LEAVE_TYPE = ApplyType.CODE_ID(+)
+					   AND ESS_LEAVE_APPLY_TB.created_by = HY.person_id
+					   AND ESS_LEAVE_APPLY_TB.LEAVE_NO = MAX_AFFIRMOR_FLAG.APPLY_NO
+					   AND HR_EMPLOYEE.POST_CODE = SY_POSITION.CODE_ID(+)
+					   AND HR_EMPLOYEE.POST_GRADE_CODE = SY_GRADE_CODE.CODE_ID(+)
+					   AND ESS_LEAVE_APPLY_TB.APPLYLEAVETYPE = ALTYPE.CODE_ID(+)
+					   AND ESS_LEAVE_APPLY_TB.LEAVE_EMPID = HR_EMPLOYEE.person_id
+					   AND ESS_LEAVE_APPLY_TB.LEAVE_NO = ESS_AFFIRM.APPLY_NO
+					   AND NVL(ESS_AFFIRM.UP_AFFIRM_FLAG,1)=1
+					   AND ESS_AFFIRM.AFFIRMOR_ID = #supervisor:VARCHAR#
+		]]>			   
+		<isNotEmpty prepend="AND" property="key">
+		<![CDATA[			    
+			       (   
+			   		   HR_EMPLOYEE.EMPID LIKE #key:VARCHAR# || '%' 
+			   		OR HR_EMPLOYEE.CHINESENAME LIKE #key:VARCHAR# || '%' 
+			   		OR UPPER(HR_EMPLOYEE.CHINESE_PINYIN) LIKE UPPER(#key:VARCHAR#) || '%' 
+			   	    )
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="sDate">
+		<![CDATA[
+			       (
+			   		   ESS_LEAVE_APPLY_TB.LEAVE_FROM_TIME BETWEEN TO_DATE(#sDate:VARCHAR#, 'YYYY-MM-DD') AND TO_DATE(#eDate:VARCHAR# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+			       OR  ESS_LEAVE_APPLY_TB.LEAVE_TO_TIME BETWEEN TO_DATE(#sDate:VARCHAR#, 'YYYY-MM-DD') AND TO_DATE(#eDate:VARCHAR# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+			       OR  ESS_LEAVE_APPLY_TB.LEAVE_FROM_TIME < TO_DATE(#sDate:VARCHAR#, 'YYYY-MM-DD') AND ESS_LEAVE_APPLY_TB.LEAVE_TO_TIME > TO_DATE(#eDate:VARCHAR# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+			       )
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptID">
+		<![CDATA[			   
+				EXISTS
+					 (SELECT *
+					          FROM HR_DEPARTMENT B1
+					         WHERE B1.DEPTID = HR_EMPLOYEE.DEPTID
+					         START WITH B1.DEPTID = #deptID:VARCHAR#
+					        CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID)
+		]]>
+		</isNotEmpty>		
+			
+	   <isNotEqual prepend="" property="qryType" compareValue="0"> 
+		   
+		    <isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁过的，无论是通过还是否决 -->
+		    <![CDATA[
+		         ( ESS_AFFIRM.affirm_flag != 0 OR ESS_LEAVE_APPLY_TB.ACTIVITY!=0 )
+		    ]]>
+		    </isEqual> 
+		       
+		    <isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 未决裁 -->
+		    <![CDATA[
+		         ESS_AFFIRM.affirm_flag = 0
+		    ]]>
+		    </isEqual>
+      </isNotEqual>
+		
+		<![CDATA[					        
+					 ORDER BY ACTIVITY, ESS_AFFIRM.AFFIRM_FLAG,LEAVE_FROM_TIME DESC,EMPID
+			]]>
+	</select>
+	
+	<!-- NEW retrieve Leave affirm list count -->
+	<select id="retrieveLeaveAffirmListCnt" parameterClass="SimpleMap" resultClass="int"> 
+			<![CDATA[
+				    SELECT COUNT(ESS_LEAVE_APPLY_TB.LEAVE_EMPID)
+					  FROM ESS_LEAVE_APPLY_TB,
+					       HR_EMPLOYEE,
+					       HR_DEPARTMENT,
+					       (SELECT ESS_AFFIRM.*,
+                     UP_AFFIRM.AFFIRM_FLAG AS UP_AFFIRM_FLAG,
+                     UP_AFFIRM.AFFIRMOR_ID AS UP_AFFIRMOR_ID,
+                     NEXT_AFFIRM.AFFIRM_FLAG AS NEXT_AFFIRM_FLAG,
+                     (CASE WHEN ESS_AFFIRM.AFFIRM_LEVEL = ESS_AFFIRM_MAX_LEVEL.MAXLEVEL THEN 1 ELSE 0 END) MAX_LEVEL_FLAG
+                FROM (SELECT ESS_AFFIRM.*,ESS_AFFIRM.AFFIRM_LEVEL - 1 AS UP_LEVEL,ESS_AFFIRM.AFFIRM_LEVEL + 1 AS NEXT_LEVEL
+                        FROM ESS_AFFIRM
+                       WHERE APPLY_TYPE = 'LeaveApply') ESS_AFFIRM,
+                     (SELECT T.APPLY_NO, T.APPLY_TYPE, MAX(T.AFFIRM_LEVEL) MAXLEVEL
+                        FROM ESS_AFFIRM T
+                       WHERE T.APPLY_TYPE = 'LeaveApply'
+                       GROUP BY T.APPLY_NO, T.APPLY_TYPE) ESS_AFFIRM_MAX_LEVEL,
+                     (SELECT T.APPLY_NO,T.APPLY_TYPE,T.AFFIRM_LEVEL,T.AFFIRMOR_ID,T.AFFIRM_FLAG
+                        FROM ESS_AFFIRM T
+                       WHERE APPLY_TYPE = 'LeaveApply') UP_AFFIRM,
+                     (SELECT A.APPLY_NO, A.APPLY_TYPE, MAX(A.AFFIRM_FLAG) AS AFFIRM_FLAG
+                        FROM ESS_AFFIRM A,
+                             (SELECT T.APPLY_NO, T.AFFIRMOR_ID, T.AFFIRM_LEVEL
+                                FROM ESS_AFFIRM T
+                               WHERE T.AFFIRMOR_ID = #supervisor:VARCHAR#
+                                 AND T.APPLY_TYPE = 'LeaveApply') B
+                       WHERE A.APPLY_TYPE = 'LeaveApply'
+                         AND A.APPLY_NO = B.APPLY_NO
+                         AND A.AFFIRM_LEVEL > B.AFFIRM_LEVEL
+                       GROUP BY A.APPLY_NO, A.APPLY_TYPE) NEXT_AFFIRM
+               WHERE ESS_AFFIRM.APPLY_TYPE = 'LeaveApply'
+                 AND ESS_AFFIRM.APPLY_TYPE = UP_AFFIRM.APPLY_TYPE(+)
+                 AND ESS_AFFIRM.APPLY_NO = UP_AFFIRM.APPLY_NO(+)
+                 AND ESS_AFFIRM.UP_LEVEL = UP_AFFIRM.AFFIRM_LEVEL(+)
+                 AND ESS_AFFIRM.APPLY_TYPE = NEXT_AFFIRM.APPLY_TYPE(+)
+                 AND ESS_AFFIRM.APPLY_NO = NEXT_AFFIRM.APPLY_NO(+)
+                 AND ESS_AFFIRM.APPLY_NO = ESS_AFFIRM_MAX_LEVEL.APPLY_NO(+)
+                 AND ESS_AFFIRM.APPLY_TYPE = ESS_AFFIRM_MAX_LEVEL.APPLY_TYPE(+)
+                 ) ESS_AFFIRM
+					 WHERE ESS_AFFIRM.APPLY_TYPE = 'LeaveApply'
+					   AND ESS_LEAVE_APPLY_TB.LEAVE_EMPID = HR_EMPLOYEE.Person_Id
+					   AND HR_EMPLOYEE.DEPTID = HR_DEPARTMENT.DEPTID
+					   AND ESS_LEAVE_APPLY_TB.LEAVE_NO = ESS_AFFIRM.APPLY_NO
+					   AND ESS_AFFIRM.AFFIRMOR_ID = #supervisor:VARCHAR#
+					   AND NVL(ESS_AFFIRM.UP_AFFIRM_FLAG,1)=1
+		]]>
+		<isNotEmpty prepend="AND" property="key">
+		<![CDATA[			    
+			       (   
+			   		   HR_EMPLOYEE.EMPID LIKE #key:VARCHAR# || '%' 
+			   		OR HR_EMPLOYEE.CHINESENAME LIKE #key:VARCHAR# || '%' 
+			   		OR UPPER(HR_EMPLOYEE.CHINESE_PINYIN) LIKE UPPER(#key:VARCHAR#) || '%' 
+			   	    )
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="sDate">
+		<![CDATA[
+			       (
+			   		   ESS_LEAVE_APPLY_TB.LEAVE_FROM_TIME BETWEEN TO_DATE(#sDate:VARCHAR#, 'YYYY-MM-DD') AND TO_DATE(#eDate:VARCHAR# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+			       OR  ESS_LEAVE_APPLY_TB.LEAVE_TO_TIME BETWEEN TO_DATE(#sDate:VARCHAR#, 'YYYY-MM-DD') AND TO_DATE(#eDate:VARCHAR# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+			       OR  ESS_LEAVE_APPLY_TB.LEAVE_FROM_TIME < TO_DATE(#sDate:VARCHAR#, 'YYYY-MM-DD') AND ESS_LEAVE_APPLY_TB.LEAVE_TO_TIME > TO_DATE(#eDate:VARCHAR# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+			       )
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptID">
+		<![CDATA[			   
+				EXISTS
+					 (SELECT *
+					          FROM HR_DEPARTMENT B1
+					         WHERE B1.DEPTID = HR_EMPLOYEE.DEPTID
+					         START WITH B1.DEPTID = #deptID:VARCHAR#
+					        CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID)
+		]]>
+		</isNotEmpty>		
+	<isNotEqual prepend="" property="qryType" compareValue="0">		
+		<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 决裁过的，无论是通过还是否决 -->
+		<![CDATA[
+				 ( affirm_flag != 0 OR ESS_LEAVE_APPLY_TB.ACTIVITY!=0 )
+		]]>
+		</isEqual>		
+		<isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 未决裁 -->
+		<![CDATA[
+				 affirm_flag = 0
+		]]>
+		</isEqual>
+	</isNotEqual>
+	</select>
+	
+	<!-- NEW retrieve Personal ot toplimit info list  -->
+	<select id="retrievePersonalOtTopLimitInfoList" parameterClass="SimpleMap" resultClass="EssOverTimeBean"> 
+			<![CDATA[
+				    SELECT ESS.APPLY_NO 								AS otNo,
+					       ESS.EMPID 									AS empId,
+					       HR_EMPLOYEE.CHINESENAME 						AS chineseName,
+					       SY_POSITION.CODE_NAME 						AS position,
+					       SY_GRADE_CODE.CODE_NAME                      AS postGradeCode,
+					       ESS_AFFIRM.AFFIRM_LEVEL 						AS affirmLevel,
+					       ESS_AFFIRM.AFFIRM_FLAG 						AS affirm_flag,
+					       HR_DEPARTMENT.DEPTNAME 						AS deptName,
+					       ESS.LIMIT_OT  			                    AS limit_ot,
+					       ESS.APPLY_LENGTN 							AS otLength,
+					       ESS.REMARK 									AS otRemark,
+					       TO_CHAR(ESS.CREATE_DATE, 'YYYY-MM-DD') 		AS createDate,
+					       ESS.ACTIVITY 								AS activity,
+					       ESS.PLAN_MONTH								AS otPlanMonth
+					  FROM ESS_APPLY_OTTOPLIMIT ESS,
+					       HR_EMPLOYEE,
+					       (SELECT CODE_ID,CODE_NAME FROM SY_CODE SY WHERE SY.PARENT_CODE = 'PositionCode') SY_POSITION,
+					       (SELECT CODE_ID,CODE_NAME FROM SY_CODE SY WHERE SY.PARENT_CODE = 'PostGradeCode') SY_GRADE_CODE,
+					       HR_DEPARTMENT,
+					       ESS_AFFIRM
+					 WHERE ESS.EMPID = HR_EMPLOYEE.EMPID
+					   AND ESS_AFFIRM.APPLY_TYPE = 'OtTopLimitApply'
+					   AND HR_EMPLOYEE.POST_CODE = SY_POSITION.CODE_ID(+)
+					   AND HR_EMPLOYEE.POST_GRADE_CODE = SY_GRADE_CODE.CODE_ID(+)
+					   AND HR_EMPLOYEE.DEPTID = HR_DEPARTMENT.DEPTID
+					   AND ESS.APPLY_NO = ESS_AFFIRM.APPLY_NO
+		]]>
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+		 		  (EXISTS ( SELECT * 
+		 		             FROM AR_SUPERVISOR_INFO 
+		 		            WHERE SUPERVISED_DEPTID = HR_EMPLOYEE.DEPTID
+		 		  			  AND AR_SUPERVISOR_ID = #supervisor:VARCHAR#
+		 		  		   )
+	 					  OR HR_EMPLOYEE.EMPID= #supervisor:VARCHAR# 
+	 	 		  	 )   
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="planMonth">
+		<![CDATA[
+				 ESS.PLAN_MONTH = #planMonth:VARCHAR#				   
+		]]>
+		</isNotEmpty>	
+		<isNotEmpty prepend="AND" property="key">
+		<![CDATA[
+			    (
+			    	ESS.EMPID LIKE #key:VARCHAR# || '%'
+			     OR HR_EMPLOYEE.CHINESENAME #key:VARCHAR# || '%' 
+			     OR UPPER(HR_EMPLOYEE.CHINESE_PINYIN) LIKE UPPER(#key:VARCHAR#) || '%' 
+				)
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptID" > 
+		<![CDATA[
+				 EXISTS (SELECT *
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTID = HR_EMPLOYEE.DEPTID
+				         START WITH B1.DEPTID = #deptID:VARCHAR#
+				        CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID)
+		]]>
+		</isNotEmpty>		
+		
+		<![CDATA[
+			ORDER BY DECODE(ACTIVITY, 0, 1, ACTIVITY),AFFIRM_FLAG,createDate DESC,DEPTNAME,EMPID
+		]]>
+		
+	</select>
+	
+	<!-- NEW retrieve Personal ot toplimit info list count -->
+	<select id="retrievePersonalOtTopLimitInfoListCnt" parameterClass="SimpleMap" resultClass="int"> 
+			<![CDATA[
+				    SELECT COUNT(ESS.APPLY_NO) 
+					  FROM ESS_APPLY_OTTOPLIMIT ESS,
+					       HR_EMPLOYEE,
+					       HR_DEPARTMENT,
+					       ESS_AFFIRM
+					 WHERE ESS.EMPID = HR_EMPLOYEE.EMPID
+					   AND ESS_AFFIRM.APPLY_TYPE = 'OtTopLimitApply'
+					   AND HR_EMPLOYEE.DEPTID = HR_DEPARTMENT.DEPTID
+					   AND ESS.APPLY_NO = ESS_AFFIRM.APPLY_NO
+		]]>
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+		 		   (EXISTS ( SELECT * 
+		 		             FROM AR_SUPERVISOR_INFO 
+		 		            WHERE SUPERVISED_DEPTID = HR_EMPLOYEE.DEPTID
+		 		  			  AND AR_SUPERVISOR_ID = #supervisor:VARCHAR#
+		 		  			)
+	 					  OR HR_EMPLOYEE.EMPID= #supervisor:VARCHAR# 
+	 	 		  	 )   
+		    ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="planMonth">
+		<![CDATA[
+				 ESS.PLAN_MONTH = #planMonth:VARCHAR#				   
+		]]>
+		</isNotEmpty>		
+		<isNotEmpty prepend="AND" property="key">
+		<![CDATA[
+			    (
+			    	ESS.EMPID LIKE #key:VARCHAR# || '%'
+			     OR HR_EMPLOYEE.CHINESENAME #key:VARCHAR# || '%' 
+			     OR UPPER(HR_EMPLOYEE.CHINESE_PINYIN) LIKE UPPER(#key:VARCHAR#) || '%' 
+				)
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptID" > 
+		<![CDATA[
+				 EXISTS (SELECT *
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTID = HR_EMPLOYEE.DEPTID
+				         START WITH B1.DEPTID = #deptID:VARCHAR#
+				        CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID)
+		]]>
+		</isNotEmpty>		
+	</select>
+	
+	<!-- NEW retrieve Personal ot info list  -->
+	<select id="retrievePersonalOtInfoList" parameterClass="SimpleMap" resultClass="EssOverTimeBean"> 
+			<![CDATA[
+						 select ESS_APPLY.Person_Id AS person_id,
+					       ESS_APPLY.APPLY_OT_NO AS otNo,
+					       ESS_APPLY.APPLY_GROUP_NO AS applyGroupSeq,
+					       ESS_APPLY.HREMPID AS empId,
+					       ESS_APPLY.CHINESENAME AS chineseName,
+					       ESS_APPLY.crechineseName AS crechineseName,
+					       DE.DEPTNAME AS deptName,
+					       FOURS.DEPTNAME AS fourthDeptName,
+					       SY_POSITION.CODE_NAME AS position,
+					       SY_GRADE_CODE.CODE_NAME AS postGradeCode,
+					       SY_CODE.CODE_NAME AS otTypeName,
+					       SY_CODE.CODE_ID AS otTypeCode,
+					       TO_CHAR(ESS_APPLY.APPLY_OT_DATE - OT_NIGHT_FLAG, 'YYYY-MM-DD') AS otDate,
+					       TO_CHAR(ESS_APPLY.APPLY_OT_DATE, 'YYYY-MM-DD ') ||
+					       ESS_APPLY.OT_FROM_TIME AS otFromTime,
+					       TO_CHAR(ESS_APPLY.APPLY_OT_DATE + ESS_APPLY.APPLY_OT_FLAG,
+					               'YYYY-MM-DD ') || ESS_APPLY.OT_TO_TIME AS otToTime,
+					       CASE
+					         WHEN OT_LENGTH > 0 THEN
+					          OT_LENGTH
+					         ELSE
+					          (TO_DATE(TO_CHAR(ESS_APPLY.APPLY_OT_DATE + ESS_APPLY.APPLY_OT_FLAG,
+					                           'YYYY-MM-DD ') || ESS_APPLY.OT_TO_TIME,
+					                   'YYYY-MM-DD HH24:MI') -
+					          TO_DATE(TO_CHAR(ESS_APPLY.APPLY_OT_DATE, 'YYYY-MM-DD ') ||
+					                   ESS_APPLY.OT_FROM_TIME,
+					                   'YYYY-MM-DD HH24:MI')) * 24 - ESS_APPLY.OT_DEDUCT_TIME
+					       END AS otLength,
+					       ESS_APPLY.APPLY_OT_REMARK AS otRemark,
+					       ESS_APPLY.APPLY_OT_FLAG AS otNextDays,
+					       TO_CHAR(ESS_APPLY.CREATE_DATE, 'YYYY-MM-DD hh24:mm') AS createDate,
+					       ESS_APPLY.OT_DEDUCT_TIME AS otDeduct,
+					       ESS_APPLY.CREATED_BY AS createdBy,
+					       ESS_APPLY.ACTIVITY AS activity,
+					       (SELECT MAX(ESS_AFFIRM.AFFIRM_FLAG)
+					          FROM ESS_AFFIRM
+					         WHERE ESS_AFFIRM.APPLY_NO=ESS_APPLY.APPLY_OT_NO
+					         AND ESS_AFFIRM.APPLY_TYPE='OtApply') AS affirm_flag,     
+					       ESS_APPLY.APPLY_OT_AFFIRM AS forceType
+					   
+					  FROM (SELECT ESS_APPLY_OT.*,
+				               HR.POST_CODE,
+				               HR.POST_GRADE_CODE,
+				               HR.PERSON_ID,
+				               HR.DEPTID,
+				               HR.CHINESENAME,
+				               HY.CHINESENAME AS crechineseName,
+				               HR.EMPID HREMPID				        
+				          FROM ESS_APPLY_OT, HR_EMPLOYEE HR	, HR_EMPLOYEE HY			        
+				         WHERE ESS_APPLY_OT.EMPID = HR.Person_Id
+				         AND   ESS_APPLY_OT.Created_By = HY.Person_Id					
+		]]>
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+		 		    (EXISTS ( SELECT * 
+		 		             FROM AR_SUPERVISOR_INFO 
+		 		            WHERE SUPERVISED_DEPTID = HR.DEPTID
+		 		  			  AND AR_SUPERVISOR_ID = #supervisor:VARCHAR#
+		 		  			 )
+	 					  OR HR.Person_Id= #supervisor:VARCHAR# 
+	 	 		  	 )   
+		    ]]>
+		</isNotEmpty>  
+		  <isNotEqual prepend="" property="qryType"  compareValue="3">
+		    <isEqual prepend="AND" property="qryType" compareValue="0"> <!-- 未确认 -->
+		    <![CDATA[
+		        ESS_APPLY_OT.ACTIVITY=0
+		    ]]>    
+		    </isEqual>
+		    <isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 已确认 -->
+		    <![CDATA[
+		        ESS_APPLY_OT.ACTIVITY=1
+		    ]]>  
+		    </isEqual>
+		    <isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 否决 -->
+		    <![CDATA[
+		      ESS_APPLY_OT.ACTIVITY=2
+		    ]]>  
+		    </isEqual>	
+	    </isNotEqual>	
+		<isNotEmpty prepend="AND" property="key">
+		<![CDATA[
+			    (
+			    	HR.EMPID LIKE #key:VARCHAR# || '%'
+			     OR HR.CHINESENAME LIKE #key:VARCHAR# || '%' 
+			     OR UPPER(HR.CHINESE_PINYIN) LIKE UPPER(#key:VARCHAR#) || '%' 
+				)
+		]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="sDate">
+		<![CDATA[			       
+				ESS_APPLY_OT.APPLY_OT_DATE BETWEEN TO_DATE(#sDate:VARCHAR#, 'YYYY-MM-DD') AND  TO_DATE(#eDate:VARCHAR# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+		]]>
+		</isNotEmpty>
+			
+		<isNotEmpty prepend="AND" property="deptID" > 
+		<![CDATA[
+				 EXISTS (SELECT *
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTID = HR.DEPTID
+				         START WITH B1.DEPTID = #deptID:VARCHAR#
+				        CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID)
+		]]>
+		</isNotEmpty>		
+		
+		<![CDATA[
+		 ) ESS_APPLY,
+		   SY_CODE,
+          (SELECT CODE_ID, CODE_NAME FROM SY_CODE SY  WHERE SY.PARENT_CODE = 'PositionCode') SY_POSITION,
+          (SELECT CODE_ID,CODE_NAME FROM SY_CODE SY WHERE SY.PARENT_CODE = 'PostGradeCode') SY_GRADE_CODE,
+         HR_DEPARTMENT DE,
+         HR_DEPARTMENT FOURS
+	     WHERE ESS_APPLY.APPLY_OT_TYPE_CODE = SY_CODE.CODE_ID(+)
+		   AND ESS_APPLY.POST_CODE = SY_POSITION.CODE_ID(+)
+		   AND ESS_APPLY.POST_GRADE_CODE = SY_GRADE_CODE.CODE_ID(+)
+		   AND ESS_APPLY.DEPTID=DE.DEPTID
+		   AND DE.FOURTHDEPT=FOURS.DEPTID
+			ORDER BY ESS_APPLY.ACTIVITY DESC, ESS_APPLY.APPLY_OT_DATE DESC ,FOURS.DEPTID,ESS_APPLY.DEPTID
+		]]>
+		
+	</select>
+	
+	<!-- NEW retrieve Personal ot info list count -->
+	<select id="retrievePersonalOtInfoListCnt" parameterClass="SimpleMap" resultClass="int"> 
+			<![CDATA[
+				    SELECT COUNT(ESS_APPLY_OT.APPLY_OT_NO) 
+					  FROM ESS_APPLY_OT, 
+					       HR_EMPLOYEE
+					 WHERE ESS_APPLY_OT.EMPID = HR_EMPLOYEE.Person_Id				   	   
+					 
+		]]>
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+		 		    (EXISTS (  SELECT * 
+			 		             FROM AR_SUPERVISOR_INFO 
+			 		            WHERE SUPERVISED_DEPTID = HR_EMPLOYEE.DEPTID
+			 		  			  AND AR_SUPERVISOR_ID = #supervisor:VARCHAR#
+		 		  			 )
+	 					  OR HR_EMPLOYEE.Person_Id= #supervisor:VARCHAR# 
+	 	 		  	 )   
+		    ]]>
+		</isNotEmpty>
+		<isNotEqual prepend="" property="qryType"  compareValue="3">
+		        <isEqual prepend="AND" property="qryType" compareValue="0"> <!-- 未确认 -->
+		        <![CDATA[
+		            ESS_APPLY_OT.ACTIVITY=0
+		        ]]>    
+		        </isEqual>
+		        <isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 已确认 -->
+		        <![CDATA[
+		            ESS_APPLY_OT.ACTIVITY=1
+		        ]]>  
+		        </isEqual>
+		        <isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 否决 -->
+		        <![CDATA[
+		          ESS_APPLY_OT.ACTIVITY=2
+		        ]]>  
+		        </isEqual>  
+      </isNotEqual>  
+		<isNotEmpty prepend="AND" property="key">
+		<![CDATA[
+			    (
+			    	HR_EMPLOYEE.EMPID LIKE #key:VARCHAR# || '%'
+			     OR HR_EMPLOYEE.CHINESENAME LIKE #key:VARCHAR# || '%' 
+			     OR UPPER(HR_EMPLOYEE.CHINESE_PINYIN) LIKE UPPER(#key:VARCHAR#) || '%' 
+				)
+		]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="sDate">
+		<![CDATA[			       
+				ESS_APPLY_OT.APPLY_OT_DATE BETWEEN TO_DATE(#sDate:VARCHAR#, 'YYYY-MM-DD') AND  TO_DATE(#eDate:VARCHAR# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+		]]>
+		</isNotEmpty>
+			
+		<isNotEmpty prepend="AND" property="deptID" > 
+		<![CDATA[
+				  EXISTS (SELECT *
+				          FROM HR_DEPARTMENT B1
+				         WHERE B1.DEPTID = HR_EMPLOYEE.DEPTID
+				         START WITH B1.DEPTID = #deptID:VARCHAR#
+				        CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID)
+		]]>
+		</isNotEmpty>		
+	</select>
+	
+	<!-- NEW retrieve Personal Leave info list  -->
+	<select id="retrievePersonalLeaveInfoList" parameterClass="SimpleMap" resultClass="EssLeaveBean"> 
+			<![CDATA[
+				    SELECT ESS_LEAVE_APPLY_TB.LEAVE_NO													AS leaveNo,
+					       ESS_LEAVE_APPLY_TB.APPLY_GROUP_NO											AS applyGroupSeq,
+					       HR_EMPLOYEE.EMPID												            AS empId,
+					       HR_EMPLOYEE.PERSON_ID													    AS PERSON_ID,
+					       HR_EMPLOYEE.CHINESENAME 														AS chineseName,
+					       HY.CHINESENAME 																AS crechineseName,
+					       HR_EMPLOYEE.deptname 														AS deptName,
+					       HR_EMPLOYEE.FOURTHDEPTNAME 													AS fourthDeptName,
+					       SY_POSITION.CODE_NAME														AS position,
+					       SY_GRADE_CODE.CODE_NAME                                                      AS postGradeCode,
+					       ESS_LEAVE_APPLY_TB.LEAVE_TYPE												AS leaveTypeCode,
+					       SY_CODE.CODE_NAME 			      											AS leaveTypeName,
+					       TO_CHAR(ESS_LEAVE_APPLY_TB.CREATE_DATE, 'YYYY-MM-DD') 						AS createDate,
+					       TO_CHAR(ESS_LEAVE_APPLY_TB.LEAVE_FROM_TIME, 'YYYY-MM-DD HH24:MI') 			AS leaveFromTime,
+					       TO_CHAR(ESS_LEAVE_APPLY_TB.LEAVE_TO_TIME, 'YYYY-MM-DD HH24:MI') 				AS leaveToTime,
+					       ESS_LEAVE_APPLY_TB.LEAVE_REASON												AS leaveReason,
+					       ESS_LEAVE_APPLY_TB.ACTIVITY													AS activity,
+					       ESS_LEAVE_APPLY_TB.CREATED_BY												AS createdBy,
+					       ESS_LEAVE_APPLY_TB.REMARK													AS remark,
+					       (SELECT MAX (AFFIRM_FLAG) FROM ESS_AFFIRM WHERE APPLY_TYPE = 'LeaveApply' AND APPLY_NO = ESS_LEAVE_APPLY_TB.LEAVE_NO) AS affirm_flag,
+					       ALTYPE.CODE_NAME                                                             as applyLeaveType,
+					       (SELECT AFFIRM_FLAG FROM ESS_AFFIRM WHERE APPLY_NO = ESS_LEAVE_APPLY_TB.LEAVE_NO AND ESS_AFFIRM_NO = (SELECT MAX(ESS_AFFIRM_NO) FROM ESS_AFFIRM WHERE APPLY_NO = ESS_LEAVE_APPLY_TB.LEAVE_NO)) AS max_affirm_flag,
+					       ESS_LEAVE_APPLY_TB.FILE_UPLOAD_FLAG											AS fileUploadFlag,
+					       DECODE(ESS_LEAVE_APPLY_STS.STS,'Y','正常','N','异常','未确认')				AS sts
+					    FROM ESS_LEAVE_APPLY_TB,
+					   		 ESS_LEAVE_APPLY_STS,
+					         SY_CODE,
+					         SY_CODE SY_POSITION,
+					         (SELECT CODE_ID,CODE_NAME FROM SY_CODE SY WHERE SY.PARENT_CODE = 'PostGradeCode') SY_GRADE_CODE,
+					         HR_EMP_V HR_EMPLOYEE,
+					         HR_EMPLOYEE HY,
+					         SY_CODE ALTYPE
+					   WHERE ESS_LEAVE_APPLY_TB.LEAVE_TYPE = SY_CODE.CODE_ID(+)
+					     AND HY.PERSON_ID = ESS_LEAVE_APPLY_TB.Created_By
+					     AND HR_EMPLOYEE.POST_CODE = SY_POSITION.CODE_ID(+)
+					     AND HR_EMPLOYEE.POST_GRADE_CODE = SY_GRADE_CODE.CODE_ID(+)
+						 AND SY_POSITION.PARENT_CODE(+) = 'PositionCode'
+					     AND ESS_LEAVE_APPLY_TB.LEAVE_EMPID = HR_EMPLOYEE.PERSON_ID
+					     AND ESS_LEAVE_APPLY_TB.APPLYLEAVETYPE = ALTYPE.CODE_ID(+)	
+					     AND ESS_LEAVE_APPLY_TB.LEAVE_NO = ESS_LEAVE_APPLY_STS.LEAVE_NO(+)				  
+		]]>
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+		 		    (EXISTS (  SELECT * 
+			 		             FROM AR_SUPERVISOR_INFO 
+			 		            WHERE SUPERVISED_DEPTID = HR_EMPLOYEE.DEPTID
+			 		  			  AND AR_SUPERVISOR_ID = #supervisor:VARCHAR#
+		 		  			 )
+	 					  OR HR_EMPLOYEE.Person_Id= #supervisor:VARCHAR# 
+	 	 		  	 )   
+		    ]]>
+		</isNotEmpty>
+		<isNotEqual prepend="" property="qryType"  compareValue="3">
+			        <isEqual prepend="AND" property="qryType" compareValue="0"> <!-- 未确认 -->
+			        <![CDATA[
+			            ESS_LEAVE_APPLY_TB.ACTIVITY=0
+			        ]]>    
+			        </isEqual>
+			        <isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 已确认 -->
+			        <![CDATA[
+			            ESS_LEAVE_APPLY_TB.ACTIVITY=1
+			        ]]>  
+			        </isEqual>
+			        <isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 否决 -->
+			        <![CDATA[
+			          ESS_LEAVE_APPLY_TB.ACTIVITY=2
+			        ]]>  
+			        </isEqual>  
+      </isNotEqual>
+      
+      
+      <!-- 新添加出入决裁 -->
+      
+      <isNotEqual prepend="" property="stsType"  compareValue="3">
+			        <isEqual prepend="AND" property="stsType" compareValue="1"> <!-- 正常 -->
+			        <![CDATA[
+			            ESS_LEAVE_APPLY_STS.STS='Y'
+			        ]]>    
+			        </isEqual>
+			        <isEqual prepend="AND" property="stsType" compareValue="2"> <!-- 异常 -->
+			        <![CDATA[
+			            ESS_LEAVE_APPLY_STS.STS='N'
+			        ]]>  
+			        </isEqual>
+			        <isEqual prepend="AND" property="stsType" compareValue="0"> <!-- 未确认 -->
+			        <![CDATA[
+			          ESS_LEAVE_APPLY_STS.STS is null
+			        ]]>  
+			        </isEqual>  
+      </isNotEqual>
+      
+      
+		<isNotEmpty prepend="AND" property="key">
+		<![CDATA[
+			    (
+			    	HR_EMPLOYEE.EMPID LIKE #key:VARCHAR# || '%'
+		         OR HR_EMPLOYEE.CHINESENAME LIKE #key:VARCHAR# || '%'
+		         OR UPPER(HR_EMPLOYEE.CHINESE_PINYIN) LIKE UPPER(#key:VARCHAR#) || '%'
+				)
+		]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="sDate">
+		<![CDATA[			       
+			   (   ESS_LEAVE_APPLY_TB.LEAVE_FROM_TIME BETWEEN TO_DATE(#sDate:VARCHAR#, 'YYYY-MM-DD') AND TO_DATE(#eDate:VARCHAR# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+        		OR ESS_LEAVE_APPLY_TB.LEAVE_TO_TIME BETWEEN TO_DATE(#sDate:VARCHAR#, 'YYYY-MM-DD') AND TO_DATE(#eDate:VARCHAR# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+				OR ESS_LEAVE_APPLY_TB.LEAVE_FROM_TIME < TO_DATE(#sDate:VARCHAR#, 'YYYY-MM-DD') AND ESS_LEAVE_APPLY_TB.LEAVE_TO_TIME > TO_DATE(#eDate:VARCHAR# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+			   ) 
+   ]]>
+		</isNotEmpty>
+			
+		<isNotEmpty prepend="AND" property="deptID" > 
+		<![CDATA[
+				 EXISTS (SELECT *
+					          FROM HR_DEPARTMENT B1
+					         WHERE B1.DEPTID = HR_EMPLOYEE.DEPTID
+					         START WITH B1.DEPTID = #deptID:VARCHAR#
+					        CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID)
+		]]>
+		</isNotEmpty>		
+		
+		<![CDATA[
+			 ORDER BY ESS_LEAVE_APPLY_TB.activity ASC,ESS_LEAVE_APPLY_TB.CREATE_DATE,HR_EMPLOYEE.FOURTHDEPTID,HR_EMPLOYEE.DEPTID
+		]]>
+		
+	</select>
+	
+	<!-- NEW retrieve Personal Leave info list count -->
+	<select id="retrievePersonalLeaveInfoListCnt" parameterClass="SimpleMap" resultClass="int"> 
+					<![CDATA[
+				    SELECT COUNT(ESS_LEAVE_APPLY_TB.LEAVE_NO)
+					  FROM ESS_LEAVE_APPLY_TB,
+					       HR_EMPLOYEE,
+					       HR_DEPARTMENT,
+					       ESS_LEAVE_APPLY_STS
+					 WHERE HR_EMPLOYEE.DEPTID = HR_DEPARTMENT.DEPTID
+					   AND ESS_LEAVE_APPLY_TB.LEAVE_EMPID = HR_EMPLOYEE.Person_Id	
+					     AND ESS_LEAVE_APPLY_TB.LEAVE_NO = ESS_LEAVE_APPLY_STS.LEAVE_NO(+)			 
+		]]>
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+		 		    (EXISTS ( SELECT * 
+			 		             FROM AR_SUPERVISOR_INFO 
+			 		            WHERE SUPERVISED_DEPTID = HR_EMPLOYEE.DEPTID
+			 		  			  AND AR_SUPERVISOR_ID = #supervisor:VARCHAR#
+			 		  		 )
+	 					  OR HR_EMPLOYEE.Person_Id= #supervisor:VARCHAR# 
+	 	 		  	 )   
+		    ]]>
+		</isNotEmpty>
+		<isNotEqual prepend="" property="qryType"  compareValue="3">
+			        <isEqual prepend="AND" property="qryType" compareValue="0"> <!-- 未确认 -->
+			        <![CDATA[
+			            ESS_LEAVE_APPLY_TB.ACTIVITY=0
+			        ]]>    
+			        </isEqual>
+			        <isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 已确认 -->
+			        <![CDATA[
+			            ESS_LEAVE_APPLY_TB.ACTIVITY=1
+			        ]]>  
+			        </isEqual>
+			        <isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 否决 -->
+			        <![CDATA[
+			          ESS_LEAVE_APPLY_TB.ACTIVITY=2
+			        ]]>  
+			        </isEqual>  
+        </isNotEqual> 
+        
+         <!-- 新添加出入决裁 -->
+      
+      <isNotEqual prepend="" property="stsType"  compareValue="3">
+			        <isEqual prepend="AND" property="stsType" compareValue="1"> <!-- 正常 -->
+			        <![CDATA[
+			            ESS_LEAVE_APPLY_STS.STS='Y'
+			        ]]>    
+			        </isEqual>
+			        <isEqual prepend="AND" property="stsType" compareValue="2"> <!-- 异常 -->
+			        <![CDATA[
+			            ESS_LEAVE_APPLY_STS.STS='N'
+			        ]]>  
+			        </isEqual>
+			        <isEqual prepend="AND" property="stsType" compareValue="0"> <!-- 未确认 -->
+			        <![CDATA[
+			          ESS_LEAVE_APPLY_STS.STS is null
+			        ]]>  
+			        </isEqual>  
+      </isNotEqual>
+         		
+		<isNotEmpty prepend="AND" property="key">
+		<![CDATA[
+			    (
+			    	HR_EMPLOYEE.EMPID LIKE #key:VARCHAR# || '%' 
+		         OR HR_EMPLOYEE.CHINESENAME LIKE #key:VARCHAR# || '%' 
+		         OR UPPER(HR_EMPLOYEE.CHINESE_PINYIN) LIKE UPPER(#key:VARCHAR#) || '%'
+				)
+		]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="sDate">
+		<![CDATA[			       
+			   (   ESS_LEAVE_APPLY_TB.LEAVE_FROM_TIME BETWEEN TO_DATE(#sDate:VARCHAR#, 'YYYY-MM-DD') AND TO_DATE(#eDate:VARCHAR# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+        		OR ESS_LEAVE_APPLY_TB.LEAVE_TO_TIME BETWEEN TO_DATE(#sDate:VARCHAR#, 'YYYY-MM-DD') AND TO_DATE(#eDate:VARCHAR# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+				OR ESS_LEAVE_APPLY_TB.LEAVE_FROM_TIME < TO_DATE(#sDate:VARCHAR#, 'YYYY-MM-DD') AND ESS_LEAVE_APPLY_TB.LEAVE_TO_TIME > TO_DATE(#eDate:VARCHAR# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+			   ) 
+   		]]>
+		</isNotEmpty>
+			
+		<isNotEmpty prepend="AND" property="deptID" > 
+		<![CDATA[
+				 EXISTS (SELECT *
+					          FROM HR_DEPARTMENT B1
+					         WHERE B1.DEPTID = HR_EMPLOYEE.DEPTID
+					         START WITH B1.DEPTID = #deptID:VARCHAR#
+					        CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID)
+		]]>
+		</isNotEmpty>		
+	</select>
+	
+	
+	<!-- NEW retrieve Personal ArModify info list  -->
+	<select id="retrievePersonalArModifyInfoList" parameterClass="SimpleMap" resultClass="ArDetailBack"> 
+			<![CDATA[
+				     SELECT AR_DETAIL_BACK.AR_PK_NO AS pkNo1,
+					        (select e.empid
+					           from hr_employee e
+					          where e.person_id = AR_DETAIL_BACK.EMPID) AS empId,
+					        HR_EMPLOYEE.CHINESENAME AS chineseName,
+					        HR_EMPLOYEE.deptname AS deptName,
+					        AR_DETAIL.FROM_TIME,
+					        AR_DETAIL.To_Time,
+					        AR_DETAIL.AR_DATE_STR,
+					        AR_DETAIL.AR_MONTH_STR,
+					        AR_DETAIL.QUANTITY,
+					        AR_DETAIL.UNIT,
+					        AR_DETAIL.LOCK_YN,
+					        AR_DETAIL.REMARK,
+					        AR_DETAIL.REMARK REMARK1,
+					        AR_SHIFT010.SHIFT_NAME AS SHIFTNAME,
+					        AR_ITEM.ITEM_NAME AS ITEMNAME,
+					        SY_CODE1.CODE_NAME UNITNAME,
+					        AR_DETAIL_BACK.FROM_TIME FROM_TIME1,
+					        AR_DETAIL_BACK.TO_TIME TO_TIME1,
+					        AR_DETAIL_BACK.AR_DATE_STR AR_DATE_STR1,
+					        AR_DETAIL_BACK.AR_MONTH_STR AR_MONTH_STR1,
+					        AR_DETAIL_BACK.QUANTITY QUANTITY1,
+					        AR_DETAIL_BACK.UNIT UNIT1,
+					        AR_DETAIL_BACK.LOCK_YN LOCK_YN1,
+					        AR_ITEM1.ITEM_NAME AS ITEMNAME1,
+					        SY_CODE.CODE_NAME UNITNAME1,
+					        TO_CHAR(AR_DETAIL_BACK.CREATE_DATE, 'YYYY-MM-DD HH:SS') CREATEDATE1,
+					        H.CHINESENAME CREATEBY1,
+					        DECODE(HR_EMPLOYEE.EMP_DIFF_CODE,
+					               'C_12067_1330308',
+					               AR_CALENDER.LOCK_FLAG_Z,
+					               AR_CALENDER.LOCK_FLAG_G) STATUS
+					   FROM AR_DETAIL_BACK,
+					        AR_DETAIL,
+					        AR_SHIFT010,
+					        AR_ITEM,
+					        AR_ITEM AR_ITEM1,
+					        HR_EMP_V HR_EMPLOYEE,
+					        SY_CODE,
+					        SY_CODE SY_CODE1,
+					        HR_EMPLOYEE H,
+					        (SELECT A.AR_DATE_STR, A.CPNY_ID, A.LOCK_FLAG_G, A.LOCK_FLAG_Z
+					           FROM AR_CALENDER A
+					          WHERE A.CPNY_ID = '78000000') AR_CALENDER
+					  WHERE AR_DETAIL_BACK.OPERATION = 'UPDATE'
+					    AND AR_DETAIL_BACK.AR_PK_NO = AR_DETAIL.PK_NO
+					    AND AR_DETAIL.SHIFT_NO = AR_SHIFT010.SHIFT_NO(+)
+					    AND AR_DETAIL_BACK.AR_ITEM_NO = AR_ITEM1.ITEM_NO(+)
+					    AND AR_DETAIL.AR_ITEM_NO = AR_ITEM.ITEM_NO(+)
+					    AND AR_DETAIL_BACK.EMPID = HR_EMPLOYEE.person_id
+					    AND AR_DETAIL_BACK.UNIT = SY_CODE.CODE_ID(+)
+					    AND AR_DETAIL.UNIT = SY_CODE1.CODE_ID(+)
+					    AND AR_DETAIL_BACK.CREATED_BY = H.PERSON_ID(+)
+					    AND AR_DETAIL_BACK.AR_DATE_STR = AR_CALENDER.AR_DATE_STR
+					    AND DECODE(HR_EMPLOYEE.EMP_DIFF_CODE,
+					               'C_12067_1330308',
+					               AR_CALENDER.LOCK_FLAG_Z,
+					               AR_CALENDER.LOCK_FLAG_G) = 0			  
+		]]>
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+		 		    (EXISTS (  SELECT * 
+			 		             FROM AR_SUPERVISOR_INFO 
+			 		            WHERE SUPERVISED_DEPTID = HR_EMPLOYEE.DEPTID
+			 		  			  AND AR_SUPERVISOR_ID = #supervisor:VARCHAR#
+		 		  			 )
+	 					  OR HR_EMPLOYEE.Person_Id= #supervisor:VARCHAR# 
+	 	 		  	 )   
+		    ]]>
+		</isNotEmpty>
+		
+        <isEqual prepend="AND" property="qryType" compareValue="0"> <!-- 未决裁 -->
+        <![CDATA[
+                 AR_DETAIL.FLAG=0
+        ]]>    
+        </isEqual>
+
+		<isNotEmpty prepend="AND" property="key">
+		<![CDATA[
+			    (
+			    	HR_EMPLOYEE.EMPID LIKE #key:VARCHAR# || '%'
+		         OR HR_EMPLOYEE.CHINESENAME LIKE #key:VARCHAR# || '%'
+		         OR UPPER(HR_EMPLOYEE.CHINESE_PINYIN) LIKE UPPER(#key:VARCHAR#) || '%'
+				)
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="sDate">
+	    <![CDATA[
+	             (
+	                TO_DATE(AR_DETAIL_BACK.AR_DATE_STR,'YYYY-MM-DD') BETWEEN TO_DATE(#sDate:VARCHAR#, 'YYYY-MM-DD') AND TO_DATE(#eDate:VARCHAR# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+	             )
+	    ]]>
+	    </isNotEmpty>
+			
+		<isNotEmpty prepend="AND" property="deptID" > 
+		<![CDATA[
+				 EXISTS (SELECT *
+					          FROM HR_DEPARTMENT B1
+					         WHERE B1.DEPTID = HR_EMPLOYEE.DEPTID
+					         START WITH B1.DEPTID = #deptID:VARCHAR#
+					        CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID)
+		]]>
+		</isNotEmpty>		
+		
+		<![CDATA[
+			 ORDER BY  AR_DETAIL_BACK.AR_DATE_STR DESC,AR_DETAIL_BACK.EMPID
+		]]>
+		
+	</select>
+	
+	<!-- NEW retrieve Personal ArModify info list count -->
+	<select id="retrievePersonalArModifyInfoListCnt" parameterClass="SimpleMap" resultClass="int"> 
+					<![CDATA[
+				    SELECT COUNT(AR_DETAIL_BACK.AR_PK_NO)
+						  FROM AR_DETAIL_BACK,
+						        AR_DETAIL,
+						        HR_EMP_V HR_EMPLOYEE,
+						        HR_EMPLOYEE H,
+						        (SELECT A.AR_DATE_STR, A.CPNY_ID, A.LOCK_FLAG_G, A.LOCK_FLAG_Z
+						           FROM AR_CALENDER A
+						          WHERE A.CPNY_ID = '78000000') AR_CALENDER
+						  WHERE AR_DETAIL_BACK.OPERATION = 'UPDATE'
+						    AND AR_DETAIL_BACK.AR_PK_NO = AR_DETAIL.PK_NO
+						    AND AR_DETAIL_BACK.EMPID = HR_EMPLOYEE.person_id
+						    AND AR_DETAIL_BACK.CREATED_BY = H.PERSON_ID(+)
+						    AND AR_DETAIL_BACK.AR_DATE_STR = AR_CALENDER.AR_DATE_STR
+						    AND DECODE(HR_EMPLOYEE.EMP_DIFF_CODE,
+						               'C_12067_1330308',
+						               AR_CALENDER.LOCK_FLAG_Z,
+						               AR_CALENDER.LOCK_FLAG_G) = 0				 
+		]]>
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+		 		    (EXISTS (  SELECT * 
+			 		             FROM AR_SUPERVISOR_INFO 
+			 		            WHERE SUPERVISED_DEPTID = HR_EMPLOYEE.DEPTID
+			 		  			  AND AR_SUPERVISOR_ID = #supervisor:VARCHAR#
+		 		  			 )
+	 					  OR HR_EMPLOYEE.Person_Id= #supervisor:VARCHAR# 
+	 	 		  	 )   
+		    ]]>
+		</isNotEmpty>
+		
+        <isEqual prepend="AND" property="qryType" compareValue="0"> <!-- 未决裁 -->
+        <![CDATA[
+            AR_DETAIL.FLAG=0
+        ]]>    
+        </isEqual>
+
+		<isNotEmpty prepend="AND" property="key">
+		<![CDATA[
+			    (
+			    	HR_EMPLOYEE.EMPID LIKE #key:VARCHAR# || '%'
+		         OR HR_EMPLOYEE.CHINESENAME LIKE #key:VARCHAR# || '%'
+		         OR UPPER(HR_EMPLOYEE.CHINESE_PINYIN) LIKE UPPER(#key:VARCHAR#) || '%'
+				)
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="sDate">
+	    <![CDATA[
+	             (
+	                TO_DATE(AR_DETAIL_BACK.AR_DATE_STR,'YYYY-MM-DD') BETWEEN TO_DATE(#sDate:VARCHAR#, 'YYYY-MM-DD') AND TO_DATE(#eDate:VARCHAR# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+	             )
+	    ]]>
+	    </isNotEmpty>
+			
+		<isNotEmpty prepend="AND" property="deptID" > 
+		<![CDATA[
+				 EXISTS (SELECT *
+					          FROM HR_DEPARTMENT B1
+					         WHERE B1.DEPTID = HR_EMPLOYEE.DEPTID
+					         START WITH B1.DEPTID = #deptID:VARCHAR#
+					        CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID)
+		]]>
+		</isNotEmpty>	
+	</select>
+	
+	<!-- NEW update affirmor information -->
+	<update id="updateAffirmorInfo" parameterClass="SimpleMap"> 
+		<![CDATA[
+		  UPDATE ESS_AFFIRM
+		     SET AFFIRM_FLAG = #affirmFlag:NUMERIC#,
+		         UPDATE_DATE = SYSDATE,
+				  UPDATED_BY = #adminId:VARCHAR#
+		   WHERE ESS_AFFIRM_NO = #affirmNo:NUMERIC#
+			]]>
+	</update>
+	
+	<!-- NEW update apply toplimit information -->
+	<update id="updateApplyOtTopLimitInfo" parameterClass="SimpleMap"> 
+		<![CDATA[
+		  UPDATE ESS_APPLY_OTTOPLIMIT
+		     SET REMARK		  = #remark:VARCHAR#,
+		         APPLY_LENGTN = #otLength:NUMERIC#,
+		         UPDATE_DATE  = SYSDATE,
+				 UPDATED_BY   = #adminId:VARCHAR#
+		]]>
+		<isNotEmpty prepend="," property="activity">
+			<![CDATA[
+				ACTIVITY=#activity:NUMERIC#
+             ]]>   
+		</isNotEmpty>
+			
+		<![CDATA[		 
+		   WHERE APPLY_NO = (SELECT APPLY_NO FROM ESS_AFFIRM WHERE ESS_AFFIRM_NO = #affirmNo:NUMERIC# )
+		]]>
+	</update>
+	
+	<!-- NEW update personal overtime plan information -->
+	<update id="updatePersonalOTPlan" parameterClass="SimpleMap"> 
+		<![CDATA[
+		  UPDATE AR_OVERTIME_PLAN
+		     SET UPDATE_DATE = SYSDATE,
+				 UPDATED_BY = #adminId:VARCHAR#
+	    ]]>
+	    <isEqual prepend="," property="affirmFlag" compareValue="1">
+		<![CDATA[
+				 LIMIT_OT = LIMIT_OT + #otLength:NUMERIC#]]>
+		</isEqual>
+		<isEqual prepend="," property="affirmFlag" compareValue="2"> 
+		<![CDATA[
+				 LIMIT_OT = LIMIT_OT - #otLength:NUMERIC#]]>
+		</isEqual>
+		<![CDATA[	
+				 
+		   WHERE OT_PLAN_NO = (
+		     				SELECT OT_PLAN_NO FROM ESS_APPLY_OTTOPLIMIT WHERE APPLY_NO = (SELECT APPLY_NO FROM ESS_AFFIRM WHERE ESS_AFFIRM_NO = #affirmNo:NUMERIC# )
+		     	 		 )
+		]]>
+	</update>
+	
+	<!-- NEW 得到当前人的决裁者或代决裁人 -->
+	<select id="retrieveInsteadAffirm" parameterClass="SimpleMap" resultClass="SimpleMap"> 
+		<![CDATA[
+				SELECT HR.EMPID,HR.CHINESENAME,HR.CHINESE_PINYIN,HR.DEPTID 
+				  FROM SY_AFFIRM_RELATION_TB AFFIRM,HR_EMPLOYEE HR
+				 WHERE AFFIRM.AFFIRMOR_ID = HR.Person_Id
+                   AND AFFIRM.AFFIRM_TYPE_ID in ('LeaveApply','OtApply','ArModifyApply')
+  				   AND AFFIRM.AFFIRMOR_ID_BACK = #supervisor:VARCHAR#
+  				   AND AFFIRM.AFFIRMOR_ID <> AFFIRM.AFFIRMOR_ID_BACK
+  				   AND ROWNUM = 1
+  		]]>
+    </select>
+
+	<!-- NEW 得到当前人的决裁者或代决裁人1 -->
+	<select id="retrieveInsteadAffirm1" parameterClass="SimpleMap" resultClass="SimpleMap"> 
+		<![CDATA[
+				SELECT HR.EMPID,HR.CHINESENAME,HR.CHINESE_PINYIN,HR.DEPTID 
+				  FROM SY_AFFIRM_RELATION_TB_AUTO AFFIRM,HR_EMPLOYEE HR
+				 WHERE AFFIRM.AFFIRMOR_ID = HR.Person_Id
+  				   AND AFFIRM.AFFIRMOR_ID_BACK = #supervisor:VARCHAR#
+  				   AND AFFIRM.AFFIRMOR_ID <> AFFIRM.AFFIRMOR_ID_BACK
+  				   AND ROWNUM = 1
+  		]]>
+    </select>
+	
+	<!-- NEW 得到当前人的决裁者或代决裁人2 -->
+	<select id="retrieveInsteadAffirm2" parameterClass="SimpleMap" resultClass="SimpleMap"> 
+		<![CDATA[
+				SELECT HR.EMPID,HR.CHINESENAME,HR.CHINESE_PINYIN,HR.DEPTID,HR.PERSON_ID 
+				  FROM SY_AFFIRM_RELATION_TB_ACT AFFIRM,HR_EMPLOYEE HR
+				 WHERE AFFIRM.AFFIRMOR_ACT_ID = HR.Person_Id
+  				   AND AFFIRM.AFFIRMOR_ID = #supervisor:VARCHAR#
+  				  
+  		]]>
+  		
+  		<isNotEmpty prepend="AND" property="appointType">
+   <![CDATA[
+         AFFIRM.AFFIRM_TYPE_ID= #appointType:VARCHAR# 
+           
+      ]]>
+  </isNotEmpty>
+  		<![CDATA[
+  		 AND ROWNUM = 1
+  		]]>
+    </select>
+	
+	<!-- insert overtime apply information -->
+	<insert id="insertOvertimeApply" parameterClass="EssOverTimeBean"> 
+		<![CDATA[
+		  INSERT INTO ESS_APPLY_OT 
+					  (APPLY_OT_NO, 
+					   EMPID, 
+					   APPLY_OT_TYPE_CODE, 
+					   APPLY_OT_DATE, 
+					   OT_FROM_TIME, 
+					   OT_TO_TIME, 
+					   APPLY_OT_REMARK, 
+					   APPLY_OT_FLAG, 
+					   CREATE_DATE, 
+					   CREATED_BY, 
+					   ACTIVITY, 
+					   OT_DEDUCT_TIME, 
+					   OT_TYPE_REMARK, 
+					   APPLY_OT_AFFIRM,    
+					   APPLY_GROUP_NO,
+					   OT_LENGTH,
+					   OT_NIGHT_FLAG
+					   ) 
+			    VALUES (#otNo:NUMERIC#, 
+						#person_id:VARCHAR#, 
+						#otTypeCode:VARCHAR#, 
+						TO_DATE(#otDate:VARCHAR#, 'YYYY-MM-DD'), 
+						#otFromTime:VARCHAR#, 
+						#otToTime:VARCHAR#, 
+						#otRemark:VARCHAR#, 
+						#otNextDays:NUMERIC#, 
+						SYSDATE, 
+						#createdBy:VARCHAR#,             
+						0, 
+						#otDeduct:NUMERIC#, 
+						#otSortCode:VARCHAR#, 
+						#forceType:BOOLEAN#,  
+						#applyGroupSeq:NUMERIC#,
+						#otLength:NUMERIC#,
+						#otNightFlag:NUMERIC#
+						)
+			]]>
+	</insert>
+	
+	<!-- insert affirmor information -->
+	<insert id="insertAffirmorInfo" parameterClass="EssAffirmor"> 
+		<![CDATA[
+		
+			INSERT INTO ESS_AFFIRM 
+				   (ESS_AFFIRM_NO, 
+				   	APPLY_NO, 
+					AFFIRM_FLAG, 
+					AFFIRM_LEVEL, 
+					AFFIRMOR_ID, 
+					CREATE_DATE, 
+					CREATED_BY, 
+					ACTIVITY, 
+					APPLY_TYPE,
+					AFFIRM_LEVEL_ORIGINAL) 
+			VALUES (ESS_AFFIRM_SEQ.NEXTVAL, 
+				    #applyNo:NUMERIC#, 
+				    0, 
+					#affirmLevel:NUMERIC#, 
+					#affirmorId:VARCHAR#, 
+					SYSDATE, 
+					#createdBy:VARCHAR#, 
+					1, 
+					#applyType:VARCHAR#,
+					#affirmLevelOriginal:NUMERIC#)
+				]]>
+	</insert>
+	
+	<!-- NEW get max overtime apply No -->
+	<select id="getOTTopLimitApplyNo" resultClass="int">
+		<![CDATA[	
+			SELECT MAX(APPLY_NO) ApplyNO FROM ESS_APPLY_OTTOPLIMIT
+			]]>
+	</select>
+	
+	<!-- get max overtime top limit apply No -->
+	<select id="getOTApplyNo" resultClass="int">
+		<![CDATA[	
+			SELECT MAX(APPLY_OT_NO) ApplyNO FROM ESS_APPLY_OT
+			]]>
+	</select>
+	
+	<!-- insert leave apply information -->
+	<insert id="insertLeaveApply" parameterClass="EssLeaveBean"> 
+		<![CDATA[
+			INSERT INTO ESS_LEAVE_APPLY_TB 
+						(LEAVE_NO,
+						 LEAVE_EMPID, 
+						 LEAVE_TYPE, 
+						 LEAVE_FROM_TIME, 
+						 LEAVE_TO_TIME, 
+						 LEAVE_REASON, 
+						 CREATE_DATE, 
+						 CREATED_BY, 
+						 ACTIVITY,
+						 APPLY_GROUP_NO,
+						 applyleavetype,
+						 FILE_UPLOAD_FLAG,
+						 cpny)
+				VALUES  (#leaveNo:NUMERIC#, 
+						 #person_id:VARCHAR#, 
+						 #leaveTypeCode:VARCHAR#, 
+						 TO_DATE(#leaveFromDate:VARCHAR# || ' ' || #leaveFromTime:VARCHAR#, 'YYYY-MM-DD HH24:MI'), 
+						 TO_DATE(#leaveToDate:VARCHAR# || ' ' || #leaveToTime:VARCHAR#, 'YYYY-MM-DD HH24:MI'), 
+						 #leaveReason:VARCHAR#, 
+						 SYSDATE, 
+						 #createdBy:VARCHAR#, 
+						 0,        
+						 #applyGroupSeq#,
+						 #applyLeaveType:VARCHAR#,
+						 0,
+						 #cpny:VARCHAR#)    
+		]]>
+	</insert>
+				 
+	<!-- get max leave apply No -->
+	<select id="getLeaveApplyNo" resultClass="int">
+		<![CDATA[	
+		
+			SELECT MAX(LEAVE_NO) ApplyNO FROM ESS_LEAVE_APPLY_TB
+			
+			]]>
+	</select>
+	
+		<!-- get overtime detail -->
+	<select id="getOvertimeDetail" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+				SELECT D.EMPID,
+					   D.AFFIRM_LEVEL,
+					   ROUND(SUM(D.OT_HOUR),2) OT_HOUR
+				  FROM (
+						SELECT B.EMPID,
+							   A.APPLY_NO,
+							   B.APPLY_OT_DATE,
+							   B.OT_FROM_TIME,
+							   B.OT_TO_TIME,
+							   (TO_DATE(TO_CHAR(B.APPLY_OT_DATE + B.APPLY_OT_FLAG,'YYYY-MM-DD') || B.OT_TO_TIME,'YYYY-MM-DD HH24:MI') - TO_DATE(TO_CHAR(B.APPLY_OT_DATE,'YYYY-MM-DD') || B.OT_FROM_TIME,'YYYY-MM-DD HH24:MI')) * 24 OT_HOUR,
+							   B.ACTIVITY,
+							   A.AFFIRM_LEVEL,
+							   A.AFFIRM_FLAG,
+							   NVL(C.AFFIRM_LEVEL,-1) NEXT_AFFIRM_LEVEL,
+							   NVL(C.AFFIRM_FLAG,-1)  NEXT_AFFIRM_FLAG
+						  FROM ESS_AFFIRM A,
+						  	   ESS_APPLY_OT B,
+							   ESS_AFFIRM C
+						 WHERE A.APPLY_NO = B.APPLY_OT_NO
+						   AND A.APPLY_TYPE = 'OtApply'
+						   AND AR_GET_MONTHSTR (TO_CHAR(B.APPLY_OT_DATE,'YYYY/MM/DD')) = AR_GET_MONTHSTR (TO_CHAR(TO_DATE(#APPLY_OT_DATE#,'YYYY-MM-DD'),'YYYY/MM/DD'))
+						   AND B.EMPID = #EMPID#
+						   AND B.ACTIVITY = 0
+						   AND C.APPLY_NO(+) = A.APPLY_NO
+						   AND C.APPLY_TYPE(+) = A.APPLY_TYPE
+						   AND C.AFFIRM_LEVEL(+) = A.AFFIRM_LEVEL + 1 ) D
+				   WHERE D.AFFIRM_LEVEL = $AFFIRM_LEVEL$
+				     AND D.AFFIRM_FLAG = $AFFIRM_FLAG$
+			 ]]>
+			 <dynamic prepend="AND">
+				<iterate property="NEXT_AFFIRM_FLAG" open="(" close=")" conjunction="OR">
+					D.NEXT_AFFIRM_FLAG = #NEXT_AFFIRM_FLAG[]#
+				</iterate>
+			  </dynamic>
+			 
+		<![CDATA[
+				GROUP BY D.EMPID, D.AFFIRM_LEVEL
+			]]>
+	</select>
+	
+	<!-- NEW get leave apply detail for email send-->
+	<select id="getApplyInfoForEmail" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[	
+			SELECT LEAVEEMP.EMPID OT_EMPID,
+			       LEAVEEMP.CHINESENAME OT_CHINESENAME,
+			       get_dept_name(LEAVEEMP.DEPTID) DEPTNAME,
+			       AFFIRMINFO.AFFIRM_LEVEL,
+			       AFFIRMINFO.AFFIRMOR_ID,
+			       AFFIRMINFO.EMAIL AS AFFIRM_EMAIL,
+			       APPLYTYPE.CODE_NAME AS SUBAPPLYNAME,
+			       TO_CHAR(SYSDATE, 'YYYY-MM-DD') AS APPLY_TIME,
+			       (SELECT SY.CODE_NAME FROM SY_CODE SY WHERE SY.CODE_ID = #APPLY_TYPE_CONTENT:VARCHAR#) AS APPLY_TYPE_CONTENT
+			  FROM (SELECT EA.*, HR.EMAIL FROM HR_EMPLOYEE HR, ESS_AFFIRM EA WHERE EA.AFFIRMOR_ID = HR.PERSON_ID) AFFIRMINFO,
+			       HR_EMPLOYEE           LEAVEEMP,
+			       SY_CODE               APPLYTYPE
+			 WHERE AFFIRMINFO.APPLY_TYPE = #APPLY_TYPE:VARCHAR#
+			   AND AFFIRMINFO.AFFIRM_LEVEL = 1
+			   AND AFFIRMINFO.APPLY_TYPE = APPLYTYPE.CODE_ID
+			   AND AFFIRMINFO.APPLY_NO = #APPLY_NO:NUMERIC#
+			   AND LEAVEEMP.PERSON_ID = #APPLY_EMPID:VARCHAR#	
+			 ]]>
+	</select>
+	
+	<!-- NEW get leave affirm detail for email send-->
+		<select id="getLeaveAffirmInfoForEmail" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+			  	SELECT APPLYINFO.LEAVE_NO,
+				       APPLYINFO.LEAVE_REASON,
+				       APPLYINFO.LEAVE_TYPE,
+				       APPLYTYPE.CODE_NAME SUBAPPLYNAME,
+				       APPLYINFO.LEAVE_EMPID,
+				       LEAVEEMP.CHINESENAME LEAVE_CHINESENAME,
+				       AFFIRMINFO.EMAIL AS AFFIRM_EMAIL,
+				       AFFIRMINFO.AFFIRM_FLAG,
+				       AFFIRMINFO.AFFIRM_LEVEL,
+				       AFFIRMINFO.AFFIRMOR_ID,
+				       APPLYINFO.CREATE_DATE APPLY_TIME,
+				       APPLYINFO.LEAVE_FROM_TIME AS START_TIME,
+				       APPLYINFO.LEAVE_TO_TIME AS END_TIME,
+				       APPLYINFO.LEAVE_REASON AS LEAVEREASON
+				  FROM ESS_LEAVE_APPLY_TB APPLYINFO,
+				       (SELECT EA.*,HR.EMAIL FROM HR_EMPLOYEE HR ,ESS_AFFIRM EA WHERE EA.AFFIRMOR_ID = HR.PERSON_ID AND EA.AFFIRM_FLAG = 0) AFFIRMINFO,
+				       HR_EMPLOYEE        LEAVEEMP,
+				       SY_CODE            APPLYTYPE
+				 WHERE APPLYINFO.LEAVE_NO = AFFIRMINFO.APPLY_NO
+				   AND APPLYINFO.LEAVE_EMPID = LEAVEEMP.PERSON_ID
+				   AND APPLYINFO.LEAVE_TYPE = APPLYTYPE.CODE_ID
+				   AND AFFIRMINFO.AFFIRM_LEVEL =
+				       (select max(affirm_level)
+				          from ess_affirm
+				         where apply_no = #LEAVE_NO:NUMERIC#
+				           and affirm_flag = 1
+				           and apply_type = #APPLY_TYPE:VARCHAR#) + 1
+				  AND AFFIRMINFO.APPLY_TYPE = #APPLY_TYPE:VARCHAR#
+   				  AND APPLYINFO.LEAVE_NO = #LEAVE_NO:NUMERIC#
+			 ]]>
+	</select>
+	
+	
+		<!-- NEW get OT TOPLIMIT affirm detail for email send-->
+		<select id="getOtTopLimitAffirmInfoForEmail" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+				SELECT APPLYINFO.APPLY_NO,
+				       APPLYINFO.EMPID,
+				       APPLYINFO.CHINESENAME LEAVE_CHINESENAME,
+				       AFFIRMINFO.EMAIL AS AFFIRM_EMAIL,
+				       AFFIRMINFO.AFFIRM_FLAG,
+				       AFFIRMINFO.AFFIRM_LEVEL,
+				       AFFIRMINFO.AFFIRMOR_ID,
+				       APPLYINFO.CREATE_DATE AS APPLY_TIME,
+				       APPLYINFO.APPLY_LENGTN,
+				       APPLYINFO.AR_MONTH,
+				       APPLYINFO.START_TIME,
+				       APPLYINFO.END_TIME
+				  FROM (
+				          SELECT A.*,B.CHINESENAME,
+				                 C.PLAN_MONTH AR_MONTH,
+				                 TO_DATE(C.PLAN_MONTH, 'YYYYMM') AS START_TIME,
+				                 ADD_MONTHS(TO_DATE(C.PLAN_MONTH, 'YYYYMM'), 1) - 1 AS END_TIME
+				            FROM ESS_APPLY_OTTOPLIMIT A,
+				                 HR_EMPLOYEE B,       
+				                 AR_OVERTIME_PLAN C
+				           WHERE A.OT_PLAN_NO = C.OT_PLAN_NO
+				             AND A.EMPID = B.EMPID           
+				       ) APPLYINFO,
+				       (SELECT EA.*,HR.EMAIL FROM HR_EMPLOYEE HR ,ESS_AFFIRM EA WHERE EA.AFFIRMOR_ID = HR.EMPID AND EA.AFFIRM_FLAG = 0) AFFIRMINFO
+				       
+				 WHERE APPLYINFO.APPLY_NO = AFFIRMINFO.APPLY_NO
+				   AND APPLYINFO.APPLY_NO = #OTTOPLIMIT_NO:NUMERIC#
+				   AND AFFIRMINFO.APPLY_TYPE = #APPLY_TYPE:VARCHAR#
+				   AND AFFIRMINFO.AFFIRM_LEVEL =
+				       (SELECT MAX(AFFIRM_LEVEL)
+				          FROM ESS_AFFIRM
+				         WHERE APPLY_NO = #OTTOPLIMIT_NO:NUMERIC#
+				           AND AFFIRM_FLAG = 1
+				           AND APPLY_TYPE = #APPLY_TYPE:VARCHAR#) + 1
+			 ]]>
+	</select>
+	
+	
+	   <!-- NEW get ot affirm detail for email send-->
+		<select id="getOtAffirmInfoForEmail" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+        		SELECT APPLYINFO.APPLY_OT_NO,
+				       APPLYINFO.REMARK,
+				       APPLYINFO.EMP_TYPE_CODE,
+				       APPLYTYPE.CODE_NAME SUBAPPLYNAME,
+				       APPLYINFO.EMPID AS OT_EMPID,
+				       OTEMP.CHINESENAME AS OT_CHINESENAME,
+				       AFFIRMINFO.EMAIL AS AFFIRM_EMAIL,
+				       AFFIRMINFO.AFFIRM_FLAG,
+				       AFFIRMINFO.AFFIRM_LEVEL,
+				       AFFIRMINFO.AFFIRMOR_ID,
+				       TO_CHAR(APPLYINFO.CREATE_DATE,'YYYY-MM-DD') APPLY_TIME,
+				       TO_CHAR(APPLYINFO.APPLY_OT_DATE,'YYYY-MM-DD') AS OT_DATE,
+				       TO_CHAR(APPLYINFO.APPLY_OT_DATE,'YYYY-MM-DD') || ' ' || APPLYINFO.OT_FROM_TIME AS START_TIME,
+				       TO_CHAR(APPLYINFO.APPLY_OT_DATE + APPLY_OT_FLAG,'YYYY-MM-DD') || ' ' || APPLYINFO.OT_TO_TIME AS END_TIME,
+				       APPLYINFO.OT_LENGTH
+				  FROM ESS_APPLY_OT APPLYINFO,
+				       (SELECT EA.*,HR.EMAIL FROM HR_EMPLOYEE HR ,ESS_AFFIRM EA WHERE EA.AFFIRMOR_ID = HR.PERSON_ID AND EA.AFFIRM_FLAG = 0) AFFIRMINFO,
+				       HR_EMPLOYEE        OTEMP,
+				       SY_CODE            APPLYTYPE
+				 WHERE APPLYINFO.APPLY_OT_NO = AFFIRMINFO.APPLY_NO
+				   AND APPLYINFO.EMPID = OTEMP.PERSON_ID
+				   AND APPLYINFO.APPLY_OT_TYPE_CODE = APPLYTYPE.CODE_ID
+				   AND AFFIRMINFO.AFFIRM_LEVEL =
+				       (select max(affirm_level)
+				          from ess_affirm
+				         where apply_no = #OVERTIME_NO:NUMERIC#
+				           and affirm_flag = 1
+				           and apply_type = #APPLY_TYPE:VARCHAR#) + 1
+				  AND AFFIRMINFO.APPLY_TYPE = #APPLY_TYPE:VARCHAR#
+   				  AND APPLYINFO.APPLY_OT_NO = #OVERTIME_NO:NUMERIC#
+			 ]]>
+	</select>
+	
+	 <!-- NEW get ot apply detail for email send-->
+		<select id="getOtApplyInfoForEmail" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			  	SELECT A.EMPID AS OT_EMPID,
+				       E.CHINESENAME AS OT_CHINESENAME,
+				       E.EMAIL AS APPLY_EMAIL,
+				       A.APPLY_OT_TYPE_CODE,
+				       E.POST_GRADE_CODE,
+				       OT.CODE_NAME AS SUBAPPLYNAME,
+				       A.CREATE_DATE AS APPLY_TIME,
+			       	   TO_CHAR(A.APPLY_OT_DATE,'YYYY-MM-DD') AS OT_DATE,
+				       TO_CHAR(A.APPLY_OT_DATE,'YYYY-MM-DD') || ' ' || A.OT_FROM_TIME AS START_TIME,
+				       TO_CHAR(A.APPLY_OT_DATE + A.APPLY_OT_FLAG,'YYYY-MM-DD') || ' ' || A.OT_TO_TIME AS END_TIME,
+				       A.OT_LENGTH,
+				       A.APPLY_OT_NO
+				  FROM ESS_APPLY_OT A, 
+				       HR_EMPLOYEE E, 
+				       HR_EMPLOYEE C, 
+				       (SELECT S.CODE_ID,S.CODE_NAME,S.PARENT_CODE FROM SY_CODE S WHERE S.PARENT_CODE = 'OTTypeCode') OT
+				 WHERE A.APPLY_OT_NO = #OVERTIME_NO:NUMERIC#
+				   AND A.EMPID = E.Person_Id
+				   AND A.CREATED_BY = C.Person_Id
+				   AND A.APPLY_OT_TYPE_CODE = OT.CODE_ID(+)
+			 ]]>
+	</select>
+	
+	<!-- NEW get leave apply detail for email send-->
+		<select id="getLeaveApplyInfoForEmail" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			  	SELECT A.LEAVE_EMPID AS LEAVE_EMPID,
+				       E.CHINESENAME AS LEAVE_CHINESENAME,
+				       NVL(E.EMAIL, C.EMAIL) AS APPLY_EMAIL,
+				       A.LEAVE_TYPE,
+				       E.POST_GRADE_CODE,
+				       LEAVE.CODE_NAME AS SUBAPPLYNAME,
+				       A.CREATE_DATE AS APPLY_TIME,
+				       A.LEAVE_FROM_TIME AS START_TIME,
+				       A.LEAVE_TO_TIME AS END_TIME,
+				       A.LEAVE_NO
+				  FROM ESS_LEAVE_APPLY_TB A,
+				       HR_EMPLOYEE E,
+				       HR_EMPLOYEE C,
+				       (SELECT S.CODE_ID, S.CODE_NAME, S.PARENT_CODE
+				          FROM SY_CODE S
+				         WHERE S.PARENT_CODE = 'LeaveTypeCode') LEAVE
+				 WHERE A.LEAVE_NO = #LEAVE_NO:NUMERIC#
+				   AND A.LEAVE_EMPID = E.Person_Id
+				   AND A.CREATED_BY = C.Person_Id
+				   AND A.LEAVE_TYPE = LEAVE.CODE_ID(+)
+			  
+			 ]]>
+	</select>
+	 
+                 <!--  case    getLeaveApplyInfo 之前按部门的编号 
+		           when HR_EMP_V.FOURTHDEPTID = '630B1000' then
+	              'GL部第'||a.disd_dept_report_no||'号'
+	               when HR_EMP_V.FOURTHDEPTID = '630G6000' then
+	               'FM部第'||a.disd_dept_report_no||'号'
+	               when HR_EMP_V.FOURTHDEPTID = '630F1000' then
+	               'Sourcing第'||a.disd_dept_report_no||'号'
+	               when HR_EMP_V.FOURTHDEPTID = '630B4000' then
+	               'CW部第'||a.disd_dept_report_no||'号'
+	               when HR_EMP_V.FOURTHDEPTID = '630H1000' then
+	               'SG部第'||a.disd_dept_report_no||'号'
+	                   when HR_EMP_V.FOURTHDEPTID = '630E1000' then
+	               'QC部第'||a.disd_dept_report_no||'号'
+	               when HR_EMP_V.FOURTHDEPTID = '630G7000' then
+	               'GX部第'||a.disd_dept_report_no||'号'
+	               when HR_EMP_V.FOURTHDEPTID = '630G3000' then
+	               'SJ部第'||a.disd_dept_report_no||'号'
+	               when HR_EMP_V.FOURTHDEPTID = '630G1000' then
+	               'SC部第'||a.disd_dept_report_no||'号'
+	               when HR_EMP_V.FOURTHDEPTID = '630G4000' then
+	               'R'||'&'||'D部第'||a.disd_dept_report_no||'号'
+		           end as disd_dept_report_no	 -->
+  <select id="getLeaveApplyInfo" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			  	SELECT HR_EMP_V.EMPID AS LEAVE_EMPID,
+			       HR_EMP_V.CHINESENAME,
+			       LEAVE.CODE_NAME,
+			       HR_EMP_V.deptname,
+			       HR_EMP_V.FOURTHDEPTNAME,
+			       A.LEAVE_REASON,
+			       A.CREATE_DATE,
+			       A.LEAVE_EMPID AS PERSON_ID,
+			       GET_CODE_NAME(HR_EMP_V.POST_CODE) POST_CODE,
+			       TO_CHAR(A.LEAVE_FROM_TIME,'YYYY-MM-DD HH24:MI') LEAVE_FROM_TIME,
+                   TO_CHAR(A.LEAVE_TO_TIME,'YYYY-MM-DD HH24:MI') LEAVE_TO_TIME,
+			       TRUNC(ESS_GET_LEAVE_LENGTH_REPORT2(A.LEAVE_EMPID,TO_CHAR(A.LEAVE_FROM_TIME, 'YYYY-MM-DD HH24:MI'),TO_CHAR(A.LEAVE_TO_TIME, 'YYYY-MM-DD HH24:MI'),A.LEAVE_TYPE,A.APPLYLEAVETYPE,HR_EMP_V.Cpny_Id)/8,0) leaveday,
+                   ROUND(ESS_GET_LEAVE_LENGTH_REPORT2(A.LEAVE_EMPID,TO_CHAR(A.LEAVE_FROM_TIME, 'YYYY-MM-DD HH24:MI'),TO_CHAR(A.LEAVE_TO_TIME, 'YYYY-MM-DD HH24:MI'),A.LEAVE_TYPE,A.APPLYLEAVETYPE,HR_EMP_V.Cpny_Id)-TRUNC(ESS_GET_LEAVE_LENGTH_REPORT2(A.LEAVE_EMPID,TO_CHAR(A.LEAVE_FROM_TIME, 'YYYY-MM-DD HH24:MI'),TO_CHAR(A.LEAVE_TO_TIME, 'YYYY-MM-DD HH24:MI'),A.LEAVE_TYPE,A.APPLYLEAVETYPE,HR_EMP_V.Cpny_Id)/8,0)*8,1) as leavehour,  		           
+		           'QT-HR-'||substr(a.disd_dept_report_id,3,2)||'-'||substr(a.disd_dept_report_id,5,10) AS disd_dept_report_no
+			         
+			  FROM ESS_LEAVE_APPLY_TB A,
+			       HR_EMP_V,
+			       (SELECT S.CODE_ID, S.CODE_NAME, S.PARENT_CODE
+			          FROM SY_CODE S
+			         WHERE S.PARENT_CODE = 'LeaveTypeCode') LEAVE
+			 WHERE A.LEAVE_NO =#LEAVE_NO:NUMERIC#
+			   AND A.LEAVE_EMPID=HR_EMP_V.person_id
+			   AND A.LEAVE_TYPE = LEAVE.CODE_ID(+)
+			  
+			 ]]>
+	</select>
+	
+	
+	<select id="getOtApplyInfo" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			  	SELECT HR_EMP_V.EMPID AS LEAVE_EMPID,
+				       HR_EMP_V.CHINESENAME,
+				       OT.CODE_NAME,
+				       HR_EMP_V.deptname,
+				       HR_EMP_V.FOURTHDEPTNAME,
+				       A.APPLY_OT_REMARK,
+				       A.CREATE_DATE,
+				       A.EMPID AS PERSON_ID,
+				       GET_CODE_NAME(HR_EMP_V.POST_CODE) POST_CODE, 
+				       TO_CHAR(A.APPLY_OT_DATE - OT_NIGHT_FLAG, 'YYYY-MM-DD') AS otDate,
+				       TO_CHAR(A.APPLY_OT_DATE, 'YYYY-MM-DD ') || A.OT_FROM_TIME AS otFromTime,
+				       TO_CHAR(A.APPLY_OT_DATE + A.APPLY_OT_FLAG, 'YYYY-MM-DD ') ||
+				       A.OT_TO_TIME AS otToTime,
+				       CASE
+				         WHEN OT_LENGTH > 0 THEN
+				          OT_LENGTH
+				         ELSE
+				          (TO_DATE(TO_CHAR(A.APPLY_OT_DATE + A.APPLY_OT_FLAG, 'YYYY-MM-DD ') ||
+				                   A.OT_TO_TIME,
+				                   'YYYY-MM-DD HH24:MI') -
+				          TO_DATE(TO_CHAR(A.APPLY_OT_DATE, 'YYYY-MM-DD ') || A.OT_FROM_TIME,
+				                   'YYYY-MM-DD HH24:MI')) * 24 - A.OT_DEDUCT_TIME
+				       END AS otLength
+				
+				  FROM ESS_APPLY_OT A,
+				       HR_EMP_V,
+				       (SELECT S.CODE_ID, S.CODE_NAME, S.PARENT_CODE
+				          FROM SY_CODE S
+				         WHERE S.PARENT_CODE = 'OTTypeCode') OT
+				 WHERE A.APPLY_OT_NO = #OT_NO:NUMERIC#
+				   AND A.EMPID = HR_EMP_V.person_id
+				   AND A.APPLY_OT_TYPE_CODE = OT.CODE_ID(+)
+
+			  
+			 ]]>
+	</select>
+	
+	<select id="getLeaveApplyH9Info" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			  	SELECT LEAVE_NO,
+				       BUSINESS,
+				       AGENT_EMPID,
+				       AGENT_NAME,
+				       AGENT_POSITION,
+				       AGENT_OFFICE_PHONE,
+				       AGENT_CELLPHONE,
+				       OTHERBUSINESS,
+				       CONTACT_MODE
+				  FROM ESS_LEAVE_APPLY_H9_INO T
+				 WHERE T.LEAVE_NO =#LEAVE_NO:NUMERIC#
+			 ]]>
+	</select>
+	
+	 <!-- NEW get OtTopLimit apply detail for email send-->
+	<select id="getOtTopLimitApplyInfoForEmail" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+		  	SELECT A.EMPID AS OT_EMPID,
+			       E.CHINESENAME AS OT_CHINESENAME,
+			       NVL(E.EMAIL, C.EMAIL) AS APPLY_EMAIL,
+			       A.CREATE_DATE AS APPLY_TIME,
+			       OT.PLAN_MONTH AR_MONTH,
+			       TO_DATE(OT.PLAN_MONTH, 'YYYYMM') AS START_TIME,
+			       ADD_MONTHS(TO_DATE(OT.PLAN_MONTH, 'YYYYMM'), 1) - 1 AS END_TIEM ,
+			       A.APPLY_LENGTN,
+			       A.APPLY_NO
+			  FROM ESS_APPLY_OTTOPLIMIT A,
+			       HR_EMPLOYEE          E,
+			       HR_EMPLOYEE          C,
+			       AR_OVERTIME_PLAN     OT
+			 WHERE A.APPLY_NO = #OTTOPLIMIT_NO:NUMERIC#
+			   AND A.EMPID = E.EMPID
+			   AND A.CREATED_BY = C.EMPID
+			   AND A.OT_PLAN_NO = OT.OT_PLAN_NO
+		 ]]>
+	</select>
+	
+	
+		<!-- insert leave apply information -->
+	<insert id="insertLeaveApplyMail" parameterClass="SimpleMap"> 
+		<![CDATA[
+		INSERT INTO SY_EMAIL_SND
+			  (EMAIL_SND_SEQ,
+			   EMAIL_TITLE,
+			   EMAIL_CONTNT,
+			   EMAIL_TP,
+			   RCVR_EMAIL_ADDR,
+			   SND_STAT,
+			   CREATE_DATE,
+			   BIZ_TP)
+		VALUES
+			  (EMAIL_SND_SEQ.NEXTVAL,
+			   #EMAIL_TITLE:VARCHAR#,
+			   #EMAIL_CONTNT:VARCHAR#,
+			   #EMAIL_TP:VARCHAR#,
+			   #RCVR_EMAIL_ADDR:VARCHAR#,
+			   #SND_STAT:VARCHAR#,
+			   SYSDATE,
+			   #BIZ_TP:VARCHAR#)
+		]]>
+	</insert>
+	
+			<!-- insert leave affirm information -->
+	<insert id="insertLeaveAffirmMail" parameterClass="SimpleMap"> 
+		<![CDATA[
+		INSERT INTO SY_EMAIL_SND
+			  (EMAIL_SND_SEQ,
+			   EMAIL_TITLE,
+			   EMAIL_CONTNT,
+			   EMAIL_TP,
+			   RCVR_EMAIL_ADDR,
+			   SND_STAT,
+			   CREATE_DATE,
+			   BIZ_TP)
+		VALUES
+			  (EMAIL_SND_SEQ.NEXTVAL,
+			   #EMAIL_TITLE:VARCHAR#,
+			   #EMAIL_CONTNT:VARCHAR#,
+			   #EMAIL_TP:VARCHAR#,
+			   #RCVR_EMAIL_ADDR:VARCHAR#,
+			   #SND_STAT:VARCHAR#,
+			   SYSDATE,
+			   #BIZ_TP:VARCHAR#)
+		]]>
+	</insert>
+	
+		<!-- insert OverTime apply information -->
+		<insert id="insertOtApplyMail" parameterClass="SimpleMap"> 
+		<![CDATA[
+		INSERT INTO SY_EMAIL_SND
+			  (EMAIL_SND_SEQ,
+			   EMAIL_TITLE,
+			   EMAIL_CONTNT,
+			   EMAIL_TP,
+			   RCVR_EMAIL_ADDR,
+			   SND_STAT,
+			   CREATE_DATE,
+			   BIZ_TP)
+		VALUES
+			  (EMAIL_SND_SEQ.NEXTVAL,
+			   #EMAIL_TITLE:VARCHAR#,
+			   #EMAIL_CONTNT:VARCHAR#,
+			   #EMAIL_TP:VARCHAR#,
+			   #RCVR_EMAIL_ADDR:VARCHAR#,
+			   #SND_STAT:VARCHAR#,
+			   SYSDATE,
+			   #BIZ_TP:VARCHAR#)
+		]]>
+	</insert>
+	
+			<!-- insert OverTime affirm information -->
+	<insert id="insertOtAffirmMail" parameterClass="SimpleMap"> 
+		<![CDATA[
+		INSERT INTO SY_EMAIL_SND
+			  (EMAIL_SND_SEQ,
+			   EMAIL_TITLE,
+			   EMAIL_CONTNT,
+			   EMAIL_TP,
+			   RCVR_EMAIL_ADDR,
+			   SND_STAT,
+			   CREATE_DATE,
+			   BIZ_TP)
+		VALUES
+			  (EMAIL_SND_SEQ.NEXTVAL,
+			   #EMAIL_TITLE:VARCHAR#,
+			   #EMAIL_CONTNT:VARCHAR#,
+			   #EMAIL_TP:VARCHAR#,
+			   #RCVR_EMAIL_ADDR:VARCHAR#,
+			   #SND_STAT:VARCHAR#,
+			   SYSDATE,
+			   #BIZ_TP:VARCHAR#)
+		]]>
+	</insert>
+	
+	<select id="getLeaveDateForAffirm" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+					SELECT MIN(TO_CHAR(ESS_LEAVE_APPLY_TB.LEAVE_FROM_TIME, 'YYYY-MM-DD')) MIN_LEAVE_FROM_TIME,
+       					   MAX(TO_CHAR(ESS_LEAVE_APPLY_TB.LEAVE_TO_TIME, 'YYYY-MM-DD')) MAX_LEAVE_TO_TIME
+					  FROM ESS_LEAVE_APPLY_TB,
+					       ESS_AFFIRM,
+					       ESS_AFFIRM ESS_LAST
+					 WHERE ESS_AFFIRM.APPLY_TYPE = 'LeaveApply'
+					   AND ESS_LEAVE_APPLY_TB.LEAVE_NO = ESS_AFFIRM.APPLY_NO
+					   AND ESS_AFFIRM.APPLY_NO = ESS_LAST.APPLY_NO(+)
+					   AND ESS_AFFIRM.AFFIRM_LEVEL + 1 = ESS_LAST.AFFIRM_LEVEL(+)
+					   AND ESS_AFFIRM.AFFIRMOR_ID = #AFFIRM_ID#
+					   AND ESS_AFFIRM.affirm_flag = 0
+					   AND (ESS_AFFIRM.Apply_No IN
+					        (select tt.Apply_No
+					            from ESS_AFFIRM tt
+					           where tt.Apply_No = ESS_AFFIRM.Apply_No
+					             AND tt.Affirm_Flag > 0 )  
+					       or ESS_AFFIRM.AFFIRM_LEVEL = 1)
+			 ]]>
+	</select>
+	
+	<select id="getEvectionDateForAffirm" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+					SELECT MIN(TO_CHAR(ESS_LEAVE_APPLY_TB.LEAVE_FROM_TIME, 'YYYY-MM-DD')) MIN_LEAVE_FROM_TIME,
+       					   MAX(TO_CHAR(ESS_LEAVE_APPLY_TB.LEAVE_TO_TIME, 'YYYY-MM-DD')) MAX_LEAVE_TO_TIME
+					  FROM ESS_LEAVE_APPLY_TB,
+					       SY_CODE,
+					       HR_EMPLOYEE_V,
+					       HR_DEPARTMENT,
+					       ESS_AFFIRM,
+					       ESS_AFFIRM ESS_LAST
+					 WHERE ESS_LEAVE_APPLY_TB.LEAVE_TYPE = SY_CODE.CODE_ID
+					   AND SY_CODE.PARENT_CODE = 'EvectionTypeCode'
+					   AND ESS_LEAVE_APPLY_TB.LEAVE_EMPID = HR_EMPLOYEE_V.EMPID
+					   AND HR_EMPLOYEE_V.DEPTID = HR_DEPARTMENT.DEPTID
+					   AND ESS_LEAVE_APPLY_TB.LEAVE_NO = ESS_AFFIRM.APPLY_NO
+					   AND ESS_AFFIRM.APPLY_NO = ESS_LAST.APPLY_NO(+)
+					   AND ESS_AFFIRM.AFFIRM_LEVEL = ESS_LAST.AFFIRM_LEVEL(+) + 1
+					   AND NVL(ESS_LAST.APPLY_TYPE, 'EvectionApply') = 'EvectionApply'
+					   AND ESS_AFFIRM.APPLY_TYPE = 'EvectionApply'
+					   AND ESS_AFFIRM.AFFIRMOR_ID = #AFFIRM_ID#
+					   AND EXISTS (SELECT *
+					          FROM HR_DEPARTMENT B1
+					         WHERE B1.DEPTID = HR_EMPLOYEE_V.DEPTID
+					         START WITH B1.DEPT_LEVEL = 1
+					        CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID)
+					   AND ESS_AFFIRM.affirm_flag = 0
+					   AND ((ESS_AFFIRM.Apply_No IN
+					       (select tt.Apply_No
+					            from ESS_AFFIRM tt
+					           where tt.Apply_No = ESS_AFFIRM.Apply_No
+					             and tt.Affirmor_Id <> ESS_AFFIRM.Affirmor_Id
+					             and tt.Affirm_Flag = 1
+					             and tt.AFFIRM_LEVEL = ESS_AFFIRM.AFFIRM_LEVEL - 1) and
+					       ESS_AFFIRM.AFFIRM_LEVEL = #MAXLEVEL#) or
+					       ESS_AFFIRM.AFFIRM_LEVEL = '1')
+			 ]]>
+	</select>
+	
+	<select id="getTrainingDateForAffirm" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+					SELECT MIN(TO_CHAR(ESS_LEAVE_APPLY_TB.LEAVE_FROM_TIME, 'YYYY-MM-DD')) MIN_LEAVE_FROM_TIME,
+       					   MAX(TO_CHAR(ESS_LEAVE_APPLY_TB.LEAVE_TO_TIME, 'YYYY-MM-DD')) MAX_LEAVE_TO_TIME
+					  FROM ESS_LEAVE_APPLY_TB,
+					       SY_CODE,
+					       HR_EMPLOYEE_V,
+					       HR_DEPARTMENT,
+					       ESS_AFFIRM,
+					       ESS_AFFIRM ESS_LAST
+					 WHERE ESS_LEAVE_APPLY_TB.LEAVE_TYPE = SY_CODE.CODE_ID
+					   AND SY_CODE.PARENT_CODE = 'TrainingTypeCode'
+					   AND ESS_LEAVE_APPLY_TB.LEAVE_EMPID = HR_EMPLOYEE_V.EMPID
+					   AND HR_EMPLOYEE_V.DEPTID = HR_DEPARTMENT.DEPTID
+					   AND ESS_LEAVE_APPLY_TB.LEAVE_NO = ESS_AFFIRM.APPLY_NO
+					   AND ESS_AFFIRM.APPLY_NO = ESS_LAST.APPLY_NO(+)
+					   AND ESS_AFFIRM.AFFIRM_LEVEL = ESS_LAST.AFFIRM_LEVEL(+) + 1
+					   AND NVL(ESS_LAST.APPLY_TYPE, 'TrainingApply') = 'TrainingApply'
+					   AND ESS_AFFIRM.APPLY_TYPE = 'TrainingApply'
+					   AND ESS_AFFIRM.AFFIRMOR_ID = #AFFIRM_ID#
+					   AND EXISTS (SELECT *
+					          FROM HR_DEPARTMENT B1
+					         WHERE B1.DEPTID = HR_EMPLOYEE_V.DEPTID
+					         START WITH B1.DEPT_LEVEL = 1
+					        CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID)
+					   AND ESS_AFFIRM.affirm_flag = 0
+					   AND ((ESS_AFFIRM.Apply_No IN
+					       (select tt.Apply_No
+					            from ESS_AFFIRM tt
+					           where tt.Apply_No = ESS_AFFIRM.Apply_No
+					             and tt.Affirmor_Id <> ESS_AFFIRM.Affirmor_Id
+					             and tt.Affirm_Flag = 1
+					             and tt.AFFIRM_LEVEL = ESS_AFFIRM.AFFIRM_LEVEL - 1) and
+					       ESS_AFFIRM.AFFIRM_LEVEL = #MAXLEVEL#) or
+					       ESS_AFFIRM.AFFIRM_LEVEL = '1')
+			 ]]>
+	</select>
+	
+	<select id="getOverTimeDateForAffirm" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+					SELECT MIN(TO_CHAR(ESS_APPLY_OT.APPLY_OT_DATE, 'YYYY-MM-DD')) MIN_DATE,
+					       MAX(TO_CHAR(ESS_APPLY_OT.APPLY_OT_DATE, 'YYYY-MM-DD')) MAX_DATE
+					  FROM ESS_APPLY_OT,
+					       ESS_AFFIRM,
+					       ESS_AFFIRM ESS_LAST
+					 WHERE ESS_APPLY_OT.APPLY_OT_NO = ESS_AFFIRM.APPLY_NO
+					   AND ESS_AFFIRM.APPLY_NO = ESS_LAST.APPLY_NO(+)
+					   AND ESS_AFFIRM.AFFIRM_LEVEL = ESS_LAST.AFFIRM_LEVEL(+) + 1
+					   AND ESS_AFFIRM.APPLY_TYPE = 'OtApply'
+					   AND ESS_AFFIRM.AFFIRMOR_ID = #AFFIRM_ID#
+					   AND ESS_AFFIRM.affirm_flag = 0
+					   AND (
+					   		ESS_AFFIRM.Apply_No in
+					       				(select tt.Apply_No
+					            		   from ESS_AFFIRM tt
+					                      where tt.Apply_No = ESS_AFFIRM.Apply_No
+					                        and tt.Affirmor_Id <> ESS_AFFIRM.Affirmor_Id
+					                        and tt.Affirm_Flag = 1
+					                        and tt.AFFIRM_LEVEL = ESS_AFFIRM.AFFIRM_LEVEL - 1)
+					           or ESS_AFFIRM.AFFIRM_LEVEL = 1
+					       )
+			 ]]>
+	</select>
+	
+	<!--
+	comment : 员工加班信息未确认的时间
+	author : yj
+	-->
+	<select id="getOtConfirmListFirstDate" resultClass="SimpleMap"  parameterClass="SimpleMap">
+		<![CDATA[	
+		      		SELECT MIN(to_char(APPLY_OT_DATE, 'YYYY-MM-DD')) MINDATE,
+       					   MAX(to_char(APPLY_OT_DATE, 'YYYY-MM-DD')) MAXDATE
+					  FROM ESS_AFFIRM A,
+					       ESS_APPLY_OT O,
+					       (SELECT APPLY_NO, MAX(AFFIRM_FLAG) MAXFLAG, MIN(AFFIRM_FLAG) MINFLAG
+					          FROM ESS_AFFIRM,HR_EMPLOYEE HR
+					         WHERE APPLY_TYPE = 'OtApply'
+					         AND ESS_AFFIRM.AFFIRMOR_ID=HR.PERSON_ID
+                             AND HR.CPNY_ID=#cpnyId:VARCHAR#
+					         GROUP BY APPLY_NO) B,
+					         HR_EMPLOYEE DD					  
+					 WHERE A.APPLY_NO = O.APPLY_OT_NO
+					   AND O.ACTIVITY = 0
+					   AND O.EMPID=DD.PERSON_ID
+                       AND DD.CPNY_ID=#cpnyId:VARCHAR#
+					   and b.MINFLAG=1
+				       and b.MAXFLAG=1
+				       AND B.APPLY_NO = A.APPLY_NO
+					 
+		]]>
+	</select>
+	
+	<!--
+	comment : 员工休假\出差\培训信息未确认的时间
+	author : yj
+	-->
+	<select id="getConfirmListFirstDate" resultClass="SimpleMap" parameterClass="SimpleMap">
+		<![CDATA[	
+		      SELECT MIN(to_char(O.LEAVE_FROM_TIME, 'YYYY-MM-DD')) MINDATE,
+		      		 MAX(to_char(O.LEAVE_TO_TIME, 'YYYY-MM-DD')) MAXDATE 
+		      FROM ESS_AFFIRM A,ESS_LEAVE_APPLY_TB O,
+		      (
+		             SELECT APPLY_NO,MAX(AFFIRM_FLAG) MAXFLAG,MIN(AFFIRM_FLAG) MINFLAG FROM ESS_AFFIRM ,HR_EMPLOYEE HR
+		             WHERE APPLY_TYPE=#LeaveApply:VARCHAR#
+		             AND ESS_AFFIRM.AFFIRMOR_ID=HR.PERSON_ID
+                     AND HR.CPNY_ID=#cpnyId:VARCHAR#
+		             GROUP BY APPLY_NO
+		      ) B,HR_EMPLOYEE DD
+		      WHERE A.APPLY_NO = O.LEAVE_NO
+		      AND O.ACTIVITY=0
+		      AND O.LEAVE_EMPID=DD.PERSON_ID
+              AND DD.CPNY_ID=#cpnyId:VARCHAR#
+		      AND B.APPLY_NO = A.APPLY_NO
+		      AND B.MAXFLAG=1
+		      AND B.MINFLAG=1
+		          
+		]]>
+	</select>
+		<select id="getOtViewListFirstDate" resultClass="SimpleMap" parameterClass="SimpleMap">
+		<![CDATA[	
+		SELECT MIN(to_char(APPLY_OT_DATE, 'YYYY-MM-DD')) MINDATE,
+		       MAX(to_char(APPLY_OT_DATE, 'YYYY-MM-DD')) MAXDATE
+		  FROM ESS_APPLY_OT O,       
+		       HR_EMPLOYEE DD
+		 WHERE O.ACTIVITY = 0
+		   AND O.EMPID = DD.PERSON_ID
+		   AND DD.CPNY_ID = #cpnyId:VARCHAR#	
+		          
+		]]>
+	</select>
+	
+	<!--  
+	comment : 员工申请个人信息
+	author : aqing
+	-->
+	<select id="getEssPersonalInfoListCnt" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[	
+			SELECT  count(A.EMPID)
+			   FROM ESS_PERSONAL_INFO A,
+			   		HR_EMPLOYEE B
+			  WHERE A.EMPID = B.EMPID(+)
+		]]>
+		
+		
+		<isNotEmpty prepend="AND" property="CONDITION">
+			<![CDATA[
+				(	
+					B.CHINESENAME 		LIKE '%'||#CONDITION#||'%'
+					OR B.EMPID 			LIKE '%'||#CONDITION#||'%'
+					OR B.CHINESE_PINYIN LIKE '%'||#CONDITION#||'%'
+				)
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="DEPTID">
+			<![CDATA[
+				EXISTS (
+					SELECT     *
+	                     	FROM HR_DEPARTMENT B1
+	                     	WHERE B1.DEPTID=B.DEPTID
+	                 	START WITH B1.DEPTID = #DEPTID#
+	                 	CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID
+	                )
+             ]]>   
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="ACTIVITY">
+			<![CDATA[
+				A.ACTIVITY=#ACTIVITY#
+             ]]>   
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="ADMINID" >
+			<![CDATA[
+    		   EXISTS (
+		            SELECT *
+		              FROM SY_ADMIN_DEPTID S1, SY_ADMIN S2
+		             WHERE S2.ADMINNO = S1.ADMIN_NO
+		               AND S1.ADMIN_DEPTID = B.DEPTID
+		               AND S2.ADMINID = #ADMINID#
+		       )
+			]]>
+		</isNotEmpty>
+		
+	</select>
+	<select id="getEmployeeInfo" parameterClass="string" resultClass="SimpleMap">
+	<![CDATA[
+		select e.empid ,e.chinesename from hr_employee e where e.person_id=#id:VARCHAR#
+	]]>
+	</select>
+	
+	<select id="getSequence" parameterClass="SimpleMap" resultClass="int">
+	<![CDATA[
+		 SELECT $sql$
+		 FROM DUAL
+	]]>
+	</select>
+	<select id="setToEmail" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+		select e.empid ,e.chinesename,e.email from hr_employee e where e.person_id=#setTo:VARCHAR#
+	]]>
+	</select>
+	<select id="applyResult" parameterClass="SimpleMap" resultClass="SimpleMap"  remapResults="true">
+	<![CDATA[				
+			
+				SELECT  ESS.APPLY_OT_NO,
+			            TO_CHAR(ESS.APPLY_OT_DATE,'YYYY-MM-DD') APPLY_OT_DATE,
+			            TO_CHAR(ESS.CREATE_DATE,'YYYY-MM-DD HH24:MI') APPLYTIME,
+			            TO_CHAR(ESS.APPLY_OT_DATE,'YYYY-MM-DD')||' '||ESS.OT_FROM_TIME APPLYFROMTIME,
+			            TO_CHAR(ESS.APPLY_OT_DATE + ESS.APPLY_OT_FLAG,'YYYY-MM-DD ') || ESS.OT_TO_TIME AS APPLYTOTIME,
+			            ESS.OT_LENGTH,
+			            HR.CHINESENAME,
+			            HR.EMPID,
+			            SY.CODE_NAME APPLYTYPE,
+			            SY.CODE_ID APPLYTYPECODE,
+			            HD.DEPTNAME
+			        FROM ESS_APPLY_OT ESS,HR_EMPLOYEE HR,SY_CODE SY,HR_DEPARTMENT HD
+			        WHERE ESS.EMPID=HR.PERSON_ID
+			        AND HR.DEPTID = HD.DEPTID
+			        AND ESS.APPLY_OT_TYPE_CODE=SY.CODE_ID
+			        AND ESS.APPLY_OT_NO IN($applyNoStr$)
+			
+	]]>
+	</select>
+	
+	<select id="getAffirmorFromEssAffirm" parameterClass="SimpleMap" resultClass="SimpleMap"  remapResults="true">
+	<![CDATA[				
+			SELECT DISTINCT A.AFFIRMOR_ID AFFIRMOR_ID
+			  FROM ESS_AFFIRM A, 
+			       ESS_APPLY_OT B
+			 WHERE A.APPLY_NO = B.APPLY_OT_NO
+			   AND A.AFFIRM_LEVEL = #applyLevel:VARCHAR#
+			   AND A.APPLY_TYPE = #applyType:VARCHAR#
+			   AND A.ACTIVITY = 1
+			   AND A.APPLY_NO IN ($applyStr$)	
+	]]>
+	</select>
+	
+	<select id="getApplyNoForMail" parameterClass="SimpleMap" resultClass="SimpleMap" remapResults="true">
+	<![CDATA[				
+			
+				SELECT A.APPLY_OT_NO APPLY_NO
+				  FROM ESS_APPLY_OT A, 
+				       ESS_AFFIRM B
+				 WHERE A.APPLY_OT_NO = B.APPLY_NO
+				   AND B.AFFIRM_LEVEL = #affirmLevel:VARCHAR#
+				   AND B.AFFIRMOR_ID = #affirmorId:VARCHAR#
+				   AND A.APPLY_OT_NO IN ($applyStr$)
+				   AND B.APPLY_TYPE = 'OtApply'
+	]]>
+	</select>
+	
+	<select id="applyLeaveResult" parameterClass="SimpleMap" resultClass="SimpleMap"  remapResults="true">
+	<![CDATA[				
+				
+				SELECT ESS.LEAVE_NO,
+				       TO_CHAR(ESS.CREATE_DATE,'YYYY-MM-DD HH24:MI') APPLY_DATE,
+				       TO_CHAR(ESS.LEAVE_FROM_TIME,'YYYY-MM-DD HH24:MI') FROM_DATE,
+				       TO_CHAR(ESS.LEAVE_TO_TIME,'YYYY-MM-DD HH24:MI') TO_DATE,
+				       ESS.LEAVE_REASON,
+				       SY.CODE_NAME APPLY_TYPE,
+				       HR.EMPID,
+				       HR.CHINESENAME,
+				       get_dept_name(HR.DEPTID) DEPTNAME
+				FROM ESS_LEAVE_APPLY_TB ESS,
+				     HR_EMPLOYEE HR,
+				     SY_CODE SY
+				WHERE ESS.LEAVE_EMPID = HR.PERSON_ID
+				AND   ESS.LEAVE_TYPE = SY.CODE_ID
+				AND   ESS.LEAVE_NO IN ($applyNoStr$)
+			
+	]]>
+	</select>
+	
+	<select id="applyLeaveResult1" parameterClass="SimpleMap" resultClass="SimpleMap"  remapResults="true">
+	<![CDATA[				
+				
+				SELECT ESS.LEAVE_NO,
+				       TO_CHAR(ESS.CREATE_DATE,'YYYY-MM-DD HH24:MI') APPLY_DATE,
+				       TO_CHAR(ESS.LEAVE_FROM_TIME,'YYYY-MM-DD HH24:MI') FROM_DATE,
+				       TO_CHAR(ESS.LEAVE_TO_TIME,'YYYY-MM-DD HH24:MI') TO_DATE,
+				       ESS.LEAVE_REASON,
+				       SY.CODE_NAME APPLY_TYPE,
+				       HR.EMPID,
+				       HR.CHINESENAME,
+				       get_dept_name(HR.DEPTID) DEPTNAME,
+				       E.AFFIRM_REMARKS
+				FROM ESS_LEAVE_APPLY_TB ESS,
+				     HR_EMPLOYEE HR,
+				     SY_CODE SY,
+				     ESS_AFFIRM E
+				WHERE ESS.LEAVE_EMPID = HR.PERSON_ID
+				AND   ESS.LEAVE_NO = E.APPLY_NO
+				AND   ESS.LEAVE_TYPE = SY.CODE_ID
+				AND   ESS.LEAVE_NO IN ($applyNoStr$)
+				AND   E.AFFIRMOR_ID = #adminId:VARCHAR#
+			
+	]]>
+	</select>
+	
+	<select id="applyArModifyResult" parameterClass="SimpleMap" resultClass="SimpleMap"  remapResults="true">
+	<![CDATA[				
+		SELECT 
+               ESS.AR_DATE_STR,
+               ESS.REMARK REASON,
+               HR.EMPID,
+               AR_ITEM.ITEM_NAME,
+               AR_SHIFT010.SHIFT_NAME,
+               HR.CHINESENAME,
+			   E.AFFIRM_REMARKS
+				FROM AR_DETAIL ESS,
+                     AR_SHIFT010,
+				     AR_ITEM,
+				     HR_EMPLOYEE HR,
+				     AR_DETAIL_AFFIRM E
+				WHERE ESS.EMPID = HR.PERSON_ID
+                AND   ESS.AR_ITEM_NO = AR_ITEM.ITEM_NO(+)
+                AND   ESS.SHIFT_NO = AR_SHIFT010.SHIFT_NO(+)
+				AND   ESS.PK_NO = E.AR_DETAIL_NO
+				AND   ESS.PK_NO IN ($applyNoStr$)
+				AND   E.AFFIRMOR_ID = #adminId:VARCHAR#
+			
+	]]>
+	</select>
+	
+	<select id="getLeaveAffirmorEssAffirm" parameterClass="SimpleMap" resultClass="SimpleMap"  remapResults="true">
+	<![CDATA[				
+			SELECT DISTINCT A.AFFIRMOR_ID AFFIRMOR_ID
+			  FROM ESS_AFFIRM A, ESS_LEAVE_APPLY_TB B
+			 WHERE A.APPLY_NO = B.LEAVE_NO
+			   AND A.AFFIRM_LEVEL = #applyLevel:VARCHAR#
+			   AND A.APPLY_TYPE = #applyType:VARCHAR#
+			   AND A.ACTIVITY = 1
+			   AND A.APPLY_NO IN ($applyStr$)
+	]]>
+	</select>
+	
+	<select id="getLeaveApplyNoForMail" parameterClass="SimpleMap" resultClass="SimpleMap" remapResults="true">
+	<![CDATA[				
+			
+				SELECT A.LEAVE_NO APPLY_NO
+				  FROM ESS_LEAVE_APPLY_TB A, 
+				  	   ESS_AFFIRM B
+				 WHERE A.LEAVE_NO = B.APPLY_NO
+				   AND B.AFFIRM_LEVEL = #affirmLevel:VARCHAR#
+				   AND B.AFFIRMOR_ID = #affirmorId:VARCHAR#
+				   AND A.LEAVE_NO IN ($applyStr$)
+				   AND B.APPLY_TYPE = 'LeaveApply'
+
+	]]>
+	</select>
+	
+	<select id="getArModifyApplyNoForMail" parameterClass="SimpleMap" resultClass="SimpleMap" remapResults="true">
+	<![CDATA[				
+			
+				SELECT A.PK_NO APPLY_NO
+				  FROM AR_DETAIL A, 
+				  	   AR_DETAIL_AFFIRM B
+				 WHERE A.PK_NO = B.AR_DETAIL_NO
+				   AND B.AFFIRM_LEVEL = #affirmLevel:VARCHAR#
+				   AND B.AFFIRMOR_ID = #affirmorId:VARCHAR#
+				   AND A.PK_NO IN ($applyStr$)
+
+	]]>
+	</select>
+	
+	<select id="getNextAffirmor" parameterClass="SimpleMap" resultClass="SimpleMap" remapResults="true">
+	<![CDATA[				
+			
+				SELECT DISTINCT 
+					   A.AFFIRMOR_ID,
+					   A.AFFIRM_LEVEL
+				  FROM ESS_AFFIRM A, ESS_APPLY_OT B
+				 WHERE A.APPLY_NO = B.APPLY_OT_NO
+				   AND A.APPLY_TYPE = #applyType:VARCHAR#
+				   AND B.APPLY_OT_NO IN ($applyStr$)
+				   AND A.AFFIRM_LEVEL = (SELECT MAX(T.AFFIRM_LEVEL)
+								          FROM ESS_AFFIRM T
+								         WHERE T.AFFIRMOR_ID = #curAffirmor:VARCHAR#
+								           AND T.APPLY_NO IN ($applyStr$)) + 1
+	]]>
+	</select>
+	
+	<select id="getLeaveNextAffirmor" parameterClass="SimpleMap" resultClass="SimpleMap" remapResults="true">
+	<![CDATA[				
+			
+				SELECT DISTINCT A.AFFIRMOR_ID, 
+								A.AFFIRM_LEVEL
+				  FROM ESS_AFFIRM A, ESS_LEAVE_APPLY_TB B
+				 WHERE A.APPLY_NO = B.LEAVE_NO
+				   AND A.APPLY_TYPE = #applyType:VARCHAR#
+				   AND B.LEAVE_NO IN ($applyStr$)
+				   AND A.AFFIRM_LEVEL = (SELECT MAX(T.AFFIRM_LEVEL)
+								          FROM ESS_AFFIRM T
+								         WHERE T.AFFIRMOR_ID = #curAffirmor:VARCHAR#
+								               AND T.APPLY_NO=B.LEAVE_NO) + 1
+	]]>
+	</select>
+	
+	<select id="getArModifyNextAffirmor" parameterClass="SimpleMap" resultClass="SimpleMap" remapResults="true">
+	<![CDATA[				
+			
+                SELECT DISTINCT A.AFFIRMOR_ID, 
+								A.AFFIRM_LEVEL
+				  FROM AR_DETAIL_AFFIRM A, AR_DETAIL B
+				 WHERE A.AR_DETAIL_NO = B.PK_NO
+				   AND B.PK_NO IN ($applyStr$)
+				   AND A.AFFIRM_LEVEL = (SELECT MAX(T.AFFIRM_LEVEL)
+								          FROM AR_DETAIL_AFFIRM T
+								         WHERE T.AFFIRMOR_ID = #curAffirmor:VARCHAR#
+								           AND T.AR_DETAIL_NO IN ($applyStr$)) + 1    								           
+	]]>
+	</select>
+	
+	<select id="getOtApplyor" parameterClass="SimpleMap" resultClass="SimpleMap" remapResults="true">
+	<![CDATA[				
+			
+				SELECT DISTINCT
+				       A.CREATED_BY CREATED_BY
+				FROM ESS_APPLY_OT A
+				WHERE A.APPLY_OT_NO IN($applyStr$)
+	]]>
+	</select>
+	
+	<select id="getOtApplyNoCreateBy" parameterClass="SimpleMap" resultClass="SimpleMap" remapResults="true">
+	<![CDATA[				
+			
+				SELECT A.APPLY_OT_NO APPLY_NO
+				FROM ESS_APPLY_OT A
+				WHERE A.APPLY_OT_NO IN($applyStr$)
+				AND A.CREATED_BY = #createBy:VARCHAR#
+	]]>
+	</select>
+	
+	<select id="getLeaveApplyor" parameterClass="SimpleMap" resultClass="SimpleMap" remapResults="true">
+	<![CDATA[				
+			
+				SELECT DISTINCT
+					   A.CREATED_BY CREATED_BY
+				FROM ESS_LEAVE_APPLY_TB A
+				WHERE A.LEAVE_NO IN($applyStr$)
+	]]>
+	</select>
+	
+	<select id="getLeaveApplyNoCreateBy" parameterClass="SimpleMap" resultClass="SimpleMap" remapResults="true">
+	<![CDATA[				
+			
+				SELECT A.LEAVE_NO APPLY_NO
+				  FROM ESS_LEAVE_APPLY_TB A
+				 WHERE A.LEAVE_NO IN ($applyStr$)
+				   AND A.CREATED_BY = #createBy:VARCHAR#
+
+	]]>
+	</select>
+	
+	
+	
+	
+	<!-- retrieve getAttendanceConfirmList detail -->
+	<select id="getAttendanceConfirmList" parameterClass="SimpleMap"
+		resultClass="ArDetail">
+		<![CDATA[
+		            SELECT B.PK_NO pkNo,
+	                       B.EMPID empID,
+	                       B.POST_CODE POSITION_CODE,
+	                       POSITION.CODE_NAME positioNname,
+	                       POSITION.CODE_EN_NAME enPositionName,
+	                       B.CHINESENAME empName,
+	                       B.CHINESE_PINYIN empPinyin,
+	                       B.ENGLISHNAME enEmpName,
+	                       B.DEPTID deptId,
+	                       HR_DEPARTMENT.DEPTNAME deptName,
+	                       HR_DEPARTMENT.DEPT_EN_NAME enDept,
+	                       B.AR_DATE_STR ar_date_str,
+	                       B.DATE_TYPE date_type,
+	                       B.AR_MONTH_STR ar_month_str,
+	                       B.AR_ITEM_NO itemNo,
+	                       AR_ITEM.ITEM_NAME itemName,
+	                       AR_ITEM.ITEM_EN_NAME enItemName,
+	                       NVL(TO_CHAR(B.FROM_TIME,'YYYY-MM-DD HH24:MI:SS'),'') fromTime,
+	                       NVL(TO_CHAR(B.TO_TIME, 'YYYY-MM-DD HH24:MI:SS'),'') toTime,
+	                       B.SHIFT_NO shiftNo,
+	                       AR_SHIFT010.SHIFT_NAME shiftName,
+	                       AR_SHIFT010.SHIFT_EN_NAME enShiftName,
+	                       B.QUANTITY quantity,
+	                       B.UNIT unit,
+	                       UNIT.CODE_NAME unitName,
+	                       UNIT.CODE_EN_NAME unitEnName,
+	                       B.LOCK_YN isLock,
+	                       AR_FLAG  arFlag, 
+	                       NVL(AR_CALENDER.LOCK_FLAG , DECODE(B.EMP_DIFF_CODE ,'C_12067_1330308', AR_CALENDER.LOCK_FLAG_Z , AR_CALENDER.LOCK_FLAG_G )) status
+	  FROM (SELECT A.*, ROWNUM RNM
+          FROM (SELECT  * FROM  (
+                           select AR_DETAIL.pk_no,
+	                       AR_DETAIL.empid as personId,
+	                       HR_EMPLOYEE.empid,
+	                       AR_DETAIL.ar_item_no,
+	                       AR_DETAIL.from_time,
+	                       AR_DETAIL.to_time,
+	                       AR_DETAIL.shift_no,
+	                       AR_DETAIL.ar_date_str,
+	                       AR_DETAIL.ar_month_str,
+	                       AR_DETAIL.quantity,
+	                       AR_DETAIL.lock_yn,
+	                       AR_DETAIL.date_type,
+	                       AR_DETAIL.unit,
+	                       AR_DETAIL.mod_date,
+	                       AR_DETAIL.AR_FLAG,
+	                       HR_EMPLOYEE.EMP_DIFF_CODE,
+	                       HR_EMPLOYEE.POST_CODE,
+	                       HR_EMPLOYEE.DEPTID,
+	                       HR_EMPLOYEE.CHINESENAME,
+	                       HR_EMPLOYEE.CHINESE_PINYIN,
+	                       HR_EMPLOYEE.ENGLISHNAME
+	                  from AR_DETAIL AR_DETAIL, HR_EMPLOYEE
+	                 WHERE AR_DETAIL.AR_DATE_STR BETWEEN #sDate# AND #eDate#
+	                   AND AR_DETAIL.EMPID = HR_EMPLOYEE.PERSON_ID
+             ]]>
+	    
+	
+		<isNotEmpty prepend="AND" property="empid">
+			<![CDATA[
+			             EXISTS
+			            (SELECT *
+                                  FROM AR_SUPERVISOR_INFO J
+                                 WHERE AR_SUPERVISOR_ID in( 
+                                 select hh.person_id
+                                     from ar_detail_email ar,
+                                          hr_employee     hh
+                                    where ar.empid = hh.empid
+                                      and hh.cpny_id = '78000000'
+                                      and ar.deptid in
+                                          (select aa.deptid
+                                             FROM ar_detail_email aa
+                                            where aa.empid =
+                                                  (select empid
+                                                     from hr_employee h
+                                                    where h.person_id =
+                                                          #empid#))
+                                      and ar.flag = '2'
+                                    )
+                                   AND HR_EMPLOYEE.DEPTID = J.SUPERVISED_DEPTID)    
+                                      
+						
+						  
+				]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="condition">
+			<![CDATA[ 
+					(   HR_EMPLOYEE.EMPID LIKE '%' || #condition:VARCHAR# || '%'
+			          OR HR_EMPLOYEE.CHINESENAME LIKE '%' || #condition:VARCHAR# || '%'
+			         )
+				    
+			 ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="itemNo">
+			<![CDATA[ 
+						AR_DETAIL.AR_ITEM_NO = #itemNo:NUMERIC#
+					    
+				 ]]>
+		</isNotEmpty>
+		
+		<isEqual prepend="AND" property="qryType" compareValue="0">
+			<![CDATA[ 
+						AR_DETAIL.AR_FLAG = #qryType:NUMERIC#
+					    
+				 ]]>
+		</isEqual>		
+		
+		<isEqual prepend="AND" property="qryType" compareValue="1">
+			<![CDATA[ 
+						AR_DETAIL.AR_FLAG = #qryType:NUMERIC#
+					    
+				 ]]>
+		</isEqual>		
+		
+		<isEqual prepend="AND" property="qryType" compareValue="2">
+			<![CDATA[ 
+						AR_DETAIL.AR_FLAG = #qryType:NUMERIC#
+					    
+				 ]]>
+		</isEqual>		
+		
+		
+		<isEqual prepend="AND" property="qryType" compareValue="3"> <!-- 全部 -->
+		<![CDATA[
+				AR_DETAIL.AR_FLAG IS NOT NULL
+		]]>
+		</isEqual>		
+		
+
+		<isNotEmpty prepend="AND" property="deptid">
+			<![CDATA[
+				 		HR_EMPLOYEE.DEPTID IN (
+					      			SELECT DEPTID 
+					                FROM HR_DEPARTMENT 
+					                START WITH DEPTID = #deptid#
+					                CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+					   ) 
+			    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="sLength">
+			<isNotEmpty prepend="AND" property="eLength">
+				<![CDATA[ 
+							(AR_DETAIL.QUANTITY >= #sLength:NUMERIC# AND AR_DETAIL.QUANTITY <= #eLength:NUMERIC# )  
+					 ]]>
+			</isNotEmpty>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="sLength">
+			<isEmpty prepend="AND" property="eLength">
+				<![CDATA[ 
+							AR_DETAIL.QUANTITY = #sLength:NUMERIC# 
+					 ]]>
+			</isEmpty>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="eLength">
+			<isEmpty prepend="AND" property="sLength">
+				<![CDATA[ 
+							AR_DETAIL.QUANTITY = #eLength:NUMERIC#
+					 ]]>
+			</isEmpty>
+		</isNotEmpty>
+
+		<![CDATA[ 
+			    ) ORDER BY AR_DATE_STR,DEPTID,EMPID) A
+		 ]]>
+		<isNotEmpty prepend="WHERE" property="endRownum">
+			<![CDATA[
+			         ROWNUM <= #endRownum:NUMERIC#
+			]]>
+		</isNotEmpty>
+
+		<![CDATA[
+			        ) B,
+			       (SELECT A.AR_DATE_STR,
+					       A.CPNY_ID,
+					       A.LOCK_FLAG_G,
+					       A.LOCK_FLAG_Z,
+					       B.SUPERVISOR_ID,
+					       B.LOCK_DATE_STR,
+					       B.LOCK_FLAG
+					  FROM AR_CALENDER A, AR_SUPERVISOR_LOCK_INFO B
+					 WHERE A.AR_DATE_STR = B.LOCK_DATE_STR(+)
+					   AND A.CPNY_ID = '78000000'
+					   AND B.SUPERVISOR_ID(+) = #supervisor:VARCHAR#) AR_CALENDER,
+			       HR_DEPARTMENT,
+			       AR_SHIFT010,
+			       AR_ITEM,
+			       SY_CODE UNIT,
+			       SY_CODE POSITION
+			 WHERE B.AR_DATE_STR = AR_CALENDER.AR_DATE_STR
+			   AND B.DEPTID = HR_DEPARTMENT.DEPTID
+			   AND B.SHIFT_NO = AR_SHIFT010.SHIFT_NO
+			   AND B.AR_ITEM_NO = AR_ITEM.ITEM_NO
+			   AND B.UNIT = UNIT.CODE_ID(+)
+			   AND B.POST_CODE = POSITION.CODE_ID(+)
+	   	 ]]>
+		<isNotEmpty prepend="AND" property="startRownum">
+			<![CDATA[
+	   	 		B.RNM > #startRownum:NUMERIC#
+	   	 	]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY B.RNM
+		]]>
+	</select>
+	
+	
+		<!-- retrieve getArDetailConfirmList detail -->
+	<select id="getArDetailConfirmList" parameterClass="SimpleMap"
+		resultClass="ArDetailBack">
+		<![CDATA[
+		            SELECT B.PK_NO pkNo,
+	                       B.EMPID empID,
+	                       B.POST_CODE POSITION_CODE,
+	                       POSITION.CODE_NAME positioNname,
+	                       POSITION.CODE_EN_NAME enPositionName,
+	                       B.CHINESENAME empName,
+	                       B.CHINESE_PINYIN empPinyin,
+	                       B.ENGLISHNAME enEmpName,
+	                       B.DEPTID deptId,
+	                       HR_DEPARTMENT.DEPTNAME deptName,
+	                       HR_DEPARTMENT.DEPT_EN_NAME enDept,
+	                       B.AR_DATE_STR ar_date_str,
+	                       B.DATE_TYPE date_type,
+	                       B.AR_MONTH_STR ar_month_str,
+	                       B.AR_ITEM_NO itemNo,
+	                       AR_ITEM.ITEM_NAME itemName,
+	                       AR_ITEM.ITEM_EN_NAME enItemName,
+	                       NVL(TO_CHAR(B.FROM_TIME,'YYYY-MM-DD HH24:MI:SS'),'') fromTime,
+	                       NVL(TO_CHAR(B.TO_TIME, 'YYYY-MM-DD HH24:MI:SS'),'') toTime,
+	                       B.SHIFT_NO shiftNo,
+	                       AR_SHIFT010.SHIFT_NAME shiftName,
+	                       AR_SHIFT010.SHIFT_EN_NAME enShiftName,
+	                       B.QUANTITY quantity,
+	                       B.UNIT unit,
+	                       UNIT.CODE_NAME unitName,
+	                       UNIT.CODE_EN_NAME unitEnName,
+	                       B.LOCK_YN isLock,
+	                       FLAG flag,
+	                       B.REMARK REMARK,
+	                       B.pk_no1 pk_no1,
+					       AR_ITEM1.ITEM_NAME itemName1,
+                           AR_SHIFT0101.SHIFT_NAME shiftName1,   
+					       B.ar_item_no1,
+					       B.from_time1,
+					       B.to_time1,
+					       B.shift_no1,
+					       B.ar_date_str1,
+					       B.ar_month_str1,
+					       B.quantity1,
+					       B.lock_yn1 isLock1,
+					       B.date_type1 date_type1,
+					       B.unit unit1,                       
+					       B.Created_By1 createBy1,
+					       B.Create_Date1 createDate1,
+					       B.Operation1 operation1, 
+					       B.flag flag1, 
+					       
+	                       NVL(AR_CALENDER.LOCK_FLAG , DECODE(B.EMP_DIFF_CODE ,'C_12067_1330308', AR_CALENDER.LOCK_FLAG_Z , AR_CALENDER.LOCK_FLAG_G )) status
+	  FROM (SELECT A.*, ROWNUM RNM
+          FROM (SELECT  * FROM  (
+                           select AR_DETAIL.pk_no,
+	                       AR_DETAIL.empid as personId,
+	                       HR_EMPLOYEE.empid,
+	                       AR_DETAIL.ar_item_no,
+	                       AR_DETAIL.from_time,
+	                       AR_DETAIL.to_time,
+	                       AR_DETAIL.shift_no,
+	                       AR_DETAIL.ar_date_str,
+	                       AR_DETAIL.ar_month_str,
+	                       AR_DETAIL.quantity,
+	                       AR_DETAIL.lock_yn,
+	                       AR_DETAIL.date_type,
+	                       AR_DETAIL.unit,
+	                       AR_DETAIL.mod_date,
+	                       AR_DETAIL.FLAG,
+	                       AR_DETAIL.REMARK,		                       
+	                       HR_EMPLOYEE.EMP_DIFF_CODE,
+	                       HR_EMPLOYEE.POST_CODE,
+	                       HR_EMPLOYEE.DEPTID,
+	                       HR_EMPLOYEE.CHINESENAME,
+	                       HR_EMPLOYEE.CHINESE_PINYIN,
+	                       HR_EMPLOYEE.ENGLISHNAME,
+	                       BACK.pk_no pk_no1,
+                           BACK.empid as personId1,
+                           BACK.ar_item_no ar_item_no1,
+                           BACK.from_time from_time1,
+                           BACK.to_time to_time1,
+                           BACK.shift_no shift_no1,
+                           BACK.ar_date_str ar_date_str1,
+                           BACK.ar_month_str ar_month_str1,
+                           BACK.quantity quantity1,
+                           BACK.lock_yn lock_yn1,
+                           BACK.date_type date_type1,
+                           BACK.unit unit1,
+                           
+                           H1.CHINESENAME Created_By1,
+                           TO_CHAR(BACK.CREATE_DATE,'YYYY-MM-DD HH24:MM') Create_Date1,
+                           BACK.Operation Operation1
+	                  from AR_DETAIL AR_DETAIL,AR_DETAIL_BACK BACK, HR_EMPLOYEE, HR_EMPLOYEE H1
+	                 WHERE AR_DETAIL.PK_NO(+) = BACK.AR_PK_NO AND AR_DETAIL.AR_DATE_STR BETWEEN #sDate# AND #eDate#
+	                   AND AR_DETAIL.EMPID = HR_EMPLOYEE.PERSON_ID AND BACK.CREATED_BY = H1.PERSON_ID(+)
+	                   AND BACK.CONFIRM = #empid#
+             ]]>
+	    
+	
+		<isNotEmpty prepend="AND" property="empid123">
+			<![CDATA[
+			             EXISTS
+			            (SELECT *
+                                  FROM AR_SUPERVISOR_INFO J
+                                 WHERE AR_SUPERVISOR_ID in( 
+                                 select hh.person_id
+                                     from ar_detail_email ar,
+                                          hr_employee     hh
+                                    where ar.empid = hh.empid
+                                      and hh.cpny_id = '78000000'
+                                      and ar.deptid in
+                                          (select aa.deptid
+                                             FROM ar_detail_email aa
+                                            where aa.empid =
+                                                  (select empid
+                                                     from hr_employee h
+                                                    where h.person_id =
+                                                          #empid#))
+                                      and ar.flag = '2'
+                                    )
+                                   AND HR_EMPLOYEE.DEPTID = J.SUPERVISED_DEPTID)    
+                                      
+						
+						  
+				]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="condition">
+			<![CDATA[ 
+					(   HR_EMPLOYEE.EMPID LIKE '%' || #condition:VARCHAR# || '%'
+			          OR HR_EMPLOYEE.CHINESENAME LIKE '%' || #condition:VARCHAR# || '%'
+			         )
+				    
+			 ]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="itemNo">
+			<![CDATA[ 
+						AR_DETAIL.AR_ITEM_NO = #itemNo:NUMERIC#
+					    
+				 ]]>
+		</isNotEmpty>
+		
+		<isEqual prepend="AND" property="qryType" compareValue="0">
+			<![CDATA[ 
+						BACK.FLAG = #qryType:NUMERIC#
+					    
+				 ]]>
+		</isEqual>		
+		
+		<isEqual prepend="AND" property="qryType" compareValue="1">
+			<![CDATA[ 
+						BACK.FLAG = #qryType:NUMERIC#
+					    
+				 ]]>
+		</isEqual>		
+		
+		<isEqual prepend="AND" property="qryType" compareValue="2">
+			<![CDATA[ 
+						BACK.FLAG = #qryType:NUMERIC#
+					    
+				 ]]>
+		</isEqual>		
+		
+		
+		<isEqual prepend="AND" property="qryType" compareValue="3"> <!-- 全部 -->
+		<![CDATA[
+				AR_DETAIL.FLAG IS NOT NULL
+		]]>
+		</isEqual>		
+		
+
+		<isNotEmpty prepend="AND" property="deptid">
+			<![CDATA[
+				 		HR_EMPLOYEE.DEPTID IN (
+					      			SELECT DEPTID 
+					                FROM HR_DEPARTMENT 
+					                START WITH DEPTID = #deptid#
+					                CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+					   ) 
+			    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="sLength">
+			<isNotEmpty prepend="AND" property="eLength">
+				<![CDATA[ 
+							(AR_DETAIL.QUANTITY >= #sLength:NUMERIC# AND AR_DETAIL.QUANTITY <= #eLength:NUMERIC# )  
+					 ]]>
+			</isNotEmpty>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="sLength">
+			<isEmpty prepend="AND" property="eLength">
+				<![CDATA[ 
+							AR_DETAIL.QUANTITY = #sLength:NUMERIC# 
+					 ]]>
+			</isEmpty>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="" property="eLength">
+			<isEmpty prepend="AND" property="sLength">
+				<![CDATA[ 
+							AR_DETAIL.QUANTITY = #eLength:NUMERIC#
+					 ]]>
+			</isEmpty>
+		</isNotEmpty>
+
+		<![CDATA[ 
+			    ) ORDER BY AR_DATE_STR,DEPTID,EMPID) A
+		 ]]>
+		<isNotEmpty prepend="WHERE" property="endRownum">
+			<![CDATA[
+			         ROWNUM <= #endRownum:NUMERIC#
+			]]>
+		</isNotEmpty>
+
+		<![CDATA[
+			        ) B,
+			       (SELECT A.AR_DATE_STR,
+					       A.CPNY_ID,
+					       A.LOCK_FLAG_G,
+					       A.LOCK_FLAG_Z,
+					       B.SUPERVISOR_ID,
+					       B.LOCK_DATE_STR,
+					       B.LOCK_FLAG
+					  FROM AR_CALENDER A, AR_SUPERVISOR_LOCK_INFO B
+					 WHERE A.AR_DATE_STR = B.LOCK_DATE_STR(+)
+					   AND A.CPNY_ID = '78000000'
+					   AND B.SUPERVISOR_ID(+) = #supervisor:VARCHAR#) AR_CALENDER,
+			       HR_DEPARTMENT,
+			       AR_SHIFT010,
+			       AR_SHIFT010 AR_SHIFT0101,
+			       AR_ITEM,
+			       AR_ITEM AR_ITEM1,
+			       SY_CODE UNIT,
+			       SY_CODE POSITION
+			 WHERE B.AR_DATE_STR = AR_CALENDER.AR_DATE_STR
+			   AND B.DEPTID = HR_DEPARTMENT.DEPTID
+			   AND B.SHIFT_NO = AR_SHIFT010.SHIFT_NO
+			   AND B.AR_ITEM_NO = AR_ITEM.ITEM_NO
+			   AND B.SHIFT_NO1 = AR_SHIFT0101.SHIFT_NO
+               AND B.AR_ITEM_NO1 = AR_ITEM1.ITEM_NO
+			   AND B.UNIT = UNIT.CODE_ID(+)
+			   AND B.POST_CODE = POSITION.CODE_ID(+)
+	   	 ]]>
+		<isNotEmpty prepend="AND" property="startRownum">
+			<![CDATA[
+	   	 		B.RNM > #startRownum:NUMERIC#
+	   	 	]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY B.RNM
+		]]>
+	</select>
+	
+	<!-- NEW retrieve Leave affirm list information -->
+	<select id="retrieveArModifyAffirmList" parameterClass="SimpleMap" resultClass="ArDetailBack"> 
+		<![CDATA[   
+			SELECT AR_DETAIL_BACK.AR_PK_NO AS pkNo1,
+				       (select e.empid
+				          from hr_employee e
+				         where e.person_id = AR_DETAIL_BACK.EMPID) AS empId,
+				       
+				       HR_EMPLOYEE.CHINESENAME AS chineseName,
+				       HR_EMPLOYEE.deptname AS deptName,
+				       
+				       AR_DETAIL_AFFIRM.AFFIRM_LEVEL AS affirmLevel,
+				       AR_DETAIL_AFFIRM.AFFIRM_FLAG AS affirm_flag,
+				       AR_DETAIL_AFFIRM.AFFIRM_REMARKS AS remark,
+				       NVL(AR_DETAIL_AFFIRM.UP_AFFIRM_FLAG, 1) AS up_flag,
+				       NVL(AR_DETAIL_AFFIRM.NEXT_AFFIRM_FLAG, 0) AS next_flag,
+				       NVL(AR_DETAIL_AFFIRM.MAX_LEVEL_FLAG, 0) AS maxLevel_flag,
+				       MAX_AFFIRMOR_FLAG.AFFIRM_FLAG AS max_affirm_flag,
+				
+				       AR_DETAIL.FROM_TIME,
+				       AR_DETAIL.To_Time,
+				       AR_DETAIL.AR_DATE_STR,
+				       AR_DETAIL.AR_MONTH_STR,
+				       AR_DETAIL.QUANTITY,
+				       AR_DETAIL.UNIT,
+				       AR_DETAIL.LOCK_YN,
+				       AR_DETAIL.REMARK,
+				       AR_DETAIL.REMARK REMARK1,
+				       AR_SHIFT010.SHIFT_NAME AS SHIFTNAME,
+				       AR_ITEM.ITEM_NAME AS ITEMNAME,
+				       SY_CODE1.CODE_NAME UNITNAME,
+				       
+				       AR_DETAIL_BACK.FROM_TIME FROM_TIME1,
+				       AR_DETAIL_BACK.TO_TIME TO_TIME1,
+				       AR_DETAIL_BACK.AR_DATE_STR AR_DATE_STR1,
+				       AR_DETAIL_BACK.AR_MONTH_STR AR_MONTH_STR1,
+				       AR_DETAIL_BACK.QUANTITY QUANTITY1,
+				       AR_DETAIL_BACK.UNIT UNIT1,
+				       AR_DETAIL_BACK.LOCK_YN LOCK_YN1,
+				       AR_ITEM1.ITEM_NAME AS ITEMNAME1,
+				       SY_CODE.CODE_NAME UNITNAME1,
+				       TO_CHAR(AR_DETAIL_BACK.CREATE_DATE,'YYYY-MM-DD HH:SS') CREATEDATE1,
+				       H.CHINESENAME CREATEBY1,
+				       DECODE(HR_EMPLOYEE.EMP_DIFF_CODE,'C_12067_1330308',AR_CALENDER.LOCK_FLAG_Z,AR_CALENDER.LOCK_FLAG_G) STATUS
+
+				  FROM AR_DETAIL_BACK,
+				       AR_DETAIL, 
+				       AR_SHIFT010,
+				       AR_ITEM,
+				       AR_ITEM  AR_ITEM1,
+				       HR_EMP_V HR_EMPLOYEE,
+				       SY_CODE,
+				       SY_CODE SY_CODE1,
+				       HR_EMPLOYEE H,
+				       (SELECT AR_DETAIL_AFFIRM.*,
+				               UP_AFFIRM.AFFIRM_FLAG AS UP_AFFIRM_FLAG,
+				               UP_AFFIRM.AFFIRMOR_ID AS UP_AFFIRMOR_ID,
+				               NEXT_AFFIRM.AFFIRM_FLAG AS NEXT_AFFIRM_FLAG,
+				               (CASE
+				                 WHEN AR_DETAIL_AFFIRM.AFFIRM_LEVEL = ESS_AFFIRM_MAX_LEVEL.MAXLEVEL THEN
+				                  1
+				                 ELSE
+				                  0
+				               END) MAX_LEVEL_FLAG
+				          FROM (SELECT AR_DETAIL_AFFIRM.*,
+				                       AR_DETAIL_AFFIRM.AFFIRM_LEVEL - 1 AS UP_LEVEL,
+				                       AR_DETAIL_AFFIRM.AFFIRM_LEVEL + 1 AS NEXT_LEVEL
+				                  FROM AR_DETAIL_AFFIRM
+				                ) AR_DETAIL_AFFIRM,
+				               (SELECT T.AR_DETAIL_NO,  MAX(T.AFFIRM_LEVEL) MAXLEVEL
+				                  FROM AR_DETAIL_AFFIRM T
+				                 GROUP BY T.AR_DETAIL_NO) ESS_AFFIRM_MAX_LEVEL,
+				               (SELECT T.AR_DETAIL_NO,
+				                       T.AFFIRM_LEVEL,
+				                       T.AFFIRMOR_ID,
+				                       T.AFFIRM_FLAG
+				                  FROM AR_DETAIL_AFFIRM T
+				                 ) UP_AFFIRM,
+				               (SELECT A.AR_DETAIL_NO,
+				                       MAX(A.AFFIRM_FLAG) AS AFFIRM_FLAG
+				                  FROM AR_DETAIL_AFFIRM A,
+				                       (SELECT T.AR_DETAIL_NO, T.AFFIRMOR_ID, T.AFFIRM_LEVEL
+				                          FROM AR_DETAIL_AFFIRM T
+				                         WHERE T.AFFIRMOR_ID = #supervisor:VARCHAR#
+				                        ) B
+				                 WHERE 
+				                      A.AR_DETAIL_NO = B.AR_DETAIL_NO
+				                   AND A.AFFIRM_LEVEL > B.AFFIRM_LEVEL
+				                 GROUP BY A.AR_DETAIL_NO) NEXT_AFFIRM
+				         WHERE 
+				            AR_DETAIL_AFFIRM.AR_DETAIL_NO = UP_AFFIRM.AR_DETAIL_NO(+)
+				           AND AR_DETAIL_AFFIRM.UP_LEVEL = UP_AFFIRM.AFFIRM_LEVEL(+)
+				           AND AR_DETAIL_AFFIRM.AR_DETAIL_NO = NEXT_AFFIRM.AR_DETAIL_NO(+)
+				           AND AR_DETAIL_AFFIRM.AR_DETAIL_NO = ESS_AFFIRM_MAX_LEVEL.AR_DETAIL_NO(+)
+				           ) AR_DETAIL_AFFIRM,
+				      
+				         (SELECT AR_DETAIL_AFFIRM.AFFIRM_FLAG, AR_DETAIL_AFFIRM.AR_DETAIL_NO
+				          FROM AR_DETAIL_AFFIRM,
+				               (SELECT MAX(AR_DETAIL_AFFIRM.AFFIRM_LEVEL),
+				                       MAX(AR_DETAIL_AFFIRM.AR_DETAIL_AFFIRM_NO) AR_DETAIL_AFFIRM_NO
+				                  FROM AR_DETAIL_AFFIRM
+				                 GROUP BY AR_DETAIL_AFFIRM.AR_DETAIL_NO) HH
+				         WHERE AR_DETAIL_AFFIRM.AR_DETAIL_AFFIRM_NO = HH.AR_DETAIL_AFFIRM_NO) MAX_AFFIRMOR_FLAG,
+				         (SELECT   A.AR_DATE_STR,
+					               A.CPNY_ID,
+					               A.LOCK_FLAG_G,
+					               A.LOCK_FLAG_Z					               
+					          FROM AR_CALENDER A
+					         WHERE A.CPNY_ID = #cpnyId:VARCHAR#) AR_CALENDER
+				 WHERE 
+				   AR_DETAIL_BACK.OPERATION = 'UPDATE'
+				   AND AR_DETAIL_BACK.AR_PK_NO = AR_DETAIL.PK_NO
+				   AND AR_DETAIL.SHIFT_NO = AR_SHIFT010.SHIFT_NO(+)   
+				   AND AR_DETAIL_BACK.AR_ITEM_NO = AR_ITEM1.ITEM_NO(+)
+				   AND AR_DETAIL.AR_ITEM_NO = AR_ITEM.ITEM_NO(+)
+				   AND AR_DETAIL_BACK.AR_PK_NO = MAX_AFFIRMOR_FLAG.AR_DETAIL_NO(+)
+				   AND AR_DETAIL_BACK.EMPID = HR_EMPLOYEE.person_id
+				   AND AR_DETAIL_BACK.AR_PK_NO = AR_DETAIL_AFFIRM.AR_DETAIL_NO
+				   AND NVL(AR_DETAIL_AFFIRM.UP_AFFIRM_FLAG, 1) = 1
+				   AND AR_DETAIL_AFFIRM.AFFIRMOR_ID = #supervisor:VARCHAR#
+				   AND AR_DETAIL_BACK.UNIT = SY_CODE.CODE_ID(+)
+				   AND AR_DETAIL.UNIT = SY_CODE1.CODE_ID(+)
+				   AND AR_DETAIL_BACK.CREATED_BY = H.PERSON_ID(+)
+				   AND AR_DETAIL_BACK.AR_DATE_STR = AR_CALENDER.AR_DATE_STR
+				   AND DECODE(HR_EMPLOYEE.EMP_DIFF_CODE,'C_12067_1330308',AR_CALENDER.LOCK_FLAG_Z,AR_CALENDER.LOCK_FLAG_G) = 0
+				   
+		]]>			   
+		<isNotEmpty prepend="AND" property="key">
+		<![CDATA[			    
+			       (   
+			   		   HR_EMPLOYEE.EMPID LIKE #key:VARCHAR# || '%' 
+			   		OR HR_EMPLOYEE.CHINESENAME LIKE #key:VARCHAR# || '%' 
+			   		OR UPPER(HR_EMPLOYEE.CHINESE_PINYIN) LIKE UPPER(#key:VARCHAR#) || '%' 
+			   	    )
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="sDate">
+		<![CDATA[
+			       (
+			   		   TO_DATE(AR_DETAIL_BACK.AR_DATE_STR,'YYYY-MM-DD') BETWEEN TO_DATE(#sDate:VARCHAR#, 'YYYY-MM-DD') AND TO_DATE(#eDate:VARCHAR# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+			       )
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptID">
+		<![CDATA[			   
+				EXISTS
+					 (SELECT *
+					          FROM HR_DEPARTMENT B1
+					         WHERE B1.DEPTID = HR_EMPLOYEE.DEPTID
+					         START WITH B1.DEPTID = #deptID:VARCHAR#
+					        CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID)
+		]]>
+		</isNotEmpty>		
+			
+	 
+		       
+		<isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 未决裁 -->
+		    <![CDATA[
+		         AR_DETAIL_AFFIRM.affirm_flag = 0
+		    ]]>
+		</isEqual>
+      
+		
+		<![CDATA[					        
+					 ORDER BY AR_DETAIL_AFFIRM.AFFIRM_FLAG, AR_DETAIL_BACK.AR_DATE_STR DESC , AR_DETAIL_BACK.EMPID
+			]]>
+	</select>
+	
+	<!-- NEW retrieve ArModify affirm list count -->
+	<select id="retrieveArModifyAffirmListCnt" parameterClass="SimpleMap" resultClass="int"> 
+			<![CDATA[
+				    
+					SELECT COUNT(AR_DETAIL_BACK.EMPID)
+				  FROM AR_DETAIL_BACK,
+				       AR_DETAIL, 
+				       AR_SHIFT010,
+				       AR_ITEM,
+				       AR_ITEM  AR_ITEM1,
+				       HR_EMP_V HR_EMPLOYEE,
+				       SY_CODE,
+				       SY_CODE SY_CODE1,
+				       HR_EMPLOYEE H,
+				       (SELECT AR_DETAIL_AFFIRM.*,
+				               UP_AFFIRM.AFFIRM_FLAG AS UP_AFFIRM_FLAG,
+				               UP_AFFIRM.AFFIRMOR_ID AS UP_AFFIRMOR_ID,
+				               NEXT_AFFIRM.AFFIRM_FLAG AS NEXT_AFFIRM_FLAG,
+				               (CASE
+				                 WHEN AR_DETAIL_AFFIRM.AFFIRM_LEVEL = ESS_AFFIRM_MAX_LEVEL.MAXLEVEL THEN
+				                  1
+				                 ELSE
+				                  0
+				               END) MAX_LEVEL_FLAG
+				          FROM (SELECT AR_DETAIL_AFFIRM.*,
+				                       AR_DETAIL_AFFIRM.AFFIRM_LEVEL - 1 AS UP_LEVEL,
+				                       AR_DETAIL_AFFIRM.AFFIRM_LEVEL + 1 AS NEXT_LEVEL
+				                  FROM AR_DETAIL_AFFIRM
+				                ) AR_DETAIL_AFFIRM,
+				               (SELECT T.AR_DETAIL_NO,  MAX(T.AFFIRM_LEVEL) MAXLEVEL
+				                  FROM AR_DETAIL_AFFIRM T
+				                 GROUP BY T.AR_DETAIL_NO) ESS_AFFIRM_MAX_LEVEL,
+				               (SELECT T.AR_DETAIL_NO,
+				                       T.AFFIRM_LEVEL,
+				                       T.AFFIRMOR_ID,
+				                       T.AFFIRM_FLAG
+				                  FROM AR_DETAIL_AFFIRM T
+				                 ) UP_AFFIRM,
+				               (SELECT A.AR_DETAIL_NO,
+				                       MAX(A.AFFIRM_FLAG) AS AFFIRM_FLAG
+				                  FROM AR_DETAIL_AFFIRM A,
+				                       (SELECT T.AR_DETAIL_NO, T.AFFIRMOR_ID, T.AFFIRM_LEVEL
+				                          FROM AR_DETAIL_AFFIRM T
+				                         WHERE T.AFFIRMOR_ID = #supervisor:VARCHAR#
+				                        ) B
+				                 WHERE 
+				                      A.AR_DETAIL_NO = B.AR_DETAIL_NO
+				                   AND A.AFFIRM_LEVEL > B.AFFIRM_LEVEL
+				                 GROUP BY A.AR_DETAIL_NO) NEXT_AFFIRM
+				         WHERE 
+				            AR_DETAIL_AFFIRM.AR_DETAIL_NO = UP_AFFIRM.AR_DETAIL_NO(+)
+				           AND AR_DETAIL_AFFIRM.UP_LEVEL = UP_AFFIRM.AFFIRM_LEVEL(+)
+				           AND AR_DETAIL_AFFIRM.AR_DETAIL_NO = NEXT_AFFIRM.AR_DETAIL_NO(+)
+				           AND AR_DETAIL_AFFIRM.AR_DETAIL_NO = ESS_AFFIRM_MAX_LEVEL.AR_DETAIL_NO(+)
+				           ) AR_DETAIL_AFFIRM,
+				      
+				         (SELECT AR_DETAIL_AFFIRM.AFFIRM_FLAG, AR_DETAIL_AFFIRM.AR_DETAIL_NO
+				          FROM AR_DETAIL_AFFIRM,
+				               (SELECT MAX(AR_DETAIL_AFFIRM.AFFIRM_LEVEL),
+				                       MAX(AR_DETAIL_AFFIRM.AR_DETAIL_AFFIRM_NO) AR_DETAIL_AFFIRM_NO
+				                  FROM AR_DETAIL_AFFIRM
+				                 GROUP BY AR_DETAIL_AFFIRM.AR_DETAIL_NO) HH
+				         WHERE AR_DETAIL_AFFIRM.AR_DETAIL_AFFIRM_NO = HH.AR_DETAIL_AFFIRM_NO) MAX_AFFIRMOR_FLAG,
+				         (SELECT   A.AR_DATE_STR,
+					               A.CPNY_ID,
+					               A.LOCK_FLAG_G,
+					               A.LOCK_FLAG_Z					               
+					          FROM AR_CALENDER A
+					         WHERE A.CPNY_ID = #cpnyId:VARCHAR#) AR_CALENDER
+				 WHERE 
+				   AR_DETAIL_BACK.OPERATION = 'UPDATE' 
+				   AND AR_DETAIL_BACK.AR_PK_NO = AR_DETAIL.PK_NO
+				   AND AR_DETAIL.SHIFT_NO = AR_SHIFT010.SHIFT_NO(+)   
+				   AND AR_DETAIL_BACK.AR_ITEM_NO = AR_ITEM1.ITEM_NO(+)
+				   AND AR_DETAIL.AR_ITEM_NO = AR_ITEM.ITEM_NO(+)
+				   AND AR_DETAIL_BACK.AR_PK_NO = MAX_AFFIRMOR_FLAG.AR_DETAIL_NO(+)
+				   AND AR_DETAIL_BACK.EMPID = HR_EMPLOYEE.person_id
+				   AND AR_DETAIL_BACK.AR_PK_NO = AR_DETAIL_AFFIRM.AR_DETAIL_NO
+				   AND NVL(AR_DETAIL_AFFIRM.UP_AFFIRM_FLAG, 1) = 1
+				   AND AR_DETAIL_AFFIRM.AFFIRMOR_ID = #supervisor:VARCHAR#
+				   AND AR_DETAIL_BACK.UNIT = SY_CODE.CODE_ID(+)
+				   AND AR_DETAIL.UNIT = SY_CODE1.CODE_ID(+)
+				   AND AR_DETAIL_BACK.CREATED_BY = H.PERSON_ID(+)
+				   AND AR_DETAIL_BACK.AR_DATE_STR = AR_CALENDER.AR_DATE_STR
+				   AND DECODE(HR_EMPLOYEE.EMP_DIFF_CODE,'C_12067_1330308',AR_CALENDER.LOCK_FLAG_Z,AR_CALENDER.LOCK_FLAG_G) = 0
+		]]>
+		<isNotEmpty prepend="AND" property="key">
+		<![CDATA[			    
+			       (   
+			   		   HR_EMPLOYEE.EMPID LIKE #key:VARCHAR# || '%' 
+			   		OR HR_EMPLOYEE.CHINESENAME LIKE #key:VARCHAR# || '%' 
+			   		OR UPPER(HR_EMPLOYEE.CHINESE_PINYIN) LIKE UPPER(#key:VARCHAR#) || '%' 
+			   	    )
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="sDate">
+		<![CDATA[
+			       (
+			   		   TO_DATE(AR_DETAIL_BACK.AR_DATE_STR,'YYYY-MM-DD') BETWEEN TO_DATE(#sDate:VARCHAR#, 'YYYY-MM-DD') AND TO_DATE(#eDate:VARCHAR# || ' 23:59:59', 'YYYY-MM-DD HH24:MI:SS') 
+			       )
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="deptID">
+		<![CDATA[			   
+				EXISTS
+					 (SELECT *
+					          FROM HR_DEPARTMENT B1
+					         WHERE B1.DEPTID = HR_EMPLOYEE.DEPTID
+					         START WITH B1.DEPTID = #deptID:VARCHAR#
+					        CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID)
+		]]>
+		</isNotEmpty>		
+     
+		<isEqual prepend="AND" property="qryType" compareValue="2"> <!-- 未决裁 -->
+		    <![CDATA[
+		         AR_DETAIL_AFFIRM.affirm_flag = 0
+		    ]]>
+		</isEqual>
+		<![CDATA[					        
+				ORDER BY AR_DETAIL_AFFIRM.AFFIRM_FLAG, AR_DETAIL_BACK.AR_DATE_STR , AR_DETAIL_BACK.EMPID
+			]]>
+	</select>
+	
+</sqlMap>

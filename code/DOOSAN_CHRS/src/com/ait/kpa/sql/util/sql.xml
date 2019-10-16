@@ -1,0 +1,464 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="kpa.util">
+
+	<!-- retrieve paInfo send mail information -->
+	<select id="retrievePaInfoForSendMail" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+		     SELECT PA.*, HR.EMAIL, NVL(SY.CODE_KOR_NAME,' ') AS POST_KOR
+			  FROM HR_EMPLOYEE HR,
+             	   SY_CODE SY,
+			       (SELECT PA.EMPID,
+			               PA.CHINESENAME,
+			               PA.DEPTID,
+			               PA.DEPARTMENT,
+			               PA.OFFICE,
+                    	   POST_CODE,
+			               NVL(PA.POST,' ') AS POST,
+			               /* 工资信息 */
+			               PA.FIXED_WAGES_MONTH,
+			               PA.OTHER_PAYMENTS1,
+			               PA.OTHER_PAY1,
+			               PA.OTHER_PAYMENTS2,
+			               PA.OTHER_PAY2,
+			               PA.COUNTS,
+			               /* 保险 */
+			               PA.INSURANCE_COMPANY,
+			               PA.INSURANCE_COM,
+			               PA.COUNT_SUM,
+			               PA.HEALTH_INSURANCE_EMP,
+			               PA.NATIONAL_INSURANCE_EMP,
+			               PA.OTHER_INSURANCES_EMP,
+			               PA.INSURANCE_SUM_EMP1,
+			               PA.INSURANCE_SUM_EMP2,
+			               /* 实发 */
+			               PA.INCOME_SUM_EMP
+			          FROM KPA_HISTORY PA
+			         WHERE PA.PA_MONTH = #PA_MONTH:VARCHAR#) PA
+			 WHERE HR.EMPID = PA.EMPID
+               AND PA.POST_CODE = SY.CODE_ID(+)
+			   AND HR.EMAIL IS NOT NULL
+	]]>
+	</select>
+	
+	<!-- retrieve paBonusInfo send mail information -->
+	<select id="retrievePaBonusInfoForSendMail" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+		     SELECT PA.*,HR.EMAIL, NVL(SY.CODE_KOR_NAME,' ')  AS POST_KOR
+			   FROM HR_EMPLOYEE HR,
+              		SY_CODE SY ,
+					(SELECT PA.EMPID,
+					        PA.CHINESENAME,
+					        PA.DEPTID,
+					        PA.DEPARTMENT,
+					        PA.POST_CODE,
+		                    PA.POST,
+		                    PA.ACHIEVEMENT,
+		                    PA.TAX_AMOUNT_TOTAL,
+		                    PA.MONTH_TAX * 12 * 1.1 AS MONTH_TAX,
+		                    PA.RESULT_TAX,
+		                    PA.RESULT_TAX_SENDS1,
+		                    PA.RESULT_TAX_SENDS2
+					   FROM KPA_BONUS_HISTORY PA
+					  WHERE PA.PA_MONTH = #PA_MONTH:VARCHAR#) PA
+			 WHERE HR.EMPID = PA.EMPID
+               AND PA.POST_CODE = SY.CODE_ID(+)
+			   AND HR.EMAIL IS NOT NULL
+	]]>
+	</select>
+	
+	<!-- retrieve paDiffInfo send mail information -->
+	<select id="retrievePaDiffInfoForSendMail" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+		        SELECT PA.*, HR.EMAIL, NVL(SY.CODE_KOR_NAME, ' ') AS POST_KOR
+				  FROM HR_EMPLOYEE HR,
+				       SY_CODE SY,
+				       (SELECT PA.EMPID,
+				               PA.CHINESENAME,
+				               PA.DEPTID,
+				               PA.DEPARTMENT,
+				               PA.POST_CODE,
+				               PA.POST,
+				               PA.PA_MONTHS || '~' || PA.PA_MONTH AS PA_BETWEEN_MONTH,
+				               PA.YEARLY_SALARY_BEFORE,
+				               PA.YEARLY_SALARY_AFTER,
+				               PA.TAX_AMOUNT_ALL_BEFORE,
+				               PA.TAX_AMOUNT_ALL_AFTER,
+				               PA.WAGES_FIXEDLY_MONTH,
+				               PA.UNPAID_TAX_AMOUNT,
+				               PA.ALL_DIFFER
+				          FROM KPA_DIFF_HISTORY PA
+				         WHERE PA.PA_MONTH = #PA_MONTH:VARCHAR#) PA
+				 WHERE HR.EMPID = PA.EMPID
+				   AND PA.POST_CODE = SY.CODE_ID(+)
+				   AND HR.EMAIL IS NOT NULL
+				   AND PA.EMPID = 'ic0300043'
+	]]>
+	</select>
+	
+	<!-- retrieve altert DSHR columns -->
+	<!--  ALL_TAB_COLUMNS.COLUMN_NAME,ALL_TAB_COLUMNS.DATA_TYPE,ALL_TAB_COLUMNS.DATA_LENGTH,USER_COL_COMMENTS.COMMENTS,ALL_TAB_COLUMNS.DATA_PRECISION -->
+	<select id="retrieveAlterDsHrColumns" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+				SELECT 'ALTER TABLE ' || ALL_TAB_COLUMNS.TABLE_NAME || ' ADD ' || ALL_TAB_COLUMNS.COLUMN_NAME || ' ' || ALL_TAB_COLUMNS.DATA_TYPE ||
+				       CASE ALL_TAB_COLUMNS.DATA_TYPE
+				         WHEN 'NUMBER' THEN DECODE(NVL(ALL_TAB_COLUMNS.DATA_PRECISION,1),1,'','(' || ALL_TAB_COLUMNS.DATA_PRECISION || ')')
+				         WHEN 'DATE' THEN ''
+				         ELSE '(' || ALL_TAB_COLUMNS.DATA_LENGTH || ')'
+				       END AS "ALTERSQL"
+				  FROM ALL_TAB_COLUMNS
+				 WHERE ALL_TAB_COLUMNS.TABLE_NAME = #TABLE_NAME:VARCHAR#
+				   AND ALL_TAB_COLUMNS.OWNER = 'DICI'
+				   AND NOT EXISTS
+				 (SELECT *
+				          FROM USER_COL_COMMENTS T
+				         WHERE T.COLUMN_NAME IN ($dsHrPaHistoryColumns$)
+				           AND T.COLUMN_NAME = ALL_TAB_COLUMNS.COLUMN_NAME
+				           AND T.TABLE_NAME = ALL_TAB_COLUMNS.TABLE_NAME)
+				UNION ALL
+				SELECT 'COMMENT ON COLUMN ' || USER_COL_COMMENTS.TABLE_NAME || '.' ||
+				        USER_COL_COMMENTS.COLUMN_NAME || ' IS ''' || USER_COL_COMMENTS.COMMENTS || ''''
+				        AS "ALTERSQL"
+				  FROM USER_COL_COMMENTS
+				 WHERE USER_COL_COMMENTS.TABLE_NAME = #TABLE_NAME:VARCHAR#
+				   AND USER_COL_COMMENTS.COMMENTS IS NOT NULL
+				   AND NOT EXISTS
+				 (SELECT *
+				          FROM USER_COL_COMMENTS T
+				         WHERE T.COLUMN_NAME IN ($dsHrPaHistoryColumns$)
+				           AND T.COLUMN_NAME = USER_COL_COMMENTS.COLUMN_NAME
+				           AND T.TABLE_NAME = USER_COL_COMMENTS.TABLE_NAME)
+		]]>
+		
+	</select>
+	
+	<!-- retrieve altert DSHR Comments -->
+	<!--  ALL_TAB_COLUMNS.COLUMN_NAME,ALL_TAB_COLUMNS.DATA_TYPE,ALL_TAB_COLUMNS.DATA_LENGTH,USER_COL_COMMENTS.COMMENTS,ALL_TAB_COLUMNS.DATA_PRECISION -->
+	<select id="retrieveAlterDsHrComments" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+				SELECT 'COMMENT ON COLUMN ' || USER_COL_COMMENTS.TABLE_NAME || '.' ||
+				        USER_COL_COMMENTS.COLUMN_NAME || ' IS ''' || USER_COL_COMMENTS.COMMENTS || ''''
+				        AS "ALTERSQL",USER_COL_COMMENTS.COLUMN_NAME
+				  FROM USER_COL_COMMENTS
+				 WHERE USER_COL_COMMENTS.TABLE_NAME = #TABLE_NAME:VARCHAR#
+				   AND USER_COL_COMMENTS.COMMENTS IS NOT NULL
+				   AND NOT EXISTS
+				 (SELECT *
+				          FROM USER_COL_COMMENTS T
+				         WHERE T.COLUMN_NAME IN ($dsHrPaHistoryColumns$)
+				           AND T.COLUMN_NAME = USER_COL_COMMENTS.COLUMN_NAME
+				           AND T.TABLE_NAME = USER_COL_COMMENTS.TABLE_NAME)
+		]]>
+	</select>
+	
+	<!-- retrieve insert data DSHR columns -->
+	<select id="retrieveInsertDataColumns" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			    SELECT ALL_TAB_COLUMNS.COLUMN_NAME,
+				       ALL_TAB_COLUMNS.DATA_TYPE,
+				       (CASE ALL_TAB_COLUMNS.DATA_TYPE 
+				            WHEN 'NUMBER' THEN ALL_TAB_COLUMNS.DATA_PRECISION
+				            WHEN 'DATE'   THEN ALL_TAB_COLUMNS.DATA_PRECISION                            
+				            ELSE ALL_TAB_COLUMNS.DATA_LENGTH END
+				       ) AS DATA_LENGTH
+				  FROM ALL_TAB_COLUMNS, USER_COL_COMMENTS
+				 WHERE ALL_TAB_COLUMNS.TABLE_NAME = #TABLE_NAME:VARCHAR#
+				   AND ALL_TAB_COLUMNS.OWNER = 'DICI'
+				   AND ALL_TAB_COLUMNS.TABLE_NAME = USER_COL_COMMENTS.TABLE_NAME
+				   AND ALL_TAB_COLUMNS.COLUMN_NAME = USER_COL_COMMENTS.COLUMN_NAME
+		]]>
+		
+	</select>
+
+	<!-- retrieve insert DSHR data -->
+	<select id="retrieveInsertDsHrDatas" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			     SELECT *
+			     	FROM $TABLE_NAME$
+			       WHERE PA_MONTH = #PA_MONTH:VARCHAR#
+		]]>
+		
+	</select>
+
+	<!-- retrieve pa_item_list of month -->
+	<select id="RetrievePa_Item_List_Month" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			     SELECT ITEM_NAME,ITEM_EN_NAME,ITEM_KOR_NAME,ITEM_ID 
+			     	FROM KPA_ITEM 
+			    ORDER BY CALCU_ORDER
+		]]>
+		
+	</select>
+	
+	<!-- retrieve pa_param_item_list month -->
+	<select id="RetrievePa_param_item_list" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			     SELECT PARAM_NAME,PARAM_EN_NAME,PARAM_KOR_NAME,PARAM_ID 
+       					FROM KPA_PARAM_ITEM 		
+	    ]]>
+		
+	    <![CDATA[
+	    		ORDER BY PARAM_NO
+	    ]]>
+	</select>
+
+	<!-- retrieve Pa_distinct_list  -->
+	 <select id="RetrievePa_distinct_list" parameterClass="SimpleMap" resultClass="SimpleMap" >
+		<![CDATA[	
+			     SELECT FIELD_NAME,DISTINCT_FIELD,FIELD_EN_NAME,FIELD_KOR_NAME
+     	  		   FROM KPA_DISTINCT_LIST 
+     	  		  WHERE ACTIVITY = 1 
+			        AND TABLE_NAME IN ('KPA_HR_V','KPA_AR_V')
+			   ORDER BY ID 
+		]]>	        
+	 </select>
+	 
+	 	<!-- retrieve pa_bonus_item_list of month -->
+	<select id="RetrievePa_bonus_Item_List_Month" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			     SELECT ITEM_NAME,ITEM_ID 
+			     	FROM KPA_BONUS_ITEM 
+			    UNION
+select ITEM_NAME,ITEM_ID from kpa_item
+		]]>
+		
+	</select>
+	
+	<select id="RetrieveDiff_Item_List_Month" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			     SELECT ITEM_NAME,ITEM_ID 
+			     	FROM KPA_DIFF_ITEM 
+		]]>
+		
+	</select>
+	
+	<!-- retrieve pa_bonus_param_item_list month -->
+	<select id="RetrievePa_bonus_param_item_list" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			     SELECT PARAM_NAME,PARAM_ID 
+       					FROM KPA_BONUS_PARAM_ITEM 
+       					UNION
+select PARAM_NAME,PARAM_ID from kpa_param_item		
+	    ]]>
+		
+	</select>
+	
+	<select id="RetrieveDiff_param_item_list" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			     SELECT PARAM_NAME,PARAM_ID 
+       					FROM KPA_DIFF_PARAM_ITEM
+       					 UNION
+select PARAM_NAME,PARAM_ID from kpa_param_item	
+	    ]]>
+		
+	</select>
+
+	<!-- retrieve Pa_bonus_distinct_list  -->
+	 <select id="RetrievePa_bonus_distinct_list" parameterClass="SimpleMap" resultClass="SimpleMap" >
+		<![CDATA[	
+			     SELECT FIELD_NAME,DISTINCT_FIELD
+     	  		   FROM KPA_DISTINCT_LIST 
+     	  		  WHERE ACTIVITY = 1 
+			        AND TABLE_NAME IN ('KPA_HR_V')
+			   ORDER BY ID 
+		]]>	        
+	 </select>
+	 
+	 <!-- retrieve PA_REPLENISHMENT_HISTORY count  -->
+	 <select id="paCheckCalc" parameterClass="SimpleMap" resultClass="int" >
+		<![CDATA[	
+			     SELECT COUNT(EMPID)
+     	  		   FROM KPA_REPLENISHMENT_HISTORY PA 
+     	  		  WHERE PA.PA_MONTH = #pamonth:VARCHAR#
+			        AND PA.ATTENDANCE_PERIOD_CODE = #statTypeCode:VARCHAR#
+                    AND PA.RETROACTIVE_TAX_TYPE_CODE = #retroactiveTaxType:VARCHAR#
+		]]>	        
+	 </select>
+	 
+	 <!-- retrieve PA_BONUS_HISTORY count  -->
+	 <select id="paBonusCheckCalc" parameterClass="SimpleMap" resultClass="int" >
+		<![CDATA[	
+			     SELECT COUNT(EMPID)
+     	  		   FROM KPA_BONUS_HISTORY PA 
+     	  		  WHERE PA.PA_MONTH = #pamonth:VARCHAR#
+			        AND PA.ATTENDANCE_PERIOD_CODE = #statTypeCode:VARCHAR#
+			        AND PA.BONUS_TYPE_CODE = #bonusTypeCode:VARCHAR#
+                    AND PA.BONUS_NO = #bonusNo:NUMERIC#
+		]]>	        
+	 </select>
+	 
+	 <!-- retrieve Param Data  -->
+	 <select id="retrieveParamDataList" parameterClass="SimpleMap" resultClass="SimpleMap" >
+		<![CDATA[	
+			     SELECT HR.GROUP_EMP_ID,
+			            HR.EMPID,
+			     		HR.CHINESENAME,
+			     		HD.DEPTNAME,
+                		PARAM_DATA_NO,
+                		PARAM_NO,
+                		FIELD1_VALUE ,
+                		FIELD2_VALUE ,
+                		RETURN_VALUE ,
+                		START_MONTH ,
+                		END_MONTH ,
+                		SD_ED_VALUE
+                   FROM KPA_PARAM_DATA,
+                   		HR_EMPLOYEE HR,
+                   		HR_DEPARTMENT HD
+                  WHERE PARAM_NO = #param_no:NUMERIC# 
+                  	AND FIELD1_VALUE = HR.EMPID(+)
+                  	AND HR.DEPTID = HD.DEPTID
+		]]>
+		<isNotEmpty prepend="AND" property="deptid">
+			<![CDATA[				
+				 EXISTS( SELECT HD.DEPTID FROM HR_DEPARTMENT HD WHERE HR.DEPTID = HD.DEPTID  START WITH DEPTID = #deptid:VARCHAR2# CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID ) 
+		  ]]>	 
+	   </isNotEmpty>
+	   <isNotEmpty prepend="AND" property="key">
+			<![CDATA[				
+				 (HR.CHINESENAME LIKE '%' || #key:VARCHAR2# || '%' OR UPPER(HR.EMPID) LIKE '%' || UPPER(#key:VARCHAR2#) || '%' OR UPPER(HR.CHINESE_PINYIN) LIKE '%' || UPPER(#key:VARCHAR2#) || '%')
+		  ]]>	 
+	   </isNotEmpty>	        
+	 </select>
+	 
+	 <select id="PayCalculationSignsForSearchNumber" parameterClass="SimpleMap" resultClass="int" >
+		<![CDATA[	
+			   select count(t.empid) from hr_employee t,hr_department depart
+			   where t.deptid = depart.deptid(+) and join_type_code = 'C_12009_1330064'			    
+		]]>	  
+		<isNotEmpty prepend="AND" property="deptID">
+			<![CDATA[				
+				 t.deptid=#deptID:VARCHAR# 
+		  ]]>	 
+	   </isNotEmpty>
+		<isNotEmpty prepend="AND" property="key">
+			<![CDATA[				
+					 t.empid =  #key:VARCHAR#
+		  ]]>	 
+	   </isNotEmpty>        
+	 </select>
+	 
+ 
+	 	<!-- retrieve PayCalculationSignsForSearch  -->
+	 <select id="PayCalculationSignsForSearch" parameterClass="SimpleMap" resultClass="SimpleMap" >
+		<![CDATA[	
+			 select t.empid, t.chinesename, depart.deptname,t.calc_flag
+             from hr_employee t, hr_department depart
+             where t.deptid = depart.deptid(+) and join_type_code = 'C_12009_1330064'                        
+		]]>
+		<isNotEmpty prepend="AND" property="deptID">
+			<![CDATA[				
+				 t.deptid=#deptID:VARCHAR# 
+		  ]]>	 
+	   </isNotEmpty>
+		<isNotEmpty prepend="AND" property="key">
+			<![CDATA[				
+					 t.empid =  #key:VARCHAR#
+		  ]]>	 
+	   </isNotEmpty>       
+	 </select>
+	 	 	<!-- retrieve PayCalculationSignsForSearch  -->
+	 <update id="PayCalculationSignsForUpdate" parameterClass="SimpleMap">
+		<![CDATA[	
+			 update hr_employee t
+			 set t.calc_flag=#flag:VARCHAR#
+			 where t.empid=#empid:VARCHAR#       
+		]]>
+     
+	 </update>
+	 
+	 <!-- retrieve PayBankCodeForSearchNumberPa  -->
+	 <select id="PayBankCodeForSearchNumberPa" parameterClass="SimpleMap" resultClass="int" >
+		<![CDATA[
+			 SELECT COUNT(PA.EMPID)
+			   FROM HR_EMPLOYEE HR , 
+			        (SELECT KPA_HISTORY.EMPID, KPA_HISTORY.DEPARTMENT, KPA_HISTORY.THIS_ACTUAL_WAGE
+			           FROM KPA_HISTORY
+			          WHERE KPA_HISTORY.PA_MONTH = #paMonth:VARCHAR#
+			        ) PA
+			  WHERE PA.EMPID = HR.EMPID(+)
+		]]>
+		<isNotEmpty prepend="AND" property="key">
+			<![CDATA[				
+					HR.EMPID =  #key:VARCHAR#
+		  ]]>	 
+	   </isNotEmpty>            
+	 </select>
+	 
+	 <!-- retrieve PayBankCodeForSearchPa  -->
+	 <select id="PayBankCodeForSearchPa" parameterClass="SimpleMap" resultClass="SimpleMap" >
+		<![CDATA[
+			 SELECT PA.EMPID,PA.DEPARTMENT,HR.CHINESENAME,PA.THIS_ACTUAL_WAGE AS WAGE,NVL(HR.BANK_CARD_NO,'请输入银行账号') AS BANK_CARD_NO
+			   FROM HR_EMPLOYEE HR , 
+			        (SELECT KPA_HISTORY.EMPID, KPA_HISTORY.DEPARTMENT, KPA_HISTORY.THIS_ACTUAL_WAGE
+			           FROM KPA_HISTORY
+			          WHERE KPA_HISTORY.PA_MONTH = #paMonth:VARCHAR#
+			        ) PA
+			  WHERE PA.EMPID = HR.EMPID(+)
+		]]>
+		<isNotEmpty prepend="AND" property="key">
+			<![CDATA[				
+					HR.EMPID =  #key:VARCHAR#
+		  ]]>	 
+	   </isNotEmpty>    
+	   <![CDATA[				
+			ORDER BY BANK_CARD_NO DESC,PA.DEPARTMENT,PA.EMPID	
+	   ]]>	      
+	 </select>
+	
+	 <!-- retrieve PayBankCodeForSearchNumberBonus  -->
+	 <select id="PayBankCodeForSearchNumberBonus" parameterClass="SimpleMap" resultClass="int" >
+		<![CDATA[
+			 SELECT COUNT(PA.EMPID)
+			   FROM HR_EMPLOYEE HR , 
+			        (SELECT KPA_BONUS_HISTORY.EMPID, KPA_BONUS_HISTORY.DEPARTMENT, KPA_BONUS_HISTORY.THIS_ACTUAL_BONUS
+			           FROM KPA_BONUS_HISTORY
+			          WHERE KPA_BONUS_HISTORY.PA_MONTH = #paMonth:VARCHAR#
+			            AND KPA_BONUS_HISTORY.BONUS_TYPE_CODE = #bonusTypeCode:VARCHAR#
+			            AND KPA_BONUS_HISTORY.BONUS_NO = #bonusNo:NUMERIC#
+			            AND KPA_BONUS_HISTORY.ATTENDANCE_PERIOD_CODE = #statTypeCode:VARCHAR#
+			        ) PA
+			  WHERE PA.EMPID = HR.EMPID(+)
+		]]>
+		<isNotEmpty prepend="AND" property="key">
+			<![CDATA[				
+					HR.EMPID =  #key:VARCHAR#
+		  ]]>	 
+	   </isNotEmpty>             
+	 </select>
+	 
+	 <!-- retrieve PayBankCodeForSearchBonus  -->
+	 <select id="PayBankCodeForSearchBonus" parameterClass="SimpleMap" resultClass="SimpleMap" >
+		<![CDATA[
+			 SELECT PA.EMPID,PA.DEPARTMENT,HR.CHINESENAME,PA.THIS_ACTUAL_BONUS AS WAGE,NVL(HR.BANK_CARD_NO,'请输入银行账号') AS BANK_CARD_NO
+			   FROM HR_EMPLOYEE HR , 
+			        (SELECT KPA_BONUS_HISTORY.EMPID, KPA_BONUS_HISTORY.DEPARTMENT, KPA_BONUS_HISTORY.THIS_ACTUAL_BONUS
+			           FROM KPA_BONUS_HISTORY
+			          WHERE KPA_BONUS_HISTORY.PA_MONTH = #paMonth:VARCHAR#
+			            AND KPA_BONUS_HISTORY.BONUS_TYPE_CODE = #bonusTypeCode:VARCHAR#
+			            AND KPA_BONUS_HISTORY.BONUS_NO = #bonusNo:NUMERIC#
+			            AND KPA_BONUS_HISTORY.ATTENDANCE_PERIOD_CODE = #statTypeCode:VARCHAR#
+			        ) PA
+			  WHERE PA.EMPID = HR.EMPID(+)
+		]]>
+		<isNotEmpty prepend="AND" property="key">
+			<![CDATA[				
+					HR.EMPID =  #key:VARCHAR#
+		  ]]>	 
+	   </isNotEmpty> 
+	   <![CDATA[				
+			ORDER BY BANK_CARD_NO DESC,PA.DEPARTMENT,PA.EMPID	
+	   ]]>	      
+	 </select>
+
+	<!-- retrieve PayBankCodeForUpdate  -->
+	 <update id="PayBankCodeForUpdate" parameterClass="SimpleMap">
+		<![CDATA[	
+			 update hr_employee
+			 set BANK_CARD_NO=#flag:VARCHAR#
+			 where empid=#empid:VARCHAR#       
+		]]>
+     
+	 </update>
+</sqlMap>

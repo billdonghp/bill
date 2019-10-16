@@ -1,0 +1,1313 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="ga.present">
+
+	<!-- retrieve present list -->
+	<select id="retrievePresentList" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[	
+		   SELECT A.SEQ_NO,
+                  S.CODE_ID,
+                  S.CODE_NAME,
+				  A.PRESENT_ID,
+				  GET_CODE_NAME(A.PRESENT_ID) PRESENT_NAME,
+				  A.UNIT_PRICE,
+				  A.UNIT,
+				  GET_CODE_NAME(A.UNIT) UNIT_NAME,
+				  A.DATA_TYPE,
+				  GET_CODE_NAME(A.DATA_TYPE) DATA_TYPE_NAME,
+				  A.QUENTITY,							
+				  A.REMARK,
+				  A.APPLY_DEPT,
+				  GET_DEPT_NAME(A.APPLY_DEPT) APPLY_DEPT_NAME, 
+				  GA_GET_PRESENT_STOCK(A.SEQ_NO) STOCK_QUENTITY,
+				  B.CHINESENAME CREATED_NAME,
+				  TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD') CREATE_DATE,
+				  A.CREATED_BY,
+				  A.UPDATE_DATE,
+				  A.UPDATED_BY,
+				  A.ACTIVITY
+			  FROM GA_PRESENT A,
+			  	   HR_EMPLOYEE B,
+                   SY_CODE S
+			 WHERE A.ACTIVITY = 1
+			   AND A.CREATED_BY = B.PERSON_ID
+               AND A.PRESENT_TYPE = S.CODE_ID
+			   AND A.CPNY_ID = #cpnyId:VARCHAR#
+	  ]]>
+
+		<isNotEmpty prepend="AND" property="presentId">
+			<![CDATA[
+			 		 A.PRESENT_ID = #presentId:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="dataType">
+			<![CDATA[
+			 		 A.DATA_TYPE = #dataType:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="SEQ_NO">
+			<![CDATA[
+			 		 A.SEQ_NO = #SEQ_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="startDate">
+
+			<isNotEmpty prepend="" property="endDate">
+				<![CDATA[
+			 		 TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD') BETWEEN #startDate:VARCHAR# AND #endDate:VARCHAR#
+		    ]]>
+			</isNotEmpty>
+
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="empId">
+			<![CDATA[
+			 		 (A.CREATED_BY = #personId:VARCHAR#
+			 		  OR
+			 		  B.EMPID = #empId:VARCHAR#
+			 		  )
+		    ]]>
+		</isNotEmpty>
+
+		<![CDATA[
+	  		ORDER BY A.CREATE_DATE DESC,A.SEQ_NO DESC
+	  ]]>
+
+	</select>
+
+	<!-- retrieve present list count-->
+	<select id="retrievePresentListCnt" parameterClass="SimpleMap"
+		resultClass="int">
+		<![CDATA[	
+		   SELECT  COUNT(*) CNT
+			  FROM GA_PRESENT A,
+			  	   HR_EMPLOYEE B
+			 WHERE A.ACTIVITY = 1
+			   AND A.CREATED_BY = B.PERSON_ID
+			   AND A.CPNY_ID = #cpnyId:VARCHAR#
+	  ]]>
+
+		<isNotEmpty prepend="AND" property="presentId">
+			<![CDATA[
+			 		 A.PRESENT_ID = #presentId:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="dataType">
+			<![CDATA[
+			 		 A.DATA_TYPE = #dataType:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="SEQ_NO">
+			<![CDATA[
+			 		 A.SEQ_NO = #SEQ_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="startDate">
+
+			<isNotEmpty prepend="" property="endDate">
+				<![CDATA[
+			 		 TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD') BETWEEN #startDate:VARCHAR# AND #endDate:VARCHAR#
+		    ]]>
+			</isNotEmpty>
+
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="empId">
+			<![CDATA[
+			 		 (A.CREATED_BY = #personId:VARCHAR#
+			 		  OR
+			 		  B.EMPID = #empId:VARCHAR#
+			 		  )
+		    ]]>
+		</isNotEmpty>
+
+	</select>
+	
+	<select id="ytglPresentList" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[	
+		   SELECT A.SEQ_NO,
+                  S.CODE_ID,
+                  S.CODE_NAME,
+				  A.PRESENT_ID,
+				  GET_CODE_NAME(A.PRESENT_ID) PRESENT_NAME,
+				  A.UNIT_PRICE,
+				  A.UNIT,
+				  GET_CODE_NAME(A.UNIT) UNIT_NAME,
+				  A.DATA_TYPE,
+				  GET_CODE_NAME(A.DATA_TYPE) DATA_TYPE_NAME,
+				  A.QUENTITY,							
+				  A.REMARK,
+				  A.APPLY_DEPT,
+				  GET_DEPT_NAME(A.APPLY_DEPT) APPLY_DEPT_NAME, 
+				  GA_GET_PRESENT_STOCK(A.SEQ_NO) STOCK_QUENTITY,
+				  B.CHINESENAME CREATED_NAME,
+				  TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD') CREATE_DATE,
+				  A.CREATED_BY,
+				  A.UPDATE_DATE,
+				  A.UPDATED_BY,
+				  A.ACTIVITY
+			  FROM GA_PRESENT A,
+			  	   HR_EMPLOYEE B,
+                   SY_CODE S
+			 WHERE A.ACTIVITY = 1
+			   AND A.CREATED_BY = B.PERSON_ID
+               AND A.PRESENT_TYPE = S.CODE_ID
+			   AND A.CPNY_ID = '78888888'
+	  ]]>
+
+		<isNotEmpty prepend="AND" property="presentId">
+			<![CDATA[
+			 		 A.PRESENT_ID = #presentId:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="dataType">
+			<![CDATA[
+			 		 A.DATA_TYPE = #dataType:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="SEQ_NO">
+			<![CDATA[
+			 		 A.SEQ_NO = #SEQ_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="startDate">
+
+			<isNotEmpty prepend="" property="endDate">
+				<![CDATA[
+			 		 TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD') BETWEEN #startDate:VARCHAR# AND #endDate:VARCHAR#
+		    ]]>
+			</isNotEmpty>
+
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="empId">
+			<![CDATA[
+			 		 (A.CREATED_BY = #personId:VARCHAR#
+			 		  OR
+			 		  B.EMPID = #empId:VARCHAR#
+			 		  )
+		    ]]>
+		</isNotEmpty>
+
+		<![CDATA[
+	  		ORDER BY A.CREATE_DATE DESC,A.SEQ_NO DESC
+	  ]]>
+
+	</select>
+
+	<!-- retrieve present list count-->
+	<select id="ytglPresentListCnt" parameterClass="SimpleMap"
+		resultClass="int">
+		<![CDATA[	
+		   SELECT  COUNT(*) CNT
+			  FROM GA_PRESENT A,
+			  	   HR_EMPLOYEE B
+			 WHERE A.ACTIVITY = 1
+			   AND A.CREATED_BY = B.PERSON_ID
+			   AND A.CPNY_ID = '78888888'
+	  ]]>
+
+		<isNotEmpty prepend="AND" property="presentId">
+			<![CDATA[
+			 		 A.PRESENT_ID = #presentId:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="dataType">
+			<![CDATA[
+			 		 A.DATA_TYPE = #dataType:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="SEQ_NO">
+			<![CDATA[
+			 		 A.SEQ_NO = #SEQ_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="startDate">
+
+			<isNotEmpty prepend="" property="endDate">
+				<![CDATA[
+			 		 TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD') BETWEEN #startDate:VARCHAR# AND #endDate:VARCHAR#
+		    ]]>
+			</isNotEmpty>
+
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="empId">
+			<![CDATA[
+			 		 (A.CREATED_BY = #personId:VARCHAR#
+			 		  OR
+			 		  B.EMPID = #empId:VARCHAR#
+			 		  )
+		    ]]>
+		</isNotEmpty>
+
+	</select>
+
+	<!-- insert present data -->
+	<insert id="insertPresent" parameterClass="SimpleMap">
+		<![CDATA[	
+			INSERT INTO GA_PRESENT A
+	   		  	     (SEQ_NO,
+					  PRESENT_ID,
+					  PRESENT_TYPE,
+					  UNIT_PRICE,
+					  UNIT,
+					  DATA_TYPE,
+					  QUENTITY,							
+					  REMARK,
+					  APPLY_DEPT,
+					  CPNY_ID,
+					  CREATE_DATE,
+					  CREATED_BY,
+					  ACTIVITY)
+			  VALUES (GA_PRESENT_EXT_SEQ.NEXTVAL,
+			  		  #PRESENT_ID:VARCHAR#,
+			  		  #PRESENT_TYPE:VARCHAR#, 
+					  #UNIT_PRICE:NUMERIC#,
+					  #UNIT:VARCHAR#,
+					  #DATA_TYPE:VARCHAR#,
+					  #QUENTITY:NUMERIC#,
+					  #REMARK:VARCHAR#,
+					  #APPLY_DEPT:VARCHAR#,
+					  #cpnyId:VARCHAR#,
+					  SYSDATE,
+					  #adminId:VARCHAR#,
+					  1
+			  		 )
+	  ]]>
+	</insert>
+	
+	<insert id="insertPresent1" parameterClass="SimpleMap">
+		<![CDATA[	
+			INSERT INTO GA_PRESENT A
+	   		  	     (SEQ_NO,
+					  PRESENT_ID,
+					  PRESENT_TYPE,
+					  UNIT_PRICE,
+					  UNIT,
+					  DATA_TYPE,
+					  QUENTITY,							
+					  REMARK,
+					  APPLY_DEPT,
+					  CPNY_ID,
+					  CREATE_DATE,
+					  CREATED_BY,
+					  ACTIVITY)
+			  VALUES (GA_PRESENT_EXT_SEQ.NEXTVAL,
+			  		  #PRESENT_ID1:VARCHAR#,
+			  		  #PRESENT_TYPE:VARCHAR#, 
+					  #UNIT_PRICE:NUMERIC#,
+					  #UNIT:VARCHAR#,
+					  #DATA_TYPE:VARCHAR#,
+					  #QUENTITY:NUMERIC#,
+					  #REMARK:VARCHAR#,
+					  #APPLY_DEPT:VARCHAR#,
+					  #cpnyId:VARCHAR#,
+					  SYSDATE,
+					  #adminId:VARCHAR#,
+					  1
+			  		 )
+	  ]]>
+	</insert>
+	
+	<insert id="insertPresent2" parameterClass="SimpleMap">
+		<![CDATA[	
+			INSERT INTO GA_PRESENT A
+	   		  	     (SEQ_NO,
+					  PRESENT_ID,
+					  PRESENT_TYPE,
+					  UNIT_PRICE,
+					  UNIT,
+					  DATA_TYPE,
+					  QUENTITY,							
+					  REMARK,
+					  APPLY_DEPT,
+					  CPNY_ID,
+					  CREATE_DATE,
+					  CREATED_BY,
+					  ACTIVITY)
+			  VALUES (GA_PRESENT_EXT_SEQ.NEXTVAL,
+			  		  #PRESENT_ID2:VARCHAR#,
+			  		  #PRESENT_TYPE:VARCHAR#, 
+					  #UNIT_PRICE:NUMERIC#,
+					  #UNIT:VARCHAR#,
+					  #DATA_TYPE:VARCHAR#,
+					  #QUENTITY:NUMERIC#,
+					  #REMARK:VARCHAR#,
+					  #APPLY_DEPT:VARCHAR#,
+					  #cpnyId:VARCHAR#,
+					  SYSDATE,
+					  #adminId:VARCHAR#,
+					  1
+			  		 )
+	  ]]>
+	</insert>
+	
+	<insert id="insertPresent3" parameterClass="SimpleMap">
+		<![CDATA[	
+			INSERT INTO GA_PRESENT A
+	   		  	     (SEQ_NO,
+					  PRESENT_ID,
+					  PRESENT_TYPE,
+					  UNIT_PRICE,
+					  UNIT,
+					  DATA_TYPE,
+					  QUENTITY,							
+					  REMARK,
+					  APPLY_DEPT,
+					  CPNY_ID,
+					  CREATE_DATE,
+					  CREATED_BY,
+					  ACTIVITY)
+			  VALUES (GA_PRESENT_EXT_SEQ.NEXTVAL,
+			  		  #PRESENT_ID3:VARCHAR#,
+			  		  #PRESENT_TYPE:VARCHAR#, 
+					  #UNIT_PRICE:NUMERIC#,
+					  #UNIT:VARCHAR#,
+					  #DATA_TYPE:VARCHAR#,
+					  #QUENTITY:NUMERIC#,
+					  #REMARK:VARCHAR#,
+					  #APPLY_DEPT:VARCHAR#,
+					  '78888888',
+					  SYSDATE,
+					  #adminId:VARCHAR#,
+					  1
+			  		 )
+	  ]]>
+	</insert>
+
+	<!-- update present data -->
+	<update id="updatePresent" parameterClass="SimpleMap">
+		<![CDATA[
+			   UPDATE GA_PRESENT A
+				  SET UNIT_PRICE = NVL(#UNIT_PRICE:NUMERIC#,A.UNIT_PRICE),
+					  UNIT = NVL(#UNIT:VARCHAR#,A.UNIT),
+					  DATA_TYPE = NVL(#DATA_TYPE:VARCHAR#,A.DATA_TYPE),
+					  QUENTITY = NVL(#QUENTITY:NUMERIC#,A.QUENTITY),							
+					  REMARK = NVL(#REMARK:VARCHAR#,A.REMARK),
+					  APPLY_DEPT = NVL(#APPLY_DEPT:VARCHAR#,A.APPLY_DEPT),
+					  UPDATE_DATE = SYSDATE,
+					  UPDATED_BY = #adminId:VARCHAR#,
+					  ACTIVITY = NVL(#ACTIVITY:NUMERIC#,A.ACTIVITY)
+				WHERE A.SEQ_NO = #SEQ_NO:NUMERIC#
+	 	]]>
+	</update>
+	
+	<!-- update present data -->
+	<update id="updatePresentYtgl" parameterClass="SimpleMap">
+		<![CDATA[
+			   UPDATE GA_PRESENT A
+				  SET UNIT_PRICE = NVL(#UNIT_PRICE:NUMERIC#,A.UNIT_PRICE),
+					  UNIT = NVL(#UNIT:VARCHAR#,A.UNIT),
+					  DATA_TYPE = NVL(#DATA_TYPE:VARCHAR#,A.DATA_TYPE),
+					  QUENTITY = NVL(#QUENTITY:NUMERIC#,A.QUENTITY),							
+					  REMARK = NVL(#REMARK:VARCHAR#,A.REMARK),
+					  APPLY_DEPT = NVL(#APPLY_DEPT:VARCHAR#,A.APPLY_DEPT),
+					  UPDATE_DATE = SYSDATE,
+					  UPDATED_BY = #adminId:VARCHAR#,
+					  ACTIVITY = NVL(#ACTIVITY:NUMERIC#,A.ACTIVITY)
+				WHERE A.SEQ_NO = #SEQ_NO:NUMERIC#
+	 	]]>
+	</update>
+
+	<!-- delete present data -->
+	<delete id="deletePresent" parameterClass="SimpleMap">
+		<![CDATA[
+			   DELETE FROM GA_PRESENT A
+				     WHERE A.SEQ_NO = #SEQ_NO:NUMERIC#
+	 	]]>
+	</delete>
+
+	<!-- retrieve present apply list -->
+	<select id="retrievePresentApplyList" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[	
+			   SELECT A.SEQ_NO,
+					  A.AFFIRM_FLAG,
+					  A.CONFIRM_FLAG,
+					  DECODE(A.CONFIRM_FLAG,0,'未确认',1,'已通过','已否决') CONFIRM_FLAG_NAME,
+					  A.CONFIRM_OPITION,
+					  A.PRESENT_OBJECT,
+					  A.REASON,
+					  TO_CHAR(A.USE_DATE,'YYYY-MM-DD') USE_DATE,
+					  A.REMARK,
+					  TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD') CREATE_DATE,
+					  A.CREATED_BY,
+					  B.EMPID,
+					  B.CHINESENAME,
+					  GET_DEPT_NAME(B.DEPTID) DEPT_NAME,
+					  (SELECT MAX(C.AFFIRM_FLAG) FROM GA_PRESENT_AFFIRM C WHERE C.APPLY_NO = A.SEQ_NO) DELETE_OP_FLAG,
+					  (SELECT C.AFFIRM_FLAG FROM GA_PRESENT_AFFIRM C WHERE C.APPLY_NO = A.SEQ_NO AND C.AFFIRMOR_ID = #affirmor:VARCHAR#) AFFIRM_OP_FLAG,
+					  (SELECT DISTINCT C.SEQ_NO FROM GA_PRESENT_AFFIRM C WHERE C.APPLY_NO = A.SEQ_NO AND C.AFFIRMOR_ID = #affirmor:VARCHAR#) AFFIRM_NO,
+					  (SELECT DISTINCT C.AFFIRM_OPITION FROM GA_PRESENT_AFFIRM C WHERE C.APPLY_NO = A.SEQ_NO AND C.AFFIRMOR_ID = #affirmor:VARCHAR#) AFFIRM_OPITION,
+					  (SELECT DISTINCT C.AFFIRM_LEVEL FROM GA_PRESENT_AFFIRM C WHERE C.APPLY_NO = A.SEQ_NO AND C.AFFIRMOR_ID = #affirmor:VARCHAR#) AFFIRM_LEVEL,
+					  A.UPDATE_DATE,
+					  A.UPDATED_BY,
+					  C.CHINESENAME CONFIRMOR,
+					  A.ACTIVITY
+				 FROM GA_PRESENT_APPLY A,
+					  HR_EMPLOYEE B,
+					  HR_EMPLOYEE C
+				WHERE A.CREATED_BY = B.PERSON_ID
+				  AND A.UPDATED_BY = C.PERSON_ID(+)
+				  AND A.ACTIVITY = 1
+				  
+	  ]]>
+	  
+	   <isNotEmpty prepend="AND" property="ADMINID">
+			<![CDATA[
+		            EXISTS (SELECT SAD.ADMIN_DEPTID
+					          FROM SY_ADMIN_DEPTID SAD, 
+					          	   SY_ADMIN SA
+					         WHERE SAD.ADMIN_NO = SA.ADMINNO
+					           AND SA.ADMINID = #ADMINID:VARCHAR#
+					           AND SAD.ADMIN_DEPTID = B.DEPTID) 
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="deptId">
+			<![CDATA[
+			 		 B.DEPTID = #deptId:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+<isNotEmpty prepend="AND" property="cpnyId">
+		<![CDATA[		   
+		 B.cpny_id=#cpnyId:VARCHAR#
+		]]>	
+	</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SEQ_NO">
+			<![CDATA[
+			 		 A.SEQ_NO = #SEQ_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="startDate">
+
+			<isNotEmpty prepend="" property="endDate">
+				<![CDATA[
+			 		 TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD') BETWEEN #startDate:VARCHAR# AND #endDate:VARCHAR#
+		    ]]>
+			</isNotEmpty>
+
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="empId">
+			<![CDATA[
+			 		 (A.CREATED_BY = #personId:VARCHAR#
+			 		  OR
+			 		  B.EMPID = #empId:VARCHAR#
+			 		  )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="applicant">
+			<![CDATA[
+			 		 A.CREATED_BY = #applicant:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="flag">
+			<![CDATA[
+			 		 A.CONFIRM_FLAG = DECODE(#flag:VARCHAR#,'ConfirmType001',0,'ConfirmType002',1,2)
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="active">
+			<![CDATA[
+			 		 A.AFFIRM_FLAG = #active:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="affirmor">
+		
+			<isEmpty prepend="" property="affirmType">
+				<![CDATA[
+						A.SEQ_NO IN (	SELECT T.APPLY_NO
+								          FROM GA_PRESENT_AFFIRM T
+								         WHERE T.AFFIRMOR_ID = #affirmor:VARCHAR#
+								           AND (T.APPLY_NO IN (SELECT TT.APPLY_NO
+									                             FROM GA_PRESENT_AFFIRM TT
+									                            WHERE TT.APPLY_NO = T.APPLY_NO
+									                              AND TT.AFFIRMOR_ID <> T.AFFIRMOR_ID
+									                              AND TT.AFFIRM_FLAG = 1
+									                              AND TT.AFFIRM_LEVEL = T.AFFIRM_LEVEL - 1)
+								                OR T.AFFIRM_LEVEL = '1'
+								               )
+				  					    )
+				 ]]>
+			</isEmpty>
+			
+			<isEqual property="affirmType" compareValue="AffirmType001" >
+				<![CDATA[
+				          A.SEQ_NO IN (	SELECT T.APPLY_NO
+								          FROM GA_PRESENT_AFFIRM T
+								         WHERE T.AFFIRM_FLAG = 0
+										   AND T.AFFIRMOR_ID = #affirmor:VARCHAR#
+								           AND (T.APPLY_NO IN (SELECT TT.APPLY_NO
+									                             FROM GA_PRESENT_AFFIRM TT
+									                            WHERE TT.APPLY_NO = T.APPLY_NO
+									                              AND TT.AFFIRMOR_ID <> T.AFFIRMOR_ID
+									                              AND TT.AFFIRM_FLAG = 1
+									                              AND TT.AFFIRM_LEVEL = T.AFFIRM_LEVEL - 1)
+								                OR T.AFFIRM_LEVEL = '1'
+								               )
+				  					    )
+			    ]]>
+			</isEqual>
+		
+			<isEqual property="affirmType" compareValue="AffirmType002" >
+				<![CDATA[
+				          A.SEQ_NO IN(SELECT T.APPLY_NO
+							            FROM GA_PRESENT_AFFIRM T
+							           WHERE T.AFFIRM_FLAG = 1
+									     AND T.AFFIRMOR_ID = #affirmor:VARCHAR#)
+			    ]]>
+			 </isEqual>
+
+			<isEqual property="affirmType" compareValue="AffirmType003" >
+				<![CDATA[
+				          A.SEQ_NO IN(SELECT T.APPLY_NO
+							            FROM GA_PRESENT_AFFIRM T
+							           WHERE T.AFFIRM_FLAG = 2
+									     AND T.AFFIRMOR_ID = #affirmor:VARCHAR#)
+			    ]]>
+			</isEqual>
+		</isNotEmpty>
+		  <![CDATA[
+	  		ORDER BY A.CREATE_DATE desc
+	  ]]>
+	</select>
+	
+	<!-- retrieve present apply count -->
+	<select id="retrievePresentApplyCnt" parameterClass="SimpleMap"
+		resultClass="int">
+		<![CDATA[	
+			   SELECT COUNT(*) CNT
+				 FROM GA_PRESENT_APPLY A,
+					  HR_EMPLOYEE B,
+					  HR_EMPLOYEE C
+				WHERE A.CREATED_BY = B.PERSON_ID
+				  AND A.UPDATED_BY = C.PERSON_ID(+)
+				  AND A.ACTIVITY = 1
+	  ]]>
+
+  	   <isNotEmpty prepend="AND" property="ADMINID">
+			<![CDATA[
+		            EXISTS (SELECT SAD.ADMIN_DEPTID
+					          FROM SY_ADMIN_DEPTID SAD, 
+					          	   SY_ADMIN SA
+					         WHERE SAD.ADMIN_NO = SA.ADMINNO
+					           AND SA.ADMINID = #ADMINID:VARCHAR#
+					           AND SAD.ADMIN_DEPTID = B.DEPTID) 
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="deptId">
+			<![CDATA[
+			 		 B.DEPTID = #deptId:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+<isNotEmpty prepend="AND" property="cpnyId">
+		<![CDATA[		   
+		 B.cpny_id=#cpnyId:VARCHAR#
+		]]>	
+	</isNotEmpty>
+		<isNotEmpty prepend="AND" property="SEQ_NO">
+			<![CDATA[
+			 		 A.SEQ_NO = #SEQ_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="startDate">
+
+			<isNotEmpty prepend="" property="endDate">
+				<![CDATA[
+			 		 TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD') BETWEEN #startDate:VARCHAR# AND #endDate:VARCHAR#
+		    ]]>
+			</isNotEmpty>
+
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="empId">
+			<![CDATA[
+			 		 (A.CREATED_BY = #personId:VARCHAR#
+			 		  OR
+			 		  B.EMPID = #empId:VARCHAR#
+			 		  )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="applicant">
+			<![CDATA[
+			 		 A.CREATED_BY = #applicant:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="flag">
+			<![CDATA[
+			 		 A.CONFIRM_FLAG = DECODE(#flag:VARCHAR#,'ConfirmType001',0,'ConfirmType002',1,2)
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="active">
+			<![CDATA[
+			 		 A.AFFIRM_FLAG = #active:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="affirmor">
+		
+			<isEmpty prepend="" property="affirmType">
+				<![CDATA[
+						A.SEQ_NO IN (	SELECT T.APPLY_NO
+								          FROM GA_PRESENT_AFFIRM T
+								         WHERE T.AFFIRMOR_ID = #affirmor:VARCHAR#
+								           AND (T.APPLY_NO IN (SELECT TT.APPLY_NO
+									                             FROM GA_PRESENT_AFFIRM TT
+									                            WHERE TT.APPLY_NO = T.APPLY_NO
+									                              AND TT.AFFIRMOR_ID <> T.AFFIRMOR_ID
+									                              AND TT.AFFIRM_FLAG = 1
+									                              AND TT.AFFIRM_LEVEL = T.AFFIRM_LEVEL - 1)
+								                OR T.AFFIRM_LEVEL = '1'
+								               )
+				  					    )
+				 ]]>
+			</isEmpty>
+			
+			<isEqual property="affirmType" compareValue="AffirmType001" >
+				<![CDATA[
+				          A.SEQ_NO IN (	SELECT T.APPLY_NO
+								          FROM GA_PRESENT_AFFIRM T
+								         WHERE T.AFFIRM_FLAG = 0
+										   AND T.AFFIRMOR_ID = #affirmor:VARCHAR#
+								           AND (T.APPLY_NO IN (SELECT TT.APPLY_NO
+									                             FROM GA_PRESENT_AFFIRM TT
+									                            WHERE TT.APPLY_NO = T.APPLY_NO
+									                              AND TT.AFFIRMOR_ID <> T.AFFIRMOR_ID
+									                              AND TT.AFFIRM_FLAG = 1
+									                              AND TT.AFFIRM_LEVEL = T.AFFIRM_LEVEL - 1)
+								                OR T.AFFIRM_LEVEL = '1'
+								               )
+				  					    )
+			    ]]>
+			</isEqual>
+		
+			<isEqual property="affirmType" compareValue="AffirmType002" >
+				<![CDATA[
+				          A.SEQ_NO IN(SELECT T.APPLY_NO
+							            FROM GA_PRESENT_AFFIRM T
+							           WHERE T.AFFIRM_FLAG = 1
+									     AND T.AFFIRMOR_ID = #affirmor:VARCHAR#)
+			    ]]>
+			 </isEqual>
+
+			<isEqual property="affirmType" compareValue="AffirmType003" >
+				<![CDATA[
+				          A.SEQ_NO IN(SELECT T.APPLY_NO
+							            FROM GA_PRESENT_AFFIRM T
+							           WHERE T.AFFIRM_FLAG = 2
+									     AND T.AFFIRMOR_ID = #affirmor:VARCHAR#)
+			    ]]>
+			</isEqual>
+		</isNotEmpty>
+
+	</select>
+	
+	<!-- retrieve present affirm list -->
+	<select id="retrievePresentAffirmList" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[	
+			   SELECT A.SEQ_NO,
+					  A.APPLY_NO,
+					  A.AFFIRM_FLAG,
+					  DECODE(A.AFFIRM_FLAG,0,'未决裁',1,'已通过','已否决') AFFIRM_FLAG_NAME,
+					  A.AFFIRM_LEVEL,
+					  A.AFFIRMOR_ID,
+					  B.CHINESENAME AFFIRMOR_NAME,
+					  GET_DEPT_NAME(B.DEPTID) AFFIRMOR_DEPT,
+					  A.AFFIRM_OPITION,
+					  A.CREATE_DATE,
+					  A.CREATED_BY,
+					  A.UPDATE_DATE,
+					  A.UPDATED_BY,
+					  A.ACTIVITY
+				 FROM GA_PRESENT_AFFIRM A,
+				 	  HR_EMPLOYEE B
+				WHERE A.AFFIRMOR_ID = B.PERSON_ID
+	  ]]>
+
+		<isNotEmpty prepend="AND" property="applyNo">
+			<![CDATA[
+			 		 A.APPLY_NO = #applyNo:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="SEQ_NO">
+			<![CDATA[
+			 		 A.SEQ_NO = #SEQ_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+	</select>
+	
+	<!-- retrieve present apply detail -->
+	<select id="retrievePresentApplyDetail" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[	
+		   SELECT A.SEQ_NO,
+				  A.APPLY_NO,
+				  A.PRESENT_ID,
+				  GET_CODE_NAME(A.PRESENT_ID) PRESENT_NAME,
+				  A.QUENTITY,
+				  B.UNIT,
+				  GET_CODE_NAME(B.UNIT) UNIT_NAME,
+				  ROUND(B.UNIT_PRICE,2) UNIT_PRICE,
+				  ROUND(B.UNIT_PRICE * A.QUENTITY,2) AMOUNT,	
+				  A.REMARK,
+				  A.PRESENT_OBJECT,
+				  A.CREATE_DATE,
+				  A.CREATED_BY,
+				  A.UPDATE_DATE,
+				  A.UPDATED_BY,
+				  A.ACTIVITY
+			 FROM GA_PRESENT_APPLY_DETAIL A,
+			 	  (SELECT C.PRESENT_ID,
+				  		  MAX(C.UNIT) UNIT,
+						  SUM(C.UNIT_PRICE*C.QUENTITY)/SUM(C.QUENTITY) UNIT_PRICE
+					 FROM GA_PRESENT C
+					WHERE C.DATA_TYPE = 'StockType001'
+					  AND C.ACTIVITY = 1
+				 GROUP BY C.PRESENT_ID) B
+			WHERE A.PRESENT_ID = B.PRESENT_ID(+)
+	  ]]>
+
+		<isNotEmpty prepend="AND" property="applyNo">
+			<![CDATA[
+			 		 A.APPLY_NO = #applyNo:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+
+		<isNotEmpty prepend="AND" property="SEQ_NO">
+			<![CDATA[
+			 		 A.SEQ_NO = #SEQ_NO:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+
+	</select>
+	
+	<!-- retrieve present information -->
+	<select id="retrievePresentInformation" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[	
+		           SELECT A.CODE_ID PRESENT_ID,
+				   		  A.CODE_NAME PRESENT_NAME,
+				  		  MAX(B.UNIT) UNIT,
+						  GET_CODE_NAME(MAX(B.UNIT)) UNIT_NAME,
+						  GA_GET_PRESENT_STOCK(MAX(B.SEQ_NO)) PRESENT_STOCK,
+						  ROUND(MAX(NVL(D.UNIT_PRICE,0)),2) UNIT_PRICE
+					 FROM SY_CODE A,
+					 	  GA_PRESENT B,
+					 	  (SELECT PRESENT_ID,
+						  		  SUM(C.UNIT_PRICE*C.QUENTITY)/SUM(C.QUENTITY) UNIT_PRICE
+							 FROM GA_PRESENT C
+							WHERE C.DATA_TYPE = 'StockType001'
+							  AND C.ACTIVITY = 1 
+						 GROUP BY C.PRESENT_ID) D
+					WHERE A.CODE_ID = B.PRESENT_ID(+)
+					  AND B.PRESENT_ID = D.PRESENT_ID(+)
+					  AND (A.PARENT_CODE = 'PresentName' OR A.PARENT_CODE = 'PresentMarried')
+					  
+					  AND A.ACTIVITY = 1
+					  AND B.ACTIVITY(+) = 1
+	  ]]>
+
+		<isNotEmpty prepend="AND" property="presentId">
+			<![CDATA[
+			 		 A.CODE_ID = #presentId:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+	  <![CDATA[
+	  		 GROUP BY A.CODE_ID,A.CODE_NAME
+	  ]]>
+	</select>
+	
+	<!-- retrieve present apply quentity -->
+	<select id="retrievePresentApplyQuentity" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[	
+		    SELECT A.CODE_ID PRESENT_ID,
+				   NVL(APPLY_QUENTITY,0) APPLY_QUENTITY		
+			  FROM SY_CODE A,
+				   (SELECT B.PRESENT_ID,
+						   SUM(NVL(B.QUENTITY,0)) APPLY_QUENTITY
+					  FROM GA_PRESENT_APPLY A,
+					  	   GA_PRESENT_APPLY_DETAIL B
+					 WHERE A.SEQ_NO = B.APPLY_NO
+					   AND A.CONFIRM_FLAG = 0
+					   AND A.AFFIRM_FLAG < 2 
+					   AND A.ACTIVITY = 1
+					   GROUP BY B.PRESENT_ID) C
+			  WHERE A.CODE_ID = C.PRESENT_ID(+)
+				AND (A.PARENT_CODE = 'PresentName' OR
+                       A.PARENT_CODE = 'PresentMarried')
+				AND A.ACTIVITY = 1
+	  ]]>
+
+		<isNotEmpty prepend="AND" property="presentId">
+			<![CDATA[
+			 		 A.CODE_ID = #presentId:NUMERIC#
+		    ]]>
+		</isNotEmpty>
+
+	  <![CDATA[
+	  		ORDER BY A.CODE_ID
+	  ]]>
+	</select>
+	
+	<!-- insert present apply -->
+	<insert id="insertPresentApply" parameterClass="SimpleMap">
+		<![CDATA[
+				  INSERT INTO GA_PRESENT_APPLY A
+				 			 (SEQ_NO,
+							  AFFIRM_FLAG,
+							  CONFIRM_FLAG,
+							  CONFIRM_OPITION,
+							  PRESENT_OBJECT,
+							  REASON,
+							  USE_DATE,
+							  REMARK,
+							  CREATE_DATE,
+							  CREATED_BY,
+							  ACTIVITY)
+					  VALUES (GA_PRESENT_APPLY_SEQ.NEXTVAL,
+					  		  0,
+							  0,
+							  '',
+							  #PRESENT_OBJECT:VARCHAR#,
+							  #REASON:VARCHAR#,
+							  TO_DATE(#USE_DATE:VARCHAR#,'YYYY-MM-DD'),
+							  #REMARK:VARCHAR#,
+							  SYSDATE,
+							  #adminId:VARCHAR#,
+							  1) 
+	 	]]>
+	</insert>
+	
+	<!-- insert present affirm -->
+	<insert id="insertPresentAffirm" parameterClass="GaAffirmBean">
+		<![CDATA[
+				 INSERT INTO GA_PRESENT_AFFIRM
+					   		 (SEQ_NO,
+							  APPLY_NO,
+							  AFFIRM_FLAG,
+							  AFFIRM_LEVEL,
+							  AFFIRMOR_ID,
+							  AFFIRM_OPITION,
+							  CREATE_DATE,
+							  CREATED_BY,
+							  ACTIVITY)
+					  VALUES (GA_PRESENT_AFFIRM_SEQ.NEXTVAL,
+					  		  GA_PRESENT_APPLY_SEQ.CURRVAL,
+							  #affirmFlag:NUMERIC#,
+							  #affirmLevel:NUMERIC#,
+							  #affirmorId:VARCHAR#,
+							  '',
+							  SYSDATE,
+							  '',
+							  1) 
+	 	]]>
+	</insert>
+	
+	<!-- insert present apply detail -->
+		<insert id="insertPresentApplyDetail" parameterClass="SimpleMap">
+		<![CDATA[
+				 INSERT INTO GA_PRESENT_APPLY_DETAIL
+							 (SEQ_NO,
+							  APPLY_NO,
+							  PRESENT_ID,
+							  QUENTITY,
+							  REMARK,
+							  CREATE_DATE,
+							  CREATED_BY,
+							  ACTIVITY,
+							  PRESENT_OBJECT,
+                              PRESENT_TYPE)
+					   VALUES(GA_PRESENT_APPLY_DETAIL_SEQ.NEXTVAL,
+					   		  GA_PRESENT_APPLY_SEQ.CURRVAL,
+							  #PRESENT_ID:VARCHAR#,
+							  #QUENTITY:NUMERIC#,
+							  #REMARK:VARCHAR#,
+							  SYSDATE,
+							  #adminId:VARCHAR#,
+							  1,
+							  #PRESENT_OBJECT:VARCHAR#,
+                              #PRESENT_TYPE:VARCHAR#)
+	 	]]>
+	</insert>
+	<insert id="insertPresentApplyDetail1" parameterClass="SimpleMap">
+		<![CDATA[
+				 INSERT INTO GA_PRESENT_APPLY_DETAIL
+							 (SEQ_NO,
+							  APPLY_NO,
+							  PRESENT_ID,
+							  QUENTITY,
+							  REMARK,
+							  CREATE_DATE,
+							  CREATED_BY,
+							  ACTIVITY,
+							  PRESENT_OBJECT,
+                              PRESENT_TYPE)
+					   VALUES(GA_PRESENT_APPLY_DETAIL_SEQ.NEXTVAL,
+					   		  GA_PRESENT_APPLY_SEQ.CURRVAL,
+							  #PRESENT_ID1:VARCHAR#,
+							  #QUENTITY:NUMERIC#,
+							  #REMARK:VARCHAR#,
+							  SYSDATE,
+							  #adminId:VARCHAR#,
+							  1,
+							  #PRESENT_OBJECT:VARCHAR#,
+                              #PRESENT_TYPE:VARCHAR#)
+	 	]]>
+	</insert>
+	
+		<insert id="insertPresentApplyDetail2" parameterClass="SimpleMap">
+		<![CDATA[
+				 INSERT INTO GA_PRESENT_APPLY_DETAIL
+							 (SEQ_NO,
+							  APPLY_NO,
+							  PRESENT_ID,
+							  QUENTITY,
+							  REMARK,
+							  CREATE_DATE,
+							  CREATED_BY,
+							  ACTIVITY,
+							  PRESENT_OBJECT,
+                              PRESENT_TYPE)
+					   VALUES(GA_PRESENT_APPLY_DETAIL_SEQ.NEXTVAL,
+					   		  GA_PRESENT_APPLY_SEQ.CURRVAL,
+							  #PRESENT_ID2:VARCHAR#,
+							  #QUENTITY:NUMERIC#,
+							  #REMARK:VARCHAR#,
+							  SYSDATE,
+							  #adminId:VARCHAR#,
+							  1,
+							  #PRESENT_OBJECT:VARCHAR#,
+                              #PRESENT_TYPE:VARCHAR#)
+	 	]]>
+	</insert>
+	
+	<insert id="insertPresentApplyDetail3" parameterClass="SimpleMap">
+		<![CDATA[
+				 INSERT INTO GA_PRESENT_APPLY_DETAIL
+							 (SEQ_NO,
+							  APPLY_NO,
+							  PRESENT_ID,
+							  QUENTITY,
+							  REMARK,
+							  CREATE_DATE,
+							  CREATED_BY,
+							  ACTIVITY,
+							  PRESENT_OBJECT,
+                              PRESENT_TYPE)
+					   VALUES(GA_PRESENT_APPLY_DETAIL_SEQ.NEXTVAL,
+					   		  GA_PRESENT_APPLY_SEQ.CURRVAL,
+							  #PRESENT_ID3:VARCHAR#,
+							  #QUENTITY:NUMERIC#,
+							  #REMARK:VARCHAR#,
+							  SYSDATE,
+							  #adminId:VARCHAR#,
+							  1,
+							  #PRESENT_OBJECT:VARCHAR#,
+                              #PRESENT_TYPE:VARCHAR#)
+	 	]]>
+	</insert>
+		
+	<!-- update present affirm -->
+	<update id="updatePresentAffirm" parameterClass="SimpleMap">
+		<![CDATA[
+				 UPDATE GA_PRESENT_AFFIRM A
+				    SET A.AFFIRM_FLAG = #AFFIRM_FLAG:NUMERIC#,
+						A.AFFIRM_OPITION = #AFFIRM_OPITION:VARCHAR#,
+						A.UPDATED_BY = #adminId:VARCHAR#,
+						A.UPDATE_DATE = SYSDATE
+				  WHERE A.SEQ_NO = #affirmNo:NUMERIC#
+	 	]]>
+	</update>
+	
+	<!-- update present apply -->
+	<update id="updatePresentApply" parameterClass="SimpleMap">
+		<![CDATA[
+                  UPDATE GA_PRESENT_APPLY A
+				     SET A.CONFIRM_FLAG = NVL(#CONFIRM_FLAG:NUMERIC#,A.CONFIRM_FLAG),
+					 	 A.CONFIRM_OPITION = NVL(#CONFIRM_OPITION:VARCHAR#,A.CONFIRM_OPITION),
+					 	 A.AFFIRM_FLAG = NVL(#AFFIRM_FLAG:NUMERIC#,A.AFFIRM_FLAG),
+						 A.UPDATED_BY = NVL(#confirmor:VARCHAR#,A.UPDATED_BY),
+						 A.UPDATE_DATE = SYSDATE,
+						 A.ACTIVITY = NVL(#ACTIVITY:VARCHAR#,A.ACTIVITY)
+				   WHERE A.SEQ_NO = #SEQ_NO:NUMERIC#
+	 	]]>
+	 	
+	    <isNotEmpty prepend="AND" property="affirmOP">
+			<![CDATA[
+			 		 ((SELECT MIN(B.AFFIRM_FLAG) FROM GA_PRESENT_AFFIRM B WHERE B.APPLY_NO = A.SEQ_NO ) > 0
+			 		  OR
+			 		  #AFFIRM_FLAG:NUMERIC# = 2
+			 		  )
+		    ]]>
+		</isNotEmpty>
+		
+	</update>
+
+	<!-- update present detail -->
+	<update id="updatePresentDetail" parameterClass="SimpleMap">
+		<![CDATA[
+					UPDATE GA_PRESENT_APPLY_DETAIL A
+					   SET PRESENT_ID = NVL(#PRESENT_ID:VARCHAR#,A.PRESENT_ID),
+						   QUENTITY = NVL(#QUENTITY:NUMERIC#,A.QUENTITY),
+						   REMARK = NVL(#REMARK:VARCHAR#,A.REMARK),
+						   UPDATE_DATE = SYSDATE,
+						   UPDATED_BY = #adminId:VARCHAR#,
+						   ACTIVITY = NVL(#ACTIVITY:VARCHAR#,A.ACTIVITY)
+					 WHERE SEQ_NO = #detailNo:VARCHAR#
+	 	]]>
+	</update>
+	
+	<!-- insert present data by apply -->
+	<insert id="insertPresentByApply" parameterClass="SimpleMap">
+		<![CDATA[	
+			 INSERT INTO GA_PRESENT A
+		   		  	     (SEQ_NO,
+						  PRESENT_ID,
+						  PRESENT_TYPE,
+						  UNIT_PRICE,
+						  UNIT,
+						  DATA_TYPE,
+						  QUENTITY,							
+						  REMARK,
+						  APPLY_DEPT,
+						  CPNY_ID,
+						  CREATE_DATE,
+						  CREATED_BY,
+						  ACTIVITY)
+				   SELECT GA_PRESENT_EXT_SEQ.NEXTVAL,
+						  A.PRESENT_ID,
+						  A.PRESENT_TYPE,
+						  ROUND(B.UNIT_PRICE,2) UNIT_PRICE,
+						  B.UNIT,
+						  'StockType002',
+						  A.QUENTITY,
+						  '申请人： ' || D.CHINESENAME || '  内容： ' || A.REMARK,
+						  D.DEPTID,
+						  SY.CPNY_ID,
+						  SYSDATE,
+						  #adminId:VARCHAR#,
+						  1
+					 FROM GA_PRESENT_APPLY_DETAIL A,
+					 	  SY_CODE SY ,
+					 	  (SELECT C.PRESENT_ID,
+						  		  MAX(C.UNIT) UNIT,
+								  SUM(C.UNIT_PRICE*C.QUENTITY)/SUM(C.QUENTITY) UNIT_PRICE
+							 FROM GA_PRESENT C
+							WHERE C.DATA_TYPE = 'StockType001'
+							  AND C.ACTIVITY = 1
+						 GROUP BY C.PRESENT_ID) B,
+						  GA_PRESENT_APPLY C,
+						  HR_EMPLOYEE D
+					WHERE A.PRESENT_ID = B.PRESENT_ID(+)
+					  AND A.APPLY_NO = C.SEQ_NO
+					  AND C.CREATED_BY = D.PERSON_ID(+)
+					  AND A.SEQ_NO = #detailNo:NUMERIC#
+					  AND #CONFIRM_FLAG:NUMERIC# = 1
+					  AND SY.CODE_ID = A.PRESENT_ID
+	  ]]>
+	</insert>
+	
+	<!-- get current apply no -->
+	<select id="getCurrApplyNo" resultClass="SimpleMap">
+		<![CDATA[	
+					SELECT GA_PRESENT_APPLY_SEQ.CURRVAL APPLY_NO
+				      FROM DUAL
+	 ]]>
+	 </select>
+	 
+	<!-- get apply affirm mail -->
+	<select id="getAffirmMail" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+		    SELECT *
+		      FROM (	   			  
+					SELECT A.SEQ_NO APPLY_NO,
+						   0 AFFIRM_LEVEL,
+						   B.PERSON_ID,
+						   B.EMPID,
+						   B.CHINESENAME,
+						   B.EMAIL,
+						   GET_EMP_NAME(A.CREATED_BY) APPLY_NAME,
+						   TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD') APPLY_DATE,
+						   A.PRESENT_OBJECT,
+						   A.REASON
+					  FROM GA_PRESENT_APPLY A,
+					  	   HR_EMPLOYEE B
+					 WHERE A.CREATED_BY = B.PERSON_ID(+)
+					   AND A.SEQ_NO = #applyNO:VARCHAR#
+					UNION ALL
+					SELECT A.APPLY_NO,
+						   A.AFFIRM_LEVEL,
+						   A.AFFIRMOR_ID,
+						   B.EMPID,
+						   B.CHINESENAME,
+						   B.EMAIL,
+						   GET_EMP_NAME(C.CREATED_BY) APPLY_NAME,
+						   TO_CHAR(C.CREATE_DATE,'YYYY-MM-DD') APPLY_DATE,
+						   C.PRESENT_OBJECT,
+						   C.REASON
+					  FROM GA_PRESENT_AFFIRM A,
+					  	   HR_EMPLOYEE B,
+						   GA_PRESENT_APPLY C
+					 WHERE A.AFFIRMOR_ID = B.PERSON_ID
+					   AND A.APPLY_NO = C.SEQ_NO
+					   AND A.APPLY_NO = #applyNO:VARCHAR#
+				) WHERE 1 = 1
+	  ]]>
+
+ 	<isNotEmpty prepend="AND" property="applyLevel">
+			<![CDATA[
+			 		AFFIRM_LEVEL = #applyLevel:NUMERIC#
+		    ]]>
+	</isNotEmpty>
+	
+	</select>
+	
+	<!-- get present quentity statistics -->
+	<select id="getPresentQuentStatistics" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+					SELECT A.PRESENT_ID,
+						   GET_CODE_NAME(A.PRESENT_ID) PRESENT_NAME,
+						   SUM(DECODE(A.DATA_TYPE,'StockType001',A.QUENTITY,0)) IN_QUENTITY,
+						   SUM(DECODE(A.DATA_TYPE,'StockType002',A.QUENTITY,0)) OUT_QUENTITY,
+						   SUM(DECODE(A.DATA_TYPE,'StockType001',A.QUENTITY,0)) - SUM(DECODE(A.DATA_TYPE,'StockType002',A.QUENTITY,0)) QUENTITY
+					  FROM GA_PRESENT A
+					 WHERE A.ACTIVITY = 1
+					   AND A.CPNY_ID = #cpnyId:VARCHAR#
+					GROUP BY A.PRESENT_ID
+	 ]]>
+	 </select>
+	 
+	 <!-- get present send statistics -->
+	<select id="getPresentSendStatistics" parameterClass="SimpleMap" resultClass="SimpleMap" >
+		<![CDATA[	
+				SELECT A.FOURTHDEPT DEPT_ID,
+					   $sql$
+					   DECODE(GROUPING(A.FOURTHDEPT),1,'合计',GET_DEPT_NAME(A.FOURTHDEPT)) DEPT_NAME
+				  FROM HR_DEPT_TREE_V A,
+				  	   GA_PRESENT B
+				 WHERE A.DEPTID = B.APPLY_DEPT(+)
+				   AND A.CPNY_ID = #cpnyId:VARCHAR#
+				   AND SYSDATE BETWEEN A.DATE_CREATED AND A.DATE_ENDED
+				   AND B.CPNY_ID(+) = #cpnyId:VARCHAR#
+				   AND B.ACTIVITY(+) = 1
+				   AND B.DATA_TYPE(+) = 'StockType002'
+				
+	     ]]>
+	     
+	     <isNotEmpty prepend="AND" property="presentDeptId_stat">
+			<![CDATA[
+			 		A.FOURTHDEPT = #presentDeptId_stat:VARCHAR#
+		    ]]>
+		 </isNotEmpty>
+		 
+		 <isNotEmpty prepend="AND" property="presentStartDate_stat">
+		 	<isNotEmpty prepend="" property="presentEndDate_stat">
+				<![CDATA[
+				 		TO_CHAR(B.CREATE_DATE,'YYYY-MM-DD') BETWEEN #presentStartDate_stat:VARCHAR# AND #presentEndDate_stat:VARCHAR# 
+			    ]]>
+		    </isNotEmpty>
+		 </isNotEmpty>
+		 
+		 <![CDATA[	
+		 			GROUP BY ROLLUP(A.FOURTHDEPT)
+		 ]]>
+	 </select>
+	 
+	<!-- get present send detail -->
+	<select id="getPresentSendDetail" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+				SELECT A.SEQ_NO,
+					   C.PERSON_ID,
+					   C.EMPID,
+					   C.CHINESENAME,
+					   C.DEPTID,
+					   D.DEPTNAME,
+					   D.FOURTHDEPT,
+					   GET_DEPT_NAME(D.FOURTHDEPT) FOURTH_DEPT_NAME,
+					   TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD') APPLY_DATE,
+					   B.PRESENT_ID,
+					   GET_CODE_NAME(B.PRESENT_ID) PRESENT_NAME,
+					   B.QUENTITY,
+					   A.PRESENT_OBJECT,
+					   A.REASON,
+					   TO_CHAR(A.USE_DATE,'YYYY-MM-DD') USE_DATE
+				  FROM GA_PRESENT_APPLY A,
+				  	   GA_PRESENT_APPLY_DETAIL B,
+					   HR_EMPLOYEE C,
+					   HR_DEPT_TREE_V D
+				 WHERE A.SEQ_NO = B.APPLY_NO
+				   AND A.ACTIVITY = 1
+				   AND A.CONFIRM_FLAG = 1
+				   AND B.ACTIVITY = 1
+				   AND A.CREATED_BY = C.PERSON_ID(+)
+				   AND C.DEPTID = D.DEPTID
+				
+	     ]]>
+	     
+	     <isNotEmpty prepend="AND" property="ADMINID">
+			<![CDATA[
+		            EXISTS (SELECT SAD.ADMIN_DEPTID
+					          FROM SY_ADMIN_DEPTID SAD, 
+					          	   SY_ADMIN SA
+					         WHERE SAD.ADMIN_NO = SA.ADMINNO
+					           AND SA.ADMINID = #ADMINID:VARCHAR#
+					           AND SAD.ADMIN_DEPTID = C.DEPTID) 
+			]]>
+		</isNotEmpty>
+		
+	     <isNotEmpty prepend="AND" property="presentDeptId_detail">
+			<![CDATA[
+			 		D.FOURTHDEPT = #presentDeptId_detail:VARCHAR#
+		    ]]>
+		 </isNotEmpty>
+		 
+		 <isNotEmpty prepend="AND" property="presentId_detail">
+			<![CDATA[
+			 		B.PRESENT_ID = #presentId_detail:VARCHAR#
+		    ]]>
+		 </isNotEmpty>
+		 
+		 <isNotEmpty prepend="AND" property="presentStartDate_detail">
+		 	<isNotEmpty prepend="" property="presentEndDate_detail">
+				<![CDATA[
+				 		TO_CHAR(A.CREATE_DATE,'YYYY-MM-DD') BETWEEN #presentStartDate_detail:VARCHAR# AND #presentEndDate_detail:VARCHAR# 
+			    ]]>
+		    </isNotEmpty>
+		 </isNotEmpty>
+		 
+		 <![CDATA[	
+		 			ORDER BY C.DEPTID,A.SEQ_NO,A.CREATE_DATE
+		 ]]>
+	 </select>
+	 
+</sqlMap>

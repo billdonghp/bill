@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="pa.payplan">
+
+	<select id="payPlanSerche" parameterClass="SimpleMap" resultClass="SimpleMap" remapResults="true">	
+			select t.bg_gu,
+		       t.bg_nm,
+		       grouptype.code_name grouptype,
+		       postype.code_name postype,
+		       wages.code_name wagestype,
+		       decode(t.pay_type,'PA','基本工资','PE_RG','住宅补助','PE_DA','职务津贴','PE_SG','特殊补助','PE_DS','值班补助','PE_RS','地区补助','PE_OC','其他补偿') as paytype,
+		       t.pay_month_01 as pay1,
+		       t.pay_month_02 as pay2,
+		       t.pay_month_03 as pay3,
+		       t.pay_month_04 as pay4,
+		       t.pay_month_05 as pay5,
+		       t.pay_month_06 as pay6,
+		       t.pay_month_07 as pay7,
+		       t.pay_month_08 as pay8,
+		       t.pay_month_09 as pay9,
+		       t.pay_month_10 as pay10,
+		       t.pay_month_11 as pay11,
+		       t.pay_month_12 as pay12,
+		       t.pay_month_tot
+		
+		  from t_py_pay_plan_detail t,
+		       sy_code              grouptype,
+		       sy_code              postype,
+		       sy_code              wages
+		 where t.auth_group_type = grouptype.code_id(+)
+		   and t.pos_type = postype.code_id(+)
+		   and t.wages_type_code = wages.code_id(+)
+		   and t.com_org_id=#cpnyId:VARCHAR#
+		   AND T.PAY_TYPE in ($paItemStr$)
+		   order by t.bg_gu, t.bg_nm,grouptype.code_name,postype.code_name,wages.code_name
+	
+	</select>
+	
+	<update id="payPlanSave"   parameterClass="SimpleMap" >
+	insert into PY_PAY_PLAN_DETAIL
+	select * from T_PY_PAY_PLAN_DETAIL t
+	where  t.com_org_id=#cpnyId:VARCHAR#
+		   AND T.PAY_TYPE=#paItem:VARCHAR#	
+	</update>
+	
+	<delete id="payPlandelete"    parameterClass="SimpleMap" >
+	 
+	 delete from T_PY_PAY_PLAN_DETAIL t
+	 where  t.com_org_id=#cpnyId:VARCHAR#
+		   AND T.PAY_TYPE=#paItem:VARCHAR#	
+	</delete>
+	
+	<select id="ImportExcelProcess" parameterClass="SimpleMap" resultClass="SimpleMap" remapResults="true">	
+			select t.bg_gu,
+		       t.bg_nm,
+		       grouptype.code_name grouptype,
+		       postype.code_name postype,
+		       wages.code_name wagestype,
+		       decode(t.pay_type,'PA','基本工资','PE_RG','住宅补助','PE_DA','职务津贴','PE_SG','特殊补助','PE_DS','值班补助','PE_RS','地区补助','PE_OC','其他补偿','PB','奖金','PC','加班费') as paytype,
+		       t.pay_month_01 as pay1,
+		       t.pay_month_02 as pay2,
+		       t.pay_month_03 as pay3,
+		       t.pay_month_04 as pay4,
+		       t.pay_month_05 as pay5,
+		       t.pay_month_06 as pay6,
+		       t.pay_month_07 as pay7,
+		       t.pay_month_08 as pay8,
+		       t.pay_month_09 as pay9,
+		       t.pay_month_10 as pay10,
+		       t.pay_month_11 as pay11,
+		       t.pay_month_12 as pay12,
+		       t.pay_month_tot
+		
+		  from py_pay_plan_detail t,
+		       sy_code              grouptype,
+		       sy_code              postype,
+		       sy_code              wages
+		 where t.auth_group_type = grouptype.code_id(+)
+			  and t.pos_type = postype.code_id(+)
+			  and t.wages_type_code = wages.code_id(+)
+			  and t.com_org_id=#cpnyId:VARCHAR#
+			  AND T.PAY_TYPE in ($paItemStr$)
+			  and t.plan_yy=#planYear:VARCHAR#
+			  and t.base_yymm=#baseMonth:VARCHAR#
+              and t.seq_id=#seqId:VARCHAR#
+		   order by t.bg_gu, t.bg_nm,grouptype.code_name,postype.code_name,wages.code_name
+	
+	</select>
+	<select id="ImportExcelResult" parameterClass="SimpleMap" resultClass="SimpleMap" remapResults="true">	
+			select t.bg_gu,
+			       t.bg_nm,
+			       t.org_id,
+			       t.org_full_nm,
+			       decode(t.pay_type,
+			              'PA',
+			              '基本工资',
+			              'PE',
+			              '补贴',
+			              'PB',
+			              '奖金',
+			              'PC',
+			              '加班费') as paytype,
+			       sy.code_name grouptype,
+				   t.pay_month_01 as pay1,
+			       t.pay_month_02 as pay2,
+			       t.pay_month_03 as pay3,
+			       t.pay_month_04 as pay4,
+			       t.pay_month_05 as pay5,
+			       t.pay_month_06 as pay6,
+			       t.pay_month_07 as pay7,
+			       t.pay_month_08 as pay8,
+			       t.pay_month_09 as pay9,
+			       t.pay_month_10 as pay10,
+			       t.pay_month_11 as pay11,
+			       t.pay_month_12 as pay12
+			
+			  from py_pay_plan_detail_cc t, sy_code sy
+			 where t.plan_yy = #planYear:VARCHAR#
+			   and t.base_yymm = #baseMonth:VARCHAR#			  
+			   and t.com_org_id = #cpnyId:VARCHAR#
+			   and CONCAT('C_12009_', t.auth_group_type) = sy.code_id
+			 order by t.bg_gu, t.bg_nm, sy.code_name, t.pay_type
+
+	
+   </select>
+   
+   <select id="paHousingFundList" parameterClass="SimpleMap" resultClass="SimpleMap">	
+   <![CDATA[ 
+   			SELECT A.PA_MONTH,
+			       A.PERSON_ID,
+			       A.EMPID,
+			       A.CHINESENAME,
+			       A.CPNY_ID,
+			       B.SEQ_NO,
+			       B.OCCUR_AMOUNT,
+			       B.OCCUR_TYPE,
+			       NVL(C.HPFS_BASE, 0) AS HPFS_BASE,
+			       (NVL(C.PERSONAL_HOUSING_FUND, 0) + NVL(C.HPFS_INDIVIDUALS_BACK, 0)) AS GEREN,
+			       (NVL(C.COMPANY_HPFS, 0) + NVL(C.HPFS_COMPANIES_BACK, 0)) AS GONGSI,
+			       NVL(C.PERSONAL_HOUSING_FUND + C.COMPANY_HPFS, 0) AS HEJI,
+			       PA_HOUSING_FUND_ALLPRICE(A.PA_MONTH, A.PERSON_ID, '0', A.CPNY_ID) AS ALLPRICE
+			  FROM (SELECT HR.PERSON_ID,
+			               HR.EMPID,
+			               HR.CHINESENAME,
+			               TO_CHAR(AC.DDATE, 'YYYYMM') AS PA_MONTH,
+			               AC.CPNY_ID
+			          FROM AR_CALENDER AC, HR_EMPLOYEE HR
+			         WHERE AC.CPNY_ID = HR.CPNY_ID
+			           AND AC.IDAY = 1
+			           AND AC.DDATE BETWEEN TO_DATE(#startDate:VARCHAR# , 'YYYYMM') and TO_DATE(#endDate:VARCHAR# , 'YYYYMM')
+			           AND AC.CPNY_ID = #cpny_id:varchar#
+	]]>	
+	<isNotEmpty prepend="AND" property="deptID">
+	<![CDATA[
+		 		EXISTS (
+	      			SELECT DEPTID 
+	                FROM HR_DEPARTMENT 
+	               WHERE HR_DEPARTMENT.DEPTID = HR.DEPTID
+	                START WITH DEPTID = #deptID:VARCHAR#
+	                CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+			   ) 
+	    ]]>
+	</isNotEmpty>
+	           
+	<isNotEmpty prepend="AND" property="person_id">
+	 <![CDATA[ 
+			           HR.PERSON_ID = #person_id:VARCHAR#
+	]]>
+	</isNotEmpty>
+	<isEmpty prepend="" property="person_id">
+		<isNotEmpty prepend="AND" property="key">
+		 <![CDATA[ 
+				       HR.EMPID = #key:VARCHAR#
+		]]>
+		</isNotEmpty>
+	</isEmpty>
+	 <![CDATA[ 
+	) A,
+			       PA_HOUSING_FUND B,
+			       PA_HISTORY C
+			 WHERE A.PA_MONTH = B.OCCUR_MONTH(+)
+			   AND A.PERSON_ID = B.EMPID(+)
+			   AND A.PA_MONTH = C.PA_MONTH(+)
+			   AND A.PERSON_ID = C.PERSON_ID(+)
+			 ORDER BY A.PA_MONTH DESC, A.EMPID
+   ]]>
+   </select>
+   
+      <select id="paHousingFCount" parameterClass="SimpleMap" resultClass="int">
+      <![CDATA[ 
+			SELECT COUNT(*)
+			  FROM (SELECT HR.PERSON_ID,
+			               HR.EMPID,
+			               TO_CHAR(AC.DDATE, 'YYYYMM') AS PA_MONTH,
+			               AC.CPNY_ID
+			          FROM AR_CALENDER AC, HR_EMPLOYEE HR
+			         WHERE AC.CPNY_ID = HR.CPNY_ID
+			           AND AC.IDAY = 1
+			           AND AC.DDATE BETWEEN TO_DATE(#startDate:VARCHAR# , 'YYYYMM') and TO_DATE(#endDate:VARCHAR# , 'YYYYMM')
+			           AND AC.CPNY_ID = #cpny_id:varchar#
+	]]>	
+	<isNotEmpty prepend="AND" property="deptID">
+	<![CDATA[
+		 		EXISTS (
+	      			SELECT DEPTID 
+	                FROM HR_DEPARTMENT 
+	               WHERE HR_DEPARTMENT.DEPTID = HR.DEPTID
+	                START WITH DEPTID = #deptID:VARCHAR#
+	                CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID
+			   ) 
+	    ]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="person_id">
+	 <![CDATA[ 
+			           HR.PERSON_ID = #person_id:VARCHAR#
+	]]>
+	</isNotEmpty>
+	<isEmpty prepend="" property="person_id">
+		<isNotEmpty prepend="AND" property="key">
+		 <![CDATA[ 
+				       HR.EMPID = #key:VARCHAR#
+		]]>
+		</isNotEmpty>
+	</isEmpty>
+	 <![CDATA[ 
+	) A,
+			       PA_HOUSING_FUND B,
+			       PA_HISTORY C
+			 WHERE A.PA_MONTH = B.OCCUR_MONTH(+)
+			   AND A.PERSON_ID = B.EMPID(+)
+			   AND A.PA_MONTH = C.PA_MONTH(+)
+			   AND A.PERSON_ID = C.PERSON_ID(+)
+			 ORDER BY A.PA_MONTH DESC, A.EMPID
+  ]]>
+   </select>
+   
+        <select id="aHouingList" parameterClass="SimpleMap" resultClass="SimpleMap">
+        <![CDATA[	
+        	SELECT EMPID, CHINESENAME, DEPTNAME, ZG, ZC, (ZG - ZC) AS SY
+  			  FROM (SELECT C.EMPID,
+               			   C.CHINESENAME,
+               			   D.DEPTNAME,
+               PA_HOUSING_FUND_ALLPRICE(#month:varchar#,C.PERSON_ID,'1',C.CPNY_ID) ZG,
+               PA_HOUSING_FUND_ALLPRICE(#month:varchar#,C.PERSON_ID,'2',C.CPNY_ID) ZC
+          FROM HR_EMPLOYEE C, HR_DEPARTMENT D
+         WHERE C.DEPTID = D.DEPTID
+           AND C.PERSON_ID = #person_id1:varchar#)
+   ]]>
+   </select>
+   
+   <insert id="inertPaHouing" parameterClass="SimpleMap">
+   <![CDATA[	
+	INSERT INTO pa_housing_fund (SEQ_NO,
+				EMPID,
+				OCCUR_MONTH,
+				OCCUR_AMOUNT,
+				OCCUR_TYPE,
+				DESCRIPTION,
+				CREATE_DATE,
+				CREATED_BY)
+	values
+	(PA_HOUSING_FUND_SEQ.NEXTVAL,
+	#person_id:VARCHAR#,
+	#month:VARCHAR#,
+	#OCCUR_AMOUNT:VARCHAR#,
+	#falg:VARCHAR#,
+	#DESCRIPTION:VARCHAR#,
+	SYSDATE,
+	#ADMINID:VARCHAR#
+	)
+]]>
+   </insert>
+   
+      <update id="updatePaHouing" parameterClass="SimpleMap">
+   <![CDATA[	
+	update pa_housing_fund A SET
+				A.OCCUR_MONTH = #month:VARCHAR#,
+				A.OCCUR_AMOUNT = #OCCUR_AMOUNT:numeric#+OCCUR_AMOUNT,
+				A.DESCRIPTION = #DESCRIPTION:VARCHAR#,
+				A.UPDATE_DATE = SYSDATE,
+				A.UPDATED_BY = #ADMINID:VARCHAR#
+				WHERE a.SEQ_NO = #seqno:NUMBER#
+		
+]]>
+   </update>
+   
+         <delete id="delPaHouing" parameterClass="SimpleMap">
+   <![CDATA[	
+delete pa_housing_fund t where t.seq_no= #seqno:NUMBER#
+		
+]]>
+   </delete>
+   
+
+</sqlMap>

@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+<sqlMap namespace="gm.sealmanagement">
+
+ <select id="allWaitConfirmListNumber" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[			
+   select count(*) as num
+   from (select t.documentno
+      from ga_seal_apply t, hr_employee hr
+      where t.active = '1' 
+      and t.APPLYORID = hr.person_id
+      
+      AND (EXISTS ( SELECT SAD.ADMIN_DEPTID
+		   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+		  WHERE SAD.ADMIN_NO = SA.ADMINNO
+		    AND (SA.ADMINID = #applerId:VARCHAR#)
+		    AND SAD.ADMIN_DEPTID = hr.DEPTID	
+	   ) OR t.applyorid = #applerId:VARCHAR#) 
+              			]]>
+<isNotEmpty prepend="AND" property="deptid">
+			<![CDATA[
+		 		t.APPLYORDEPTID = #deptid:VARCHAR#
+			]]>
+	    </isNotEmpty>
+	<isNotEmpty prepend="AND" property="cpnyId">
+		<![CDATA[		   
+		 hr.CPNY_ID=#cpnyId:VARCHAR#
+		]]>	
+	</isNotEmpty>
+	 <isNotEmpty prepend="AND" property="startDate">
+		<![CDATA[		   
+		 T.usedate >= TO_DATE(#startDate:VARCHAR#,'YYYY-MM-DD')
+		]]>	
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="endDate">
+		<![CDATA[		   
+		 T.usedate <= TO_DATE(#endDate:VARCHAR#,'YYYY-MM-DD')
+		]]>	
+	</isNotEmpty>
+<isNotEmpty prepend="AND" property="key">
+			<![CDATA[
+		 		(hr.empid like '%'||#key:VARCHAR#||'%' or hr.chinesename like '%'||#key:VARCHAR#||'%')
+			]]>
+</isNotEmpty>
+ <isEqual prepend="AND" property="qryType" compareValue="0"> <!-- 未确认过的 -->
+		<![CDATA[
+				 t.ISCONFIRM=0
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 确认通过的 -->
+		<![CDATA[
+				 t.ISCONFIRM =1
+	]]>
+</isEqual>
+<![CDATA[
+   order by t.documentno desc) temp
+	]]>
+		
+</select>
+
+<select id="allWaitConfirmList"  parameterClass="SimpleMap"	 resultClass="SimpleMap">
+		<![CDATA[
+select t.documentno,
+       hr.chinesename,
+       to_char(t.usedate, 'yyyy-mm-dd') usedate,
+       code.code_name,
+       t.SELECTDEPTID as deptname,
+ 	   CASE WHEN t.islend=1
+       THEN '是'  ELSE '否'
+       END ISLEND,
+       ad.deptname as applydeptname,
+       t.useinformation,
+       t.useshares,
+       t.note,
+       t.DRAFT_NO,
+       t.isconfirm,
+       t.CONFIRMIDEA,
+       t.FILENAME,
+       t.FILEPATH,
+       to_char(t.returndate, 'yyyy-mm-dd') RETURNDATE
+  from ga_seal_apply  t,
+       hr_employee    hr,
+       sy_code        code,
+       hr_department  ad
+ where t.active = '1'
+   and t.applyorid = hr.person_id(+)
+   and t.applyordeptid = ad.deptid(+)
+   and t.usesealtype = code.code_id(+)
+   AND (EXISTS ( SELECT SAD.ADMIN_DEPTID
+		   FROM SY_ADMIN_DEPTID SAD, SY_ADMIN SA
+		  WHERE SAD.ADMIN_NO = SA.ADMINNO
+		    AND (SA.ADMINID = #applerId:VARCHAR#)
+		    AND SAD.ADMIN_DEPTID = hr.DEPTID	
+	   ) OR t.applyorid = #applerId:VARCHAR#) 
+   			]]>
+ <isEqual prepend="AND" property="qryType" compareValue="0"> <!-- 未确认过的 -->
+		<![CDATA[
+				 t.ISCONFIRM=0
+	]]>
+	</isEqual>
+	<isEqual prepend="AND" property="qryType" compareValue="1"> <!-- 确认通过的 -->
+		<![CDATA[
+				 t.ISCONFIRM =1
+	]]>
+</isEqual>
+<isNotEmpty prepend="AND" property="deptid">
+			<![CDATA[
+		 		t.APPLYORDEPTID = #deptid:VARCHAR#
+			]]>
+	    </isNotEmpty>
+	<isNotEmpty prepend="AND" property="cpnyId">
+		<![CDATA[		   
+		 ad.CPNY_ID=#cpnyId:VARCHAR#
+		]]>	
+	</isNotEmpty>
+	 <isNotEmpty prepend="AND" property="startDate">
+		<![CDATA[		   
+		 T.usedate >= TO_DATE(#startDate:VARCHAR#,'YYYY-MM-DD')
+		]]>	
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="endDate">
+		<![CDATA[		   
+		 T.usedate <= TO_DATE(#endDate:VARCHAR#,'YYYY-MM-DD')
+		]]>	
+	</isNotEmpty>
+<isNotEmpty prepend="AND" property="key">
+	<![CDATA[
+ 		(hr.empid like '%'||#key:VARCHAR#||'%' or hr.chinesename like '%'||#key:VARCHAR#||'%')
+	]]>
+</isNotEmpty>
+<![CDATA[
+ order by t.documentno desc
+	]]>
+</select>
+
+ <update id="oingConfirm" parameterClass="SimpleMap">
+		<![CDATA[			
+update ga_seal_apply t
+set t.isconfirm='1',t.confirmorid=#applerId:VARCHAR#,t.confirmdate=SYSDATE,t.CONFIRMIDEA=#affirmorIdea:VARCHAR#
+where t.documentno=#applyno:VARCHAR#
+		]]>
+</update>
+
+
+</sqlMap>

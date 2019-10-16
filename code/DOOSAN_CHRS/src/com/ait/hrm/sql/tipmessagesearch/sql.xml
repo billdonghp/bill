@@ -1,0 +1,693 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="hrm.tipmessagesearch">
+	
+	<select id="getHealthTipMessageByConditon"   parameterClass="SimpleMap"  resultClass="SimpleMap">
+	<![CDATA[
+	   select empid,
+	  CHINESENAME,  hr_employee_v.chinese_pinyin,
+    hr_employee_v.englishname,hr_employee_v.koreanname, 
+	  get_dept_name(hr_employee_v.DEPTID) as deptname,
+    hr_department.deptname,hr_department.dept_en_name,hr_department.dept_kor_name,
+	  post ,hr_employee_v.englishpost,hr_employee_v.korpost,
+    position,hr_employee_v.englishposition,hr_employee_v.korposition,
+	  to_char(Physical_Date,'YYYY-MM-DD') Physical_Date,
+	  to_char(ADD_MONTHS(Physical_Date,12),'YYYY-MM-DD') valid_Physical_Date
+	  from hr_employee_v 
+	  inner join HR_HEALTH  on hr_employee_v.empid=HR_HEALTH.Empid 
+	  inner join hr_department  on hr_employee_v.deptid=hr_department.deptid
+	  inner join (select empid ,max(Physical_Date) as max_Physical_Date
+	  from HR_HEALTH group by empid) A1  on  
+	  HR_HEALTH.EMPID=A1.empid and Physical_Date=max_Physical_Date   
+	  where  exists (SELECT deptid FROM HR_DEPARTMENT WHERE
+	     hr_employee_v.DEPTID=HR_DEPARTMENT.DEPTID START WITH
+	     HR_DEPARTMENT.DEPTID =#deptid# CONNECT BY PRIOR
+	     HR_DEPARTMENT.DEPTID = HR_DEPARTMENT.PARENT_DEPT_ID )     
+		]]>          
+	<isNotEmpty prepend="AND" property="sDate">
+			to_date(to_char(ADD_MONTHS(Physical_Date,12),'yyyy-mm-dd'),'yyyy-mm-dd')
+	        >=TO_DATE(#sDate:DATE#,'YYYY-MM-DD') 
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="eDate">
+	     <![CDATA[
+			to_date(to_char(ADD_MONTHS(Physical_Date,12),'yyyy-mm-dd'),'yyyy-mm-dd')
+	        <=TO_DATE(#eDate:DATE#,'YYYY-MM-DD')
+		  ]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="key">
+			(    HR_HEALTH.empid like '%'||#key#||'%'  
+			  or hr_employee_v.CHINESENAME like '%'||#key#||'%' 
+			  OR LOWER(CHINESE_PINYIN) like '%'||LOWER(#key#)||'%' )
+	</isNotEmpty>
+	<![CDATA[
+	   order by Physical_Date
+	]]>
+ </select>
+ 
+ 	<select id="getHealthTipMessageCNT"   parameterClass="SimpleMap"  resultClass="int">
+	<![CDATA[
+	 select count(empid) CNT
+	  from hr_employee_v 
+	  inner join HR_HEALTH  on hr_employee_v.empid=HR_HEALTH.Empid 
+	  inner join (select empid ,max(Physical_Date) as max_Physical_Date
+	  from HR_HEALTH group by empid) A1  on    
+	  HR_HEALTH.EMPID=A1.empid and Physical_Date=max_Physical_Date   
+	  where  exists (SELECT deptid FROM HR_DEPARTMENT WHERE
+	     hr_employee_v.DEPTID=HR_DEPARTMENT.DEPTID START WITH
+	     HR_DEPARTMENT.DEPTID ='Z000000' CONNECT BY PRIOR
+	     HR_DEPARTMENT.DEPTID = HR_DEPARTMENT.PARENT_DEPT_ID )     
+		]]>          
+	<isNotEmpty prepend="AND" property="sDate">
+			to_date(to_char(ADD_MONTHS(Physical_Date,12),'yyyy-mm-dd'),'yyyy-mm-dd')
+	        >=TO_DATE(#sDate:DATE#,'YYYY-MM-DD') 
+	</isNotEmpty>   
+	<isNotEmpty prepend="AND" property="eDate">
+	     <![CDATA[
+			to_date(to_char(ADD_MONTHS(Physical_Date,12),'yyyy-mm-dd'),'yyyy-mm-dd')
+	        <=TO_DATE(#eDate:DATE#,'YYYY-MM-DD')
+		  ]]>
+	</isNotEmpty>
+	<isNotEmpty prepend="AND" property="key">
+			(HR_HEALTH.empid like '%'||#key#||'%'  or hr_employee_v.CHINESENAME like '%'||#key#||'%' OR LOWER(CHINESE_PINYIN) like '%'||LOWER(#key#)||'%' )
+	</isNotEmpty>
+ </select>
+ 
+
+	<select id="getExpiredProbationByCondition" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+		   select 
+		   he.empid,
+		   he.chinesename,he.chinese_pinyin pinyin,he.englishname,he.koreanname,
+		   hd.deptname, hd.dept_en_name,hd.dept_kor_name,
+		   to_char(he.end_probation_date,'YYYY-MM-DD')  end_probation_date,
+		   he.post ,he.englishpost,he.korpost,
+		   he.position ,he.englishposition,he.korposition
+		   from hr_employee_v he inner join hr_department hd on he.deptid=hd.deptid
+		   where not end_probation_date is null 
+		  ]]>       
+		 <isNotEmpty prepend="and" property="deptid" >
+		    exists (SELECT deptid FROM HR_DEPARTMENT WHERE
+		    he.deptid=HR_DEPARTMENT.DEPTID START WITH
+		    HR_DEPARTMENT.DEPTID =#deptid# CONNECT BY PRIOR
+		    HR_DEPARTMENT.DEPTID = HR_DEPARTMENT.PARENT_DEPT_ID )  
+		</isNotEmpty> 
+		<isNotEmpty prepend="AND" property="sDate">
+		  <![CDATA[ 
+		   end_probation_date >=TO_DATE(#sDate:DATE#,'YYYY-MM-DD') 
+		  ]]>
+	    </isNotEmpty>
+	                                                            
+	    <isNotEmpty prepend="AND" property="eDate">
+	 		   <![CDATA[ 
+		    end_probation_date <=TO_DATE(#eDate:DATE#,'YYYY-MM-DD')
+		  ]]>
+	   </isNotEmpty>    
+	   <isNotEmpty prepend="AND" property="key">
+			(he.empid like '%'||#key#||'%'  or he.CHINESENAME like '%'||#key#||'%' OR LOWER(CHINESE_PINYIN) like '%'||LOWER(#key#)||'%')
+	  </isNotEmpty>                  
+		<![CDATA[ 
+		   order by empid	 	               
+		]]>  
+	</select>
+	
+		<select id="getExpiredProbationCNT" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+		   select 
+		   count(he.empid) CNT
+		   from hr_employee_v he inner join hr_department hd on he.deptid=hd.deptid
+		   where not end_probation_date is null 
+		  ]]>       
+		 <isNotEmpty prepend="and" property="deptid" >
+		    exists (SELECT deptid FROM HR_DEPARTMENT WHERE
+		    he.deptid=HR_DEPARTMENT.DEPTID START WITH
+		    HR_DEPARTMENT.DEPTID =#deptid# CONNECT BY PRIOR
+		    HR_DEPARTMENT.DEPTID = HR_DEPARTMENT.PARENT_DEPT_ID )  
+		</isNotEmpty> 
+		<isNotEmpty prepend="AND" property="sDate">
+		  <![CDATA[ 
+		   end_probation_date >=TO_DATE(#sDate:DATE#,'YYYY-MM-DD') 
+		  ]]>
+	    </isNotEmpty>
+	                                                            
+	    <isNotEmpty prepend="AND" property="eDate">
+	 		   <![CDATA[ 
+		    end_probation_date <=TO_DATE(#eDate:DATE#,'YYYY-MM-DD')
+		  ]]>
+	   </isNotEmpty>    
+	   <isNotEmpty prepend="AND" property="key">
+			(he.empid like '%'||#key#||'%'  or he.CHINESENAME like '%'||#key#||'%' OR LOWER(CHINESE_PINYIN) like '%'||LOWER(#key#)||'%')
+	  </isNotEmpty>                  
+	</select>
+	
+	<select id="getUpgradeInfoFieldByCondition" parameterClass="SimpleMap" resultClass="SimpleMap">
+		SELECT 
+		      '任'||hei.DEPTNAME||'部门'||hei.POST||'职务,'||hei.POSITION||'职位,'||TO_CHAR(hei.START_DATE,'YY')||'年'||TO_CHAR(hei.START_DATE,'MM')||'月'||TO_CHAR(hei.START_DATE,'DD')||'日'||'生效'  content,
+		      he.empid,
+              he.CHINESENAME name,he.englishname enName,he.koreanname korName,
+              he.chinese_pinyin pinyin,
+		      hei.DEPTNAME dept, he.department, he.enDept,he.korDept,
+		      hei.POST post,he.post po,he.englishpost enPost,he.korpost,
+		      hei.POSITION position ,he.POSITION posi,he.englishposition enPosition, 
+          he.korposition,
+		      hei.TRANS_NO  transNo
+		      FROM HR_EXPERIENCE_INSIDE hei inner join HR_EMPLOYEE_V he 
+              on  he.empid=hei.empid 
+		      WHERE  exists (SELECT deptid FROM HR_DEPARTMENT WHERE
+		      he.deptid=HR_DEPARTMENT.DEPTID START WITH
+		      HR_DEPARTMENT.DEPTID =#deptid# CONNECT BY PRIOR
+		      HR_DEPARTMENT.DEPTID = HR_DEPARTMENT.PARENT_DEPT_ID )  
+		      <isNotEmpty prepend="AND" property="sDate">
+		      <![CDATA[ 
+		      START_DATE>=TO_DATE(#sDate:DATE#,'YYYY-MM-DD') 
+		      ]]> 
+	         </isNotEmpty> 
+	         <isNotEmpty prepend="AND" property="eDate">
+		      <![CDATA[ 
+		      START_DATE <=TO_DATE(#eDate:DATE#,'YYYY-MM-DD') 
+		      ]]>
+	         </isNotEmpty>             
+	          <isNotEmpty prepend="AND" property="key">
+			   (he.empid like '%'||#key#||'%'  or he.CHINESENAME like '%'||#key#||'%' OR LOWER(CHINESE_PINYIN) like '%'||LOWER(#key#)||'%' )
+	          </isNotEmpty> 
+	           <isNotEmpty prepend="AND" property="empSort">
+			   he.JOIN_TYPE_CODE=#empSort#
+	          </isNotEmpty>   
+	          <![CDATA[ 
+		      AND HEI.TRANS_CODE <> 'TransCode1_100' 
+		      
+		       ]]> 
+		
+		   Union All    
+        SELECT 
+		      '职员录用'  content,
+              he.empid,
+		      he.CHINESENAME name,he.englishname enName,he.koreanname korName,
+              he.chinese_pinyin pinyin,
+		      hei.DEPTNAME dept,he.department, he.enDept,he.korDept,
+		      hei.POST post,he.post po,he.englishpost enPost,he.korpost,
+		      hei.POSITION position   ,he.POSITION posi,he.englishposition enPosition, 
+          he.korposition,
+		      hei.TRANS_NO  transNo
+		     FROM HR_EXPERIENCE_INSIDE hei inner join HR_EMPLOYEE_V  he  
+             on hei.empid=he.empid
+		      WHERE  exists (SELECT deptid FROM HR_DEPARTMENT WHERE
+		      he.deptid=HR_DEPARTMENT.DEPTID START WITH
+		      HR_DEPARTMENT.DEPTID =#deptid# CONNECT BY PRIOR
+		      HR_DEPARTMENT.DEPTID = HR_DEPARTMENT.PARENT_DEPT_ID )  
+		      <isNotEmpty prepend="AND" property="sDate">
+		      <![CDATA[ 
+		      START_DATE>=TO_DATE(#sDate:DATE#,'YYYY-MM-DD') 
+		      ]]>
+	         </isNotEmpty> 
+	         <isNotEmpty prepend="AND" property="eDate">
+		      <![CDATA[ 
+		     START_DATE<=TO_DATE(#eDate:DATE#,'YYYY-MM-DD') 
+		      ]]>
+	         </isNotEmpty> 
+	         <isNotEmpty prepend="AND" property="key">
+			(he.empid like '%'||#key#||'%'  or he.CHINESENAME like '%'||#key#||'%' OR LOWER(CHINESE_PINYIN) like '%'||LOWER(#key#)||'%' )
+	         </isNotEmpty>  
+	          <isNotEmpty prepend="AND" property="empSort">
+			   he.JOIN_TYPE_CODE=#empSort#
+	          </isNotEmpty>           
+		      AND HEI.TRANS_CODE = 'TransCode1_100' 
+		    Union All      
+          SELECT 
+		      TO_CHAR(TO_DATE(hei.START_DATE,'YYYY-MM-DD'),'YY')||'年'||
+		       TO_CHAR(TO_DATE(hei.START_DATE,'YYYY-MM-DD'),'MM')||'月'|| 
+		       TO_CHAR(TO_DATE(hei.START_DATE,'YYYY-MM-DD'),'DD')||'日'||'至'||
+		       TO_CHAR(TO_DATE(hei.end_date,'YYYY-MM-DD'),'YY')||'年'||
+		       TO_CHAR(TO_DATE(hei.end_date,'YYYY-MM-DD'),'MM')||'月'||
+		       TO_CHAR(TO_DATE(hei.end_date,'YYYY-MM-DD'),'DD')||'日,'||'因'||hei.suspend_reason||'休职'  content,
+		       he.empid,
+              he.CHINESENAME name,he.englishname enName,he.koreanname korName,
+              he.chinese_pinyin pinyin,
+		      he.DEPARTMENT dept,he.department, he.enDept,he.korDept,
+		      he.POST post,he.post po,he.englishpost enPost,he.korpost,
+		      he.POSITION position  ,he.POSITION posi,he.englishposition enPosition, 
+          he.korposition,
+		      hei.TRANS_NO   transNo 
+		      FROM HR_SUSPENSION_v hei inner join HR_EMPLOYEE_V  he  
+              on  hei.empid=he.empid
+		      WHERE  exists (SELECT deptid FROM HR_DEPARTMENT WHERE
+		      he.deptid=HR_DEPARTMENT.DEPTID START WITH
+		      HR_DEPARTMENT.DEPTID =#deptid# CONNECT BY PRIOR
+		      HR_DEPARTMENT.DEPTID = HR_DEPARTMENT.PARENT_DEPT_ID )  
+		      <isNotEmpty prepend="AND" property="sDate">
+		      <![CDATA[   
+		      hei.start_date>=TO_CHAR(TO_DATE(#sDate:DATE#,'YYYY-MM-DD'),'YYYY-MM-DD')
+		      ]]>        
+	         </isNotEmpty> 
+	         <isNotEmpty prepend="AND" property="eDate">
+		      <![CDATA[ 
+		      hei.start_date<=TO_CHAR(TO_DATE(#eDate:DATE#,'YYYY-MM-DD'),'YY-MM-DD') 
+		      ]]>
+	         </isNotEmpty>  
+	          <isNotEmpty prepend="AND" property="key">
+			   (he.empid like '%'||#key#||'%'  or he.CHINESENAME like '%'||#key#||'%' OR LOWER(CHINESE_PINYIN) like '%'||LOWER(#key#)||'%' )
+	           </isNotEmpty> 
+	           <isNotEmpty prepend="AND" property="empSort">
+			   he.JOIN_TYPE_CODE=#empSort#
+	          </isNotEmpty>        
+		 Union All  
+         SELECT                                     
+		      TO_CHAR(hei.start_date,'YY')||'年'||TO_CHAR(hei.start_date,'MM')||'月'||TO_CHAR(hei.start_date,'DD')||'日'||'至'||TO_CHAR(hei.end_date,'YY')||'年'||TO_CHAR(hei.end_date,'MM')||'月'||TO_CHAR(hei.end_date,'DD')||'日'||',兼任'||hei.plu_contents content,
+		      he.empid,
+              he.CHINESENAME name,he.englishname enName,he.koreanname korName,
+              he.chinese_pinyin pinyin,
+		      he.DEPARTMENT dept,he.department, he.enDept,he.korDept,
+		      he.POST post,       he.post po,he.englishpost enPost,he.korpost,
+		      he.POSITION position    ,he.POSITION posi,he.englishposition enPosition, 
+          he.korposition,
+		      hei.TRANS_NO    transNo  
+		      FROM hr_plurality hei inner join HR_EMPLOYEE_V  he  
+              on  he.empid=hei.empid 
+		      WHERE  exists (SELECT deptid FROM HR_DEPARTMENT WHERE
+		       he.deptid=HR_DEPARTMENT.DEPTID START WITH
+		       HR_DEPARTMENT.DEPTID =#deptid# CONNECT BY PRIOR
+		       HR_DEPARTMENT.DEPTID = HR_DEPARTMENT.PARENT_DEPT_ID )  
+		      <isNotEmpty prepend="AND" property="sDate">
+		      <![CDATA[ 
+		       hei.start_date>=TO_DATE(#sDate:DATE#,'YYYY-MM-DD')
+		      ]]>
+	         </isNotEmpty> 
+	         <isNotEmpty prepend="AND" property="eDate">
+		      <![CDATA[ 
+		      hei.start_date<=TO_DATE(#eDate:DATE#,'YYYY-MM-DD')
+		      ]]>
+	         </isNotEmpty>
+	           <isNotEmpty prepend="AND" property="key">
+			   (he.empid like '%'||#key#||'%'  or he.CHINESENAME like '%'||#key#||'%' OR LOWER(CHINESE_PINYIN) like '%'||LOWER(#key#)||'%' )
+	           </isNotEmpty>
+            <isNotEmpty prepend="AND" property="empSort">
+			   he.JOIN_TYPE_CODE=#empSort#
+	          </isNotEmpty>  
+		 Union All   
+         SELECT 
+		      TO_CHAR(hei.start_date,'YY')||'年'||TO_CHAR(hei.start_date,'MM')||'月'||TO_CHAR(hei.start_date,'DD')||'日'||'至'||TO_CHAR(hei.end_date,'YY')||'年'||TO_CHAR(hei.end_date,'MM')||'月'||TO_CHAR(hei.end_date,'DD')||'日'|| hei.Contents content,
+		       he.empid,
+               he.CHINESENAME name,he.englishname enName,he.koreanname korName,
+              he.chinese_pinyin pinyin,
+		      he.DEPARTMENT dept,he.department, he.enDept,he.korDept,
+		      he.POST post,      he.post po,he.englishpost enPost,he.korpost,
+		      he.POSITION position     ,he.POSITION posi,he.englishposition enPosition, 
+          he.korposition,
+		      hei.TRANS_NO  transNo  
+		     FROM hr_dispatch hei inner join HR_EMPLOYEE_V  he  
+             on he.empid=hei.empid 
+		      WHERE exists (SELECT deptid FROM HR_DEPARTMENT WHERE
+		     he.deptid=HR_DEPARTMENT.DEPTID START WITH
+		     HR_DEPARTMENT.DEPTID =#deptid# CONNECT BY PRIOR
+		     HR_DEPARTMENT.DEPTID = HR_DEPARTMENT.PARENT_DEPT_ID )  
+		       <isNotEmpty prepend="AND" property="sDate">
+		      <![CDATA[ 
+		       hei.start_date >=TO_DATE(#sDate:DATE#,'YYYY-MM-DD')
+		      ]]>
+	         </isNotEmpty> 
+	         <isNotEmpty prepend="AND" property="eDate">    
+		      <![CDATA[ 
+		      hei.start_date<=TO_DATE(#eDate:DATE#,'YYYY-MM-DD')
+		      ]]>
+	         </isNotEmpty>
+	          <isNotEmpty prepend="AND" property="key">
+			   (he.empid like '%'||#key#||'%'  or he.CHINESENAME like '%'||#key#||'%' OR LOWER(CHINESE_PINYIN) like '%'||LOWER(#key#)||'%' )
+	           </isNotEmpty> 
+	           <isNotEmpty prepend="AND" property="empSort">
+			   he.JOIN_TYPE_CODE=#empSort#
+	          </isNotEmpty>     
+		  Union All 
+           SELECT 
+		      TO_CHAR(hei.resign_date,'YY')||'年'||TO_CHAR(hei.resign_date,'MM')||'月'||TO_CHAR(hei.resign_date,'DD')||'日'|| ',因'||hei.resign_desc||'原因离职' content,
+		       he.empid,
+              he.CHINESENAME name,he.englishname enName,he.koreanname korName,
+              he.chinese_pinyin pinyin,
+		      he.DEPARTMENT dept,he.department, he.enDept,he.korDept,
+		      he.POST post, he.post po,he.englishpost enPost,he.korpost,
+		      he.POSITION position     ,he.POSITION posi,he.englishposition enPosition, 
+          he.korposition,
+		      hei.TRANS_NO    transNo  
+		     FROM hr_resignation hei inner join HR_EMPLOYEE_V  he  
+             on hei.empid=he.empid
+		      WHERE   exists (SELECT deptid FROM HR_DEPARTMENT WHERE
+		     he.deptid=HR_DEPARTMENT.DEPTID START WITH
+		     HR_DEPARTMENT.DEPTID =#deptid# CONNECT BY PRIOR
+		     HR_DEPARTMENT.DEPTID = HR_DEPARTMENT.PARENT_DEPT_ID ) 
+		        <isNotEmpty prepend="AND" property="sDate">
+		      <![CDATA[ 
+		       hei.resign_date>=TO_DATE(#sDate:DATE#,'YYYY-MM-DD')
+		      ]]>
+	         </isNotEmpty> 
+	         <isNotEmpty prepend="AND" property="eDate">
+		      <![CDATA[ 
+		     hei.resign_date<=TO_DATE(#eDate:DATE#,'YYYY-MM-DD')
+		      ]]>
+	         </isNotEmpty> 
+	           <isNotEmpty prepend="AND" property="key">
+			   (he.empid like '%'||#key#||'%'  or he.CHINESENAME like '%'||#key#||'%' OR LOWER(CHINESE_PINYIN) like '%'||LOWER(#key#)||'%' )
+	          </isNotEmpty> 
+	           <isNotEmpty prepend="AND" property="empSort">
+			   he.JOIN_TYPE_CODE=#empSort#
+	          </isNotEmpty>          
+		  Union All 
+           SELECT 
+		      TO_CHAR(hei.startdate,'YY')||'年'||TO_CHAR(hei.startdate,'MM')||'月'||TO_CHAR(hei.startdate,'DD')||'日'|| '至'||TO_CHAR(hei.enddate,'YY')||'年'||TO_CHAR(hei.enddate,'MM')||'月'||TO_CHAR(hei.enddate,'DD')||'日'||'期间，进行'||hei.studyname content,
+		       he.empid,
+              he.CHINESENAME name,he.englishname enName,he.koreanname korName,
+              he.chinese_pinyin pinyin,
+		      he.DEPARTMENT dept,he.department, he.enDept,he.korDept,
+		      he.POST post,he.post po,he.englishpost enPost,he.korpost,
+		      he.POSITION position      ,he.POSITION posi,he.englishposition enPosition, 
+          he.korposition,
+		      hei.TRANS_ID    transNo  
+		     FROM hr_studying_v hei inner join HR_EMPLOYEE_V  he  
+              on hei.empid=he.empid
+		      WHERE  exists (SELECT deptid FROM HR_DEPARTMENT WHERE
+		     he.deptid=HR_DEPARTMENT.DEPTID START WITH
+		     HR_DEPARTMENT.DEPTID =#deptid# CONNECT BY PRIOR
+		     HR_DEPARTMENT.DEPTID = HR_DEPARTMENT.PARENT_DEPT_ID )  
+		       <isNotEmpty prepend="AND" property="sDate">
+		      <![CDATA[ 
+		        hei.startdate >=TO_DATE(#sDate:DATE#,'YYYY-MM-DD')
+		      ]]>
+	         </isNotEmpty> 
+	         <isNotEmpty prepend="AND" property="eDate">
+		      <![CDATA[ 
+		      hei.startdate <=TO_DATE(#eDate:DATE#,'YYYY-MM-DD')
+		      ]]>
+	         </isNotEmpty>                     
+		       <isNotEmpty prepend="AND" property="key">
+			 (he.empid like '%'||#key#||'%'  or he.CHINESENAME like '%'||#key#||'%' OR LOWER(CHINESE_PINYIN) like '%'||LOWER(#key#)||'%' )
+	         </isNotEmpty> 
+	          <isNotEmpty prepend="AND" property="empSort">
+			   he.JOIN_TYPE_CODE=#empSort#
+	          </isNotEmpty>      
+		 Union All
+           SELECT 
+		      TO_CHAR(hei.punishmentdate,'YY')||'年'||TO_CHAR(hei.punishmentdate,'MM')||'月'||TO_CHAR(hei.punishmentdate,'DD')||'日'||','||'因'||hei.punishmentcontents||','||'受到'||hei.punishmenttypename||'惩戒'  content,
+		       he.empid,
+              he.CHINESENAME name,he.englishname enName,he.koreanname korName,
+              he.chinese_pinyin pinyin,
+		      he.DEPARTMENT dept,he.department, he.enDept,he.korDept,
+		      he.POST post,he.post po,he.englishpost enPost,he.korpost,
+		      he.POSITION position      ,he.POSITION posi,he.englishposition enPosition, 
+          he.korposition,
+		      hei.TRANS_ID    transNo   
+		      FROM HR_PUNISHMENT_v hei inner join HR_EMPLOYEE_V  he  
+              on hei.empid=he.empid
+		      WHERE   exists (SELECT deptid FROM HR_DEPARTMENT WHERE
+		     he.deptid=HR_DEPARTMENT.DEPTID START WITH
+		     HR_DEPARTMENT.DEPTID =#deptid# CONNECT BY PRIOR
+		     HR_DEPARTMENT.DEPTID = HR_DEPARTMENT.PARENT_DEPT_ID )
+		       <isNotEmpty prepend="AND" property="sDate">
+		      <![CDATA[ 
+		        punishmentdate>=TO_DATE(#sDate:DATE#,'YYYY-MM-DD')
+		      ]]>
+	         </isNotEmpty> 
+	         <isNotEmpty prepend="AND" property="eDate">
+		      <![CDATA[         
+		     punishmentdate<=TO_DATE(#eDate:DATE#,'YYYY-MM-DD')
+		      ]]>
+	         </isNotEmpty> 
+	          <isNotEmpty prepend="AND" property="key">
+			   (he.empid like '%'||#key#||'%'  or he.CHINESENAME like '%'||#key#||'%' OR LOWER(CHINESE_PINYIN) like '%'||LOWER(#key#)||'%' )
+	         </isNotEmpty>
+	          <isNotEmpty prepend="AND" property="empSort">
+			   he.JOIN_TYPE_CODE=#empSort#
+	          </isNotEmpty>         
+		      UNION ALL
+		     SELECT 
+		      TO_CHAR(TO_DATE(hei.reward_date,'YYYY-MM-DD'),'YY')||'年'
+             ||TO_CHAR(TO_DATE(hei.reward_date,'YYYY-MM-DD'),'MM')||'月'
+             ||TO_CHAR(TO_DATE(hei.reward_date,'YYYY-MM-DD'),'DD')||'日'|| ',因'||
+             hei.reward_contents||',被授予'||hei.reward_type content,
+		       he.empid,
+               he.CHINESENAME name,he.englishname enName,he.koreanname korName,
+              he.chinese_pinyin pinyin,
+		      he.DEPARTMENT dept,he.department, he.enDept,he.korDept,
+		      he.POST post,he.post po,he.englishpost enPost,he.korpost,
+		      he.POSITION position    ,he.POSITION posi,he.englishposition enPosition, 
+          he.korposition,
+		      hei.TRANS_NO    transNo  
+		     FROM hr_reward_v hei inner join HR_EMPLOYEE_V  he 
+             on hei.empid=he.empid 
+		      WHERE exists (SELECT deptid FROM HR_DEPARTMENT WHERE
+		     he.deptid=HR_DEPARTMENT.DEPTID START WITH
+		     HR_DEPARTMENT.DEPTID =#deptid# CONNECT BY PRIOR    
+		     HR_DEPARTMENT.DEPTID = HR_DEPARTMENT.PARENT_DEPT_ID )  
+		      <isNotEmpty prepend="AND" property="sDate">
+		      <![CDATA[ 
+		         hei.reward_date>=TO_CHAR(TO_DATE(#sDate:DATE#,'YYYY-MM-DD'),'YYYY-MM-DD') 
+		      ]]>
+	         </isNotEmpty>                    
+	         <isNotEmpty prepend="AND" property="eDate">
+		      <![CDATA[ 
+		      hei.reward_date<=TO_CHAR(TO_DATE(#eDate:DATE#,'YYYY-MM-DD'),'YYYY-MM-DD')  
+		      ]]>
+	         </isNotEmpty>             
+	          <isNotEmpty prepend="AND" property="key">
+			(he.empid like '%'||#key#||'%'  or he.CHINESENAME like '%'||#key#||'%')
+	         </isNotEmpty>
+	          <isNotEmpty prepend="AND" property="empSort">
+			   he.JOIN_TYPE_CODE=#empSort#
+	          </isNotEmpty>        
+	</select>  
+	  
+	
+	<select id="getUpgradeInfoFieldCNT" parameterClass="SimpleMap" resultClass="int">
+		SELECT COUNT(*) FROM (
+		   SELECT    
+		      he.empid
+		      FROM HR_EXPERIENCE_INSIDE hei inner join HR_EMPLOYEE_V he 
+              on  he.empid=hei.empid 
+		      WHERE  exists (SELECT deptid FROM HR_DEPARTMENT WHERE
+		      he.deptid=HR_DEPARTMENT.DEPTID START WITH
+		      HR_DEPARTMENT.DEPTID ='Z000000' CONNECT BY PRIOR
+		      HR_DEPARTMENT.DEPTID = HR_DEPARTMENT.PARENT_DEPT_ID )  
+		      <isNotEmpty prepend="AND" property="sDate">
+		      <![CDATA[ 
+		      START_DATE>=TO_DATE(#sDate:DATE#,'YYYY-MM-DD') 
+		      ]]> 
+	         </isNotEmpty> 
+	         <isNotEmpty prepend="AND" property="eDate">
+		      <![CDATA[ 
+		      START_DATE <=TO_DATE(#eDate:DATE#,'YYYY-MM-DD') 
+		      ]]>
+	         </isNotEmpty> 
+	          <isNotEmpty prepend="AND" property="key">
+			   (he.empid like '%'||#key#||'%'  or he.CHINESENAME like '%'||#key#||'%' OR LOWER(CHINESE_PINYIN) like '%'||LOWER(#key#)||'%' )
+	          </isNotEmpty> 
+	           <isNotEmpty prepend="AND" property="empSort">
+			   he.JOIN_TYPE_CODE=#empSort#
+	          </isNotEmpty>   
+	          <![CDATA[ 
+		      AND HEI.TRANS_CODE <> 'TransCode1_100' 
+		      
+		       ]]> 
+		
+		   Union All        
+        SELECT 
+              he.empid
+		     FROM HR_EXPERIENCE_INSIDE hei inner join HR_EMPLOYEE_V  he  
+             on hei.empid=he.empid
+		      WHERE  exists (SELECT deptid FROM HR_DEPARTMENT WHERE
+		      he.deptid=HR_DEPARTMENT.DEPTID START WITH
+		      HR_DEPARTMENT.DEPTID =#deptid# CONNECT BY PRIOR
+		      HR_DEPARTMENT.DEPTID = HR_DEPARTMENT.PARENT_DEPT_ID )  
+		      <isNotEmpty prepend="AND" property="sDate">
+		      <![CDATA[ 
+		      START_DATE>=TO_DATE(#sDate:DATE#,'YYYY-MM-DD') 
+		      ]]>
+	         </isNotEmpty> 
+	         <isNotEmpty prepend="AND" property="eDate">
+		      <![CDATA[ 
+		     START_DATE<=TO_DATE(#eDate:DATE#,'YYYY-MM-DD') 
+		      ]]>
+	         </isNotEmpty> 
+	         <isNotEmpty prepend="AND" property="key">
+			(he.empid like '%'||#key#||'%'  or he.CHINESENAME like '%'||#key#||'%' OR LOWER(CHINESE_PINYIN) like '%'||LOWER(#key#)||'%' )
+	         </isNotEmpty>  
+	          <isNotEmpty prepend="AND" property="empSort">
+			   he.JOIN_TYPE_CODE=#empSort#
+	          </isNotEmpty>      
+		      AND HEI.TRANS_CODE = 'TransCode1_100' 
+		    Union All      
+        SELECT 
+		       he.empid
+		      FROM HR_SUSPENSION_v hei inner join HR_EMPLOYEE_V  he  
+              on  hei.empid=he.empid
+		      WHERE  exists (SELECT deptid FROM HR_DEPARTMENT WHERE
+		      he.deptid=HR_DEPARTMENT.DEPTID START WITH
+		      HR_DEPARTMENT.DEPTID =#deptid# CONNECT BY PRIOR
+		      HR_DEPARTMENT.DEPTID = HR_DEPARTMENT.PARENT_DEPT_ID )  
+		      <isNotEmpty prepend="AND" property="sDate">
+		      <![CDATA[   
+		      hei.start_date>=TO_CHAR(TO_DATE(#sDate:DATE#,'YYYY-MM-DD'),'YY-MM-DD') 
+		      ]]>        
+	         </isNotEmpty> 
+	         <isNotEmpty prepend="AND" property="eDate">
+		      <![CDATA[ 
+		      hei.start_date<=TO_CHAR(TO_DATE(#eDate:DATE#,'YYYY-MM-DD'),'YY-MM-DD') 
+		      ]]>
+	         </isNotEmpty>  
+	          <isNotEmpty prepend="AND" property="key">
+			   (he.empid like '%'||#key#||'%'  or he.CHINESENAME like '%'||#key#||'%' OR LOWER(CHINESE_PINYIN) like '%'||LOWER(#key#)||'%' )
+	           </isNotEmpty> 
+	           <isNotEmpty prepend="AND" property="empSort">
+			   he.JOIN_TYPE_CODE=#empSort#
+	          </isNotEmpty>        
+		 Union All  
+         SELECT                                     
+		      he.empid
+		      FROM hr_plurality hei inner join HR_EMPLOYEE_V  he  
+              on  he.empid=hei.empid 
+		      WHERE  exists (SELECT deptid FROM HR_DEPARTMENT WHERE
+		       he.deptid=HR_DEPARTMENT.DEPTID START WITH
+		       HR_DEPARTMENT.DEPTID =#deptid# CONNECT BY PRIOR
+		       HR_DEPARTMENT.DEPTID = HR_DEPARTMENT.PARENT_DEPT_ID )  
+		      <isNotEmpty prepend="AND" property="sDate">
+		      <![CDATA[ 
+		       hei.start_date>=TO_DATE(#sDate:DATE#,'YYYY-MM-DD')
+		      ]]>
+	         </isNotEmpty> 
+	         <isNotEmpty prepend="AND" property="eDate">
+		      <![CDATA[ 
+		      hei.start_date<=TO_DATE(#eDate:DATE#,'YYYY-MM-DD')
+		      ]]>
+	         </isNotEmpty>
+	           <isNotEmpty prepend="AND" property="key">
+			   (he.empid like '%'||#key#||'%'  or he.CHINESENAME like '%'||#key#||'%' OR LOWER(CHINESE_PINYIN) like '%'||LOWER(#key#)||'%' )
+	           </isNotEmpty>
+            <isNotEmpty prepend="AND" property="empSort">
+			   he.JOIN_TYPE_CODE=#empSort#
+	          </isNotEmpty>     
+		 Union All   
+         SELECT 
+		       he.empid
+		     FROM hr_dispatch hei inner join HR_EMPLOYEE_V  he  
+             on he.empid=hei.empid 
+		      WHERE exists (SELECT deptid FROM HR_DEPARTMENT WHERE
+		     he.deptid=HR_DEPARTMENT.DEPTID START WITH
+		     HR_DEPARTMENT.DEPTID =#deptid# CONNECT BY PRIOR
+		     HR_DEPARTMENT.DEPTID = HR_DEPARTMENT.PARENT_DEPT_ID )  
+		      <isNotEmpty prepend="AND" property="sDate">
+		      <![CDATA[ 
+		       hei.start_date >=TO_DATE(#sDate:DATE#,'YYYY-MM-DD')
+		      ]]>
+	         </isNotEmpty> 
+	         <isNotEmpty prepend="AND" property="eDate">    
+		      <![CDATA[ 
+		      hei.start_date<=TO_DATE(#eDate:DATE#,'YYYY-MM-DD')
+		      ]]>
+	         </isNotEmpty>
+	          <isNotEmpty prepend="AND" property="key">
+			   (he.empid like '%'||#key#||'%'  or he.CHINESENAME like '%'||#key#||'%' OR LOWER(CHINESE_PINYIN) like '%'||LOWER(#key#)||'%' )
+	           </isNotEmpty> 
+	           <isNotEmpty prepend="AND" property="empSort">
+			   he.JOIN_TYPE_CODE=#empSort#
+	          </isNotEmpty>     
+		  Union All 
+           SELECT 
+		       he.empid
+		     FROM hr_resignation hei inner join HR_EMPLOYEE_V  he  
+             on hei.empid=he.empid
+		      WHERE   exists (SELECT deptid FROM HR_DEPARTMENT WHERE
+		     he.deptid=HR_DEPARTMENT.DEPTID START WITH
+		     HR_DEPARTMENT.DEPTID =#deptid# CONNECT BY PRIOR
+		     HR_DEPARTMENT.DEPTID = HR_DEPARTMENT.PARENT_DEPT_ID ) 
+		       <isNotEmpty prepend="AND" property="sDate">
+		      <![CDATA[ 
+		       hei.resign_date>=TO_DATE(#sDate:DATE#,'YYYY-MM-DD')
+		      ]]>
+	         </isNotEmpty> 
+	         <isNotEmpty prepend="AND" property="eDate">
+		      <![CDATA[ 
+		     hei.resign_date<=TO_DATE(#eDate:DATE#,'YYYY-MM-DD')
+		      ]]>
+	         </isNotEmpty> 
+	           <isNotEmpty prepend="AND" property="key">
+			   (he.empid like '%'||#key#||'%'  or he.CHINESENAME like '%'||#key#||'%' OR LOWER(CHINESE_PINYIN) like '%'||LOWER(#key#)||'%' )
+	          </isNotEmpty> 
+	           <isNotEmpty prepend="AND" property="empSort">
+			   he.JOIN_TYPE_CODE=#empSort#
+	          </isNotEmpty>        
+		  Union All 
+           SELECT 
+		       he.empid
+		     FROM hr_studying_v hei inner join HR_EMPLOYEE_V  he  
+              on hei.empid=he.empid
+		      WHERE  exists (SELECT deptid FROM HR_DEPARTMENT WHERE
+		     he.deptid=HR_DEPARTMENT.DEPTID START WITH
+		     HR_DEPARTMENT.DEPTID =#deptid# CONNECT BY PRIOR
+		     HR_DEPARTMENT.DEPTID = HR_DEPARTMENT.PARENT_DEPT_ID )  
+		      <isNotEmpty prepend="AND" property="sDate">
+		      <![CDATA[ 
+		        hei.startdate >=TO_DATE(#sDate:DATE#,'YYYY-MM-DD')
+		      ]]>
+	         </isNotEmpty> 
+	         <isNotEmpty prepend="AND" property="eDate">
+		      <![CDATA[ 
+		      hei.startdate <=TO_DATE(#eDate:DATE#,'YYYY-MM-DD')
+		      ]]>
+	         </isNotEmpty>                     
+		       <isNotEmpty prepend="AND" property="key">
+			 (he.empid like '%'||#key#||'%'  or he.CHINESENAME like '%'||#key#||'%' OR LOWER(CHINESE_PINYIN) like '%'||LOWER(#key#)||'%' )
+	         </isNotEmpty> 
+	          <isNotEmpty prepend="AND" property="empSort">
+			   he.JOIN_TYPE_CODE=#empSort#
+	          </isNotEmpty>     
+		 Union All
+         SELECT 
+		       he.empid
+		      FROM HR_PUNISHMENT_v hei inner join HR_EMPLOYEE_V  he  
+              on hei.empid=he.empid
+		      WHERE   exists (SELECT deptid FROM HR_DEPARTMENT WHERE
+		     he.deptid=HR_DEPARTMENT.DEPTID START WITH
+		     HR_DEPARTMENT.DEPTID =#deptid# CONNECT BY PRIOR
+		     HR_DEPARTMENT.DEPTID = HR_DEPARTMENT.PARENT_DEPT_ID )
+		      <isNotEmpty prepend="AND" property="sDate">
+		      <![CDATA[ 
+		        punishmentdate>=TO_DATE(#sDate:DATE#,'YYYY-MM-DD')
+		      ]]>
+	         </isNotEmpty> 
+	         <isNotEmpty prepend="AND" property="eDate">
+		      <![CDATA[ 
+		     punishmentdate<=TO_DATE(#eDate:DATE#,'YYYY-MM-DD')
+		      ]]>
+	         </isNotEmpty> 
+	          <isNotEmpty prepend="AND" property="key">
+			   (he.empid like '%'||#key#||'%'  or he.CHINESENAME like '%'||#key#||'%' OR LOWER(CHINESE_PINYIN) like '%'||LOWER(#key#)||'%' )
+	         </isNotEmpty>
+	          <isNotEmpty prepend="AND" property="empSort">
+			   he.JOIN_TYPE_CODE=#empSort#
+	          </isNotEmpty>      
+		      UNION ALL   
+		    SELECT 
+		       he.empid
+		     FROM hr_reward_v hei inner join HR_EMPLOYEE_V  he 
+             on hei.empid=he.empid 
+		      WHERE exists (SELECT deptid FROM HR_DEPARTMENT WHERE
+		     he.deptid=HR_DEPARTMENT.DEPTID START WITH
+		     HR_DEPARTMENT.DEPTID =#deptid# CONNECT BY PRIOR    
+		     HR_DEPARTMENT.DEPTID = HR_DEPARTMENT.PARENT_DEPT_ID )  
+		      <isNotEmpty prepend="AND" property="sDate">
+		      <![CDATA[ 
+		         hei.reward_date>=TO_CHAR(TO_DATE(#sDate:DATE#,'YYYY-MM-DD'),'YYYY-MM-DD') 
+		      ]]>
+	         </isNotEmpty>                    
+	         <isNotEmpty prepend="AND" property="eDate">
+		      <![CDATA[ 
+		      hei.reward_date<=TO_CHAR(TO_DATE(#eDate:DATE#,'YYYY-MM-DD'),'YYYY-MM-DD')  
+		      ]]>
+	         </isNotEmpty>             
+	          <isNotEmpty prepend="AND" property="key">
+			(he.empid like '%'||#key#||'%'  or he.CHINESENAME like '%'||#key#||'%')
+	         </isNotEmpty>
+	          <isNotEmpty prepend="AND" property="empSort">
+			   he.JOIN_TYPE_CODE=#empSort#
+	          </isNotEmpty>                      
+	          <![CDATA[ 
+		        )
+		      ]]>  
+	</select>         
+</sqlMap>

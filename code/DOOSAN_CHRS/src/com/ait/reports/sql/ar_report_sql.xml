@@ -1,0 +1,4161 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="report.ar">
+
+	<!--
+	comment : DIY职级分类
+	-->
+	<sql id="DIY_POST_GRADE_SQL">
+	<![CDATA[
+	   (CASE substr(POST_CODE, 9, 13)
+                   WHEN '1362217' THEN
+                    'INTERN'
+                    ELSE
+                 (CASE substr(POST_GRADE_CODE, 9, 13)
+                   WHEN '1352187' THEN
+                    'WORKER'
+                   WHEN '1366188' THEN
+                    'WORKER'
+                   WHEN '1366189' THEN
+                    'WORKER'
+                   WHEN '1366190' THEN
+                    'WORKER'
+                   WHEN '1366191' THEN
+                    'WORKER'
+                   WHEN '1366192' THEN
+                    'WORKER'
+                    WHEN '2882002' THEN
+                    'WORKER'
+                    WHEN '2882001' THEN
+                    'WORKER'
+                    WHEN '2882000' THEN
+                    'WORKER'
+                    WHEN '2881999' THEN
+                    'WORKER'
+                   WHEN '1366187' THEN
+                    'WORKER'
+                   WHEN '1362217' THEN
+                    'INTERN'
+                   ELSE
+                    'OFFICER'
+                 END)
+                END )
+	]]>
+	</sql>
+	
+	<!--
+	comment : 其他公司职级分类
+	-->
+	<sql id="OTHER_POST_GRADE_SQL">
+	<![CDATA[
+	   (CASE POST_CODE
+                  WHEN 'C_12004_1355928' THEN
+                   'WORKER'
+                  WHEN 'C_12004_1331763' THEN
+                   'WORKER'
+                  WHEN 'C_12004_1331764' THEN
+                   'WORKER'
+                  WHEN 'C_12004_1393412' THEN
+                   'WORKER'
+                  WHEN 'C_12005_1355928' THEN
+                   'WORKER'
+                  WHEN 'C_12005_1331763' THEN
+                   'WORKER'
+                  WHEN 'C_12005_1331764' THEN
+                   'WORKER'
+                  WHEN 'C_12005_1393412' THEN
+                   'WORKER'
+                  WHEN 'C_12004_1324167' THEN
+                   'WORKER'
+                  WHEN 'C_12005_1324167' THEN
+                   'WORKER'
+                  ELSE
+                   'OFFICER'
+                END) 
+	]]>
+	</sql>
+	
+	<!--
+	comment : DIY职群分类
+	-->
+	<sql id="DIY_POST_GRADE_GROUP_SQL">
+	<![CDATA[
+	    'WORKER', 'B职员', 'INTERN','实习生','A职员'
+	]]>
+	</sql>
+	
+	<!--
+	comment : 其他公司职群分类
+	-->
+	<sql id="OTHER_POST_GRADE_GROUP_SQL">
+	<![CDATA[
+	   'WORKER', '工人', '职员'
+	]]>
+	</sql>
+	
+	<!--
+	comment : DIY部门汇总信息
+	-->
+	<sql id="DIY_HR_DEPARTMENT_SQL">
+	<![CDATA[
+	   (SELECT ROWNUM RN,
+		       HD.DEPTID,
+		       HD.DEPTNAME,
+		       HD.CPNY_ID,
+		       HD.PARENT_DEPT_ID,
+		       HD.DATE_CREATED,
+		       HD.DATE_ENDED,
+		       HD.DEPT_LEVEL,
+		       HD.SECONDDEPT,
+		       HD.THIRDDEPT AS THIRDDEPT,
+		       HD.THIRDDEPT AS DEPT_ID,
+		       HD.FOURTHDEPT AS OFFICE_ID,
+		       HD.FIFTHLYDEPT AS TEAM_ID
+		  FROM HR_DEPARTMENT HD
+		 WHERE HD.CPNY_ID = '60000000'
+		 START WITH HD.ORG_TYPE = 'C_96021_1431220'
+		CONNECT BY PRIOR HD.DEPTID = HD.PARENT_DEPT_ID) D,
+	]]>
+	</sql>
+	
+	
+	<!--
+	comment : DICI部门汇总信息
+	-->
+	<sql id="DICI_HR_DEPARTMENT_SQL">
+	<![CDATA[
+	   (SELECT ROWNUM RN,
+		       HD.DEPTID,
+		       HD.DEPTNAME,
+		       HD.CPNY_ID,
+		       HD.PARENT_DEPT_ID,
+		       HD.DATE_CREATED,
+		       HD.DATE_ENDED,
+		       HD.DEPT_LEVEL,
+		       HD.SECONDDEPT,
+		       HD.THIRDDEPT AS THIRDDEPT,
+               HD.FOURTHDEPT AS DEPT_ID,
+               HD.FIFTHLYDEPT AS OFFICE_ID,
+               HD.SIXTHLYDEPT AS TEAM_ID
+		  FROM HR_DEPARTMENT HD
+		 WHERE HD.CPNY_ID = '59000000'
+			         START WITH HD.DEPTID = '59000000'
+		CONNECT BY PRIOR HD.DEPTID = HD.PARENT_DEPT_ID) D,
+	]]>
+	</sql>
+	<!--
+	comment : DISC部门汇总信息  
+	-->
+	<sql id="DISC_HR_DEPARTMENT_SQL">
+	<![CDATA[
+	   (SELECT ROWNUM RN,
+		       HD.DEPTID,
+		       HD.DEPTNAME,
+		       HD.CPNY_ID,
+		       HD.PARENT_DEPT_ID,
+		       HD.DATE_CREATED,
+		       HD.DATE_ENDED,
+		       HD.DEPT_LEVEL,
+		       HD.SECONDDEPT,
+		       HD.THIRDDEPT,
+		       HD.THIRDDEPT AS DEPT_ID,
+		       HD.FOURTHDEPT AS OFFICE_ID,
+		       HD.FIFTHLYDEPT AS TEAM_ID
+		  FROM HR_DEPARTMENT HD
+		 WHERE HD.CPNY_ID = '61000000'
+			         START WITH HD.DEPTID = '61000000'
+		CONNECT BY PRIOR HD.DEPTID = HD.PARENT_DEPT_ID) D,
+	]]>
+	</sql>
+	
+	<!--
+	comment : DBCN(DI)部门汇总信息  
+	-->
+	<sql id="DBCN_DI_HR_DEPARTMENT_SQL">
+	<![CDATA[
+	   (SELECT ROWNUM RN,
+		       HD.DEPTID,
+		       HD.DEPTNAME,
+		       HD.CPNY_ID,
+		       HD.PARENT_DEPT_ID,
+		       HD.DATE_CREATED,
+		       HD.DATE_ENDED,
+		       HD.DEPT_LEVEL,
+		       HD.SECONDDEPT,
+		       HD.THIRDDEPT,
+		       HD.THIRDDEPT AS DEPT_ID,
+		       HD.FOURTHDEPT AS OFFICE_ID,
+		       HD.FIFTHLYDEPT AS TEAM_ID
+		  FROM HR_DEPARTMENT HD
+		 WHERE HD.CPNY_ID = 'FN000000'
+			         START WITH HD.DEPTID = 'FN000000'
+		CONNECT BY PRIOR HD.DEPTID = HD.PARENT_DEPT_ID) D,
+	]]>
+	</sql>
+	
+	<!--
+	comment : DISD部门汇总信息
+	-->
+	<sql id="DISD_HR_DEPARTMENT_SQL">
+	<![CDATA[
+		(SELECT ROWNUM RN,
+               HD.DEPTID,
+               HD.DEPTNAME,
+               HD.CPNY_ID,
+               HD.PARENT_DEPT_ID,
+               HD.DATE_CREATED,
+               HD.DATE_ENDED,
+               HD.DEPT_LEVEL,
+               HD.SECONDDEPT,
+               HD.THIRDDEPT,
+               HD.FOURTHDEPT AS DEPT_ID,
+               HD.FIFTHLYDEPT AS OFFICE_ID,
+               DECODE(HD.DEPT_LEVEL, 7, HD.DEPTID, HD.SIXTHLYDEPT) AS TEAM_ID
+          FROM HR_DEPARTMENT HD
+         WHERE HD.CPNY_ID = '63000000'
+			         START WITH HD.DEPTID = '63000000'
+                CONNECT BY PRIOR HD.DEPTID = HD.PARENT_DEPT_ID) D,
+	]]>		
+	</sql>
+	
+		<!--
+	comment : DICC部门汇总信息
+	-->
+	<sql id="DICC_HR_DEPARTMENT_SQL">
+	<![CDATA[
+			(SELECT * FROM 
+			       (SELECT ROWNUM RN,
+			               HD.DEPTID,
+			               HD.DEPTNAME,
+			               HD.CPNY_ID,
+			               HD.PARENT_DEPT_ID,
+			               HD.DATE_CREATED,
+			               HD.DATE_ENDED,
+			               HD.DEPT_LEVEL,
+			               HD.SECONDDEPT,
+			               HD.THIRDDEPT,
+			               HD.FOURTHDEPT AS DEPT_ID,
+			               HD.FIFTHLYDEPT AS OFFICE_ID, 
+			               DECODE(HD.DEPT_LEVEL, 7, HD.DEPTID, HD.SIXTHLYDEPT) AS TEAM_ID
+			          FROM HR_DEPARTMENT HD
+			         WHERE HD.CPNY_ID = '78000000' 
+			         START WITH HD.DEPTID = '78000000'
+			        CONNECT BY PRIOR HD.DEPTID = HD.PARENT_DEPT_ID)
+			    WHERE DEPT_LEVEL > 3 ) D,
+	]]>
+	</sql>
+	
+			<!--
+	comment : DICC部门汇总信息
+	-->
+	<sql id="DICC_HR_DEPARTMENT_SQL_BAK">
+	<![CDATA[
+			(SELECT ROWNUM RN,
+	               HD.DEPTID,
+	               HD.DEPTNAME,
+	               HD.CPNY_ID,
+	               HD.PARENT_DEPT_ID,
+	               HD.DATE_CREATED,
+	               HD.DATE_ENDED,
+	               HD.DEPT_LEVEL,
+	               HD.SECONDDEPT,
+	               HD.THIRDDEPT,
+	               (CASE HD.FOURTHDEPT WHEN '780TN000' THEN HD.FIFTHLYDEPT WHEN '780NS000' THEN HD.FIFTHLYDEPT ELSE HD.FOURTHDEPT END) AS DEPT_ID,
+	               (CASE HD.FOURTHDEPT WHEN '780TN000' THEN HD.SIXTHLYDEPT WHEN '780NS000' THEN HD.SIXTHLYDEPT ELSE HD.FIFTHLYDEPT END) AS OFFICE_ID, 
+	               DECODE(HD.DEPT_LEVEL, 7, HD.DEPTID, HD.SIXTHLYDEPT) AS TEAM_ID
+	          FROM HR_DEPARTMENT HD
+	         WHERE HD.CPNY_ID = '78000000' 
+	         START WITH (HD.DEPT_LEVEL = 4 AND HD.DEPTID <> '780TN000' AND HD.DEPTID <> '780NS000' ) 
+	               OR HD.DEPTID = '780TN000' OR HD.DEPTID = '780NS000'
+	        CONNECT BY PRIOR HD.DEPTID = HD.PARENT_DEPT_ID) D,
+	]]>
+	</sql>
+	
+	<select id="retrieveReport0103Data" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+			SELECT MAX(A.AR_MONTH_STR) AS ARMONTH, 
+			       COUNT(DEPT.DEPTNAME) OVER(PARTITION BY DEPT.DEPTNAME) AS DEPT_CNT, 
+			       DEPT.DEPTNAME,
+			       MAX(OFFICE.DEPTNAME) AS OFFICENAME,
+			          (CASE GROUPING_ID(DEPT.DEPTNAME,
+			                     C.EMPID) WHEN 1 THEN '小计' WHEN 3 THEN '合计' ELSE MAX(TEAM.DEPTNAME) END) AS TEAMNAME,
+			           C.EMPID,
+			           MAX(C.CHINESENAME) AS CHINESENAME,
+			       DECODE(MAX(C.POST_GROUP_CODE), 
+	]]>
+	<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+	   			   <include refid="OTHER_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+	                <include refid="OTHER_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+	   			   <include refid="OTHER_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+	   			   <include refid="OTHER_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	<![CDATA[		       
+			       ) AS POST_GRADE,
+			             
+			       SUM(DECODE(A.AR_ITEM_NO, 24, A.QUANTITY, 0)) AS "peiXun",
+			       SUM(DECODE(A.AR_ITEM_NO, 53, A.QUANTITY, 0)) AS "yanXiu",
+			       SUM(DECODE(A.AR_ITEM_NO, 20, A.QUANTITY, 0)) AS "chuChai",
+			       SUM(DECODE(A.AR_ITEM_NO, 52, A.QUANTITY, 0)) AS "jiaoYu",
+			       SUM(DECODE(A.AR_ITEM_NO, 10, A.QUANTITY, 65, A.QUANTITY, 0)) AS "chanJia",
+			       SUM(DECODE(A.AR_ITEM_NO, 6,  A.QUANTITY, 0)) AS "hunJia",
+			       SUM(DECODE(A.AR_ITEM_NO, 37, A.QUANTITY, 0)) AS "SongJia",
+			       SUM(DECODE(A.AR_ITEM_NO, 12,A.QUANTITY, 68,A.QUANTITY, 0)) AS "gongShangJia",
+			       
+			       SUM(DECODE(A.AR_ITEM_NO, 25, A.QUANTITY, 0)) AS "shiJia",
+			       SUM(DECODE(A.AR_ITEM_NO, 4,  A.QUANTITY, 0)) AS "bingJia",
+			       SUM(DECODE(A.AR_ITEM_NO, 29, A.QUANTITY, 0)) AS "kuangGong",
+			       SUM(DECODE(A.AR_ITEM_NO, 44, A.QUANTITY,45, A.QUANTITY, 0)) AS "bingXiu",
+			       SUM(DECODE(A.AR_ITEM_NO, 58, A.QUANTITY, 0)) AS "xiuJia",
+			                   
+			       SUM(DECODE(A.AR_ITEM_NO, 1, A.QUANTITY, 0)) AS "chiDao",
+			       SUM(DECODE(A.AR_ITEM_NO, 2, A.QUANTITY, 0)) AS "zaoTui", 
+			       SUM(DECODE(A.AR_ITEM_NO, 62, A.QUANTITY, 50, A.QUANTITY, 0)) AS "fangJia",
+			       SUM(DECODE(A.AR_ITEM_NO, 62, A.QUANTITY, 0)) AS "fangJia1",
+			       SUM(DECODE(A.AR_ITEM_NO, 50, A.QUANTITY, 0)) AS "fangJia2",
+			       SUM(DECODE(A.AR_ITEM_NO, 69, A.QUANTITY, 0)) AS "yinGongWaiChu",
+			       SUM(DECODE(A.AR_ITEM_NO, 55, A.QUANTITY, 0)) AS "puRuJia",
+			       
+			       SUM(DECODE(A.AR_ITEM_NO, 56, A.QUANTITY, 0)) AS "chanJiaHuLi",
+			       SUM(DECODE(A.AR_ITEM_NO, 14, A.QUANTITY, 0)) AS "nianXiuJia",
+			       SUM(DECODE(A.AR_ITEM_NO, 57, A.QUANTITY, 0)) AS "weiQin",
+			       SUM(DECODE(A.AR_ITEM_NO, 51, A.QUANTITY, 0)) AS "jiShengJia",
+			       SUM(DECODE(A.AR_ITEM_NO, 54, A.QUANTITY, 0)) AS "jiHunDengJi",
+			       
+			       SUM(DECODE(A.AR_ITEM_NO, 59, A.QUANTITY, 0)) AS "tiaoXiu",
+			       SUM(DECODE(A.AR_ITEM_NO, 58, A.QUANTITY, 0)) AS "xiuJia",
+			       SUM(DECODE(A.AR_ITEM_NO, 63, A.QUANTITY, 0)) AS "chanQianJianCha",
+	         	   SUM(DECODE(A.AR_ITEM_NO, 16, A.QUANTITY, 0)) AS "xiuZhi",
+	         	   SUM(DECODE(A.AR_ITEM_NO, 73, A.QUANTITY, 0)) AS "gangWeiBaoLiu",
+	         	   SUM(DECODE(A.AR_ITEM_NO, 75, A.QUANTITY, 0)) AS "nianXiuJiaBuBan",
+	         	   SUM(DECODE(A.AR_ITEM_NO, 74, A.QUANTITY, 0)) AS "nianXiuJiaDuoXiu",
+	         	   SUM(CASE WHEN A.SHIFT_NO = 75 AND A.AR_ITEM_NO = 35 THEN  A.QUANTITY ELSE 0 END) AS "zhiBanXiuXi"
+			       
+			  FROM AR_DETAIL A,
+			       AR_ITEM B,
+			      (SELECT T.PERSON_ID,T.EMPID,T.CHINESENAME,T.DEPTID,
+	]]>
+	<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+	              <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	<![CDATA[
+			      		  AS POST_GROUP_CODE 
+		             FROM HR_EMPLOYEE T ) C,
+	]]>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+	   			   <include refid="DICC_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+	                
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+	   			   <include refid="DISC_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+	   			   <include refid="DISD_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+		
+	<![CDATA[
+			       HR_DEPARTMENT DEPT,
+			       HR_DEPARTMENT OFFICE,
+			       HR_DEPARTMENT TEAM
+			 WHERE A.AR_ITEM_NO = B.ITEM_NO
+			   AND A.EMPID = C.PERSON_ID
+			   AND C.DEPTID = D.DEPTID
+			   AND D.DEPT_ID = DEPT.DEPTID
+			   AND D.OFFICE_ID = OFFICE.DEPTID
+			   AND D.TEAM_ID = TEAM.DEPTID
+	]]>
+	
+	<isNotEmpty prepend="AND" property="arDate">
+	<![CDATA[
+			   A.AR_DATE_STR = #arDate:VARCHAR# 
+	]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="arDateStarted">
+	<![CDATA[
+			   A.AR_DATE_STR BETWEEN #arDateStarted:VARCHAR# AND #arDateEnd:VARCHAR#  
+	]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="supervisorId">
+    	<![CDATA[
+            EXISTS ( SELECT *
+                     FROM AR_SUPERVISOR_INFO J
+                    WHERE AR_SUPERVISOR_ID = #supervisorId:VARCHAR#
+                      AND C.DEPTID = J.SUPERVISED_DEPTID                   
+              )
+        ]]>
+	</isNotEmpty>
+	<![CDATA[
+		GROUP BY ROLLUP(DEPT.DEPTNAME,C.EMPID)
+		ORDER BY DEPT.DEPTNAME, MAX(OFFICE.DEPT_LEVEL), MAX(OFFICE.DEPTID), MAX(D.DEPT_LEVEL),  MAX(TEAM.DEPTID), C.EMPID
+	]]>
+	</select>
+	
+	<select id="retrieveReport0104Data" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+		SELECT MAX(A.AR_MONTH_STR) AS ARMONTH, 
+	           COUNT(DEPT.DEPTID) OVER(PARTITION BY DEPT.DEPTID) AS DEPT_CNT, 
+	           MAX(DEPT.DEPTNAME) AS DEPTNAME,
+	           MAX(OFFICE.DEPTNAME) AS OFFICENAME,
+	           TEAM.DEPTID AS TEAM_DEPTID,
+	          (CASE GROUPING_ID(DEPT.DEPTID, TEAM.DEPTID) 
+	          WHEN 1 THEN '小计' 
+	          WHEN 3 THEN '合计' 
+	          ELSE MAX(TEAM.DEPTNAME) END) AS TEAMNAME,
+	       
+	         COUNT(DISTINCT A.EMPID) AS "zongShu",
+	         COUNT(DECODE(A.AR_ITEM_NO, 35, 1)) AS "zhengChang",
+	         COUNT(DECODE(A.AR_ITEM_NO, 24, 1)) AS "peiXun",
+	         COUNT(DECODE(A.AR_ITEM_NO, 53, 1)) AS "yanXiu",
+	         COUNT(DECODE(A.AR_ITEM_NO, 20, 1)) AS "chuChai",
+	         COUNT(DECODE(A.AR_ITEM_NO, 52, 1)) AS "jiaoYu",
+	         COUNT(DECODE(A.AR_ITEM_NO, 10, 1, 65, 1)) AS "chanJia",
+	         COUNT(DECODE(A.AR_ITEM_NO, 6,  1)) AS "hunJia",
+	         COUNT(DECODE(A.AR_ITEM_NO, 37, 1)) AS "SongJia",
+	         COUNT(DECODE(A.AR_ITEM_NO, 12, 1, 68, 1)) AS "gongShangJia",
+	         COUNT(DECODE(A.AR_ITEM_NO, 25, 1)) AS "shiJia",
+	                   
+	         COUNT(DECODE(A.AR_ITEM_NO, 4,  1)) AS "bingJia",
+	         COUNT(DECODE(A.AR_ITEM_NO, 29, 1)) AS "kuangGong",
+	         COUNT(DECODE(A.AR_ITEM_NO, 44, 1, 45, 1)) AS "bingXiu",
+	         COUNT(DECODE(A.AR_ITEM_NO, 58, 1)) AS "xiuJia",
+	                   
+	         COUNT(DECODE(A.AR_ITEM_NO, 1, 1)) AS "chiDao",
+	         COUNT(DECODE(A.AR_ITEM_NO, 2, 1)) AS "zaoTui", 
+	             
+	         COUNT(DECODE(A.AR_ITEM_NO, 62, 1, 50, 1)) AS "fangJia",
+	         COUNT(DECODE(A.AR_ITEM_NO, 63, 1)) AS "chanQianJianCha",
+	         COUNT(DECODE(A.AR_ITEM_NO, 16, 1)) AS "xiuZhi",
+	         COUNT(DECODE(A.AR_ITEM_NO, 69, 1)) AS "yinGongWaiChu",
+	         
+	         COUNT(DECODE(A.AR_ITEM_NO, 55, 1)) AS "puRuJia",
+	         COUNT(DECODE(A.AR_ITEM_NO, 14, 1)) AS "nianXiuJia",
+	         COUNT(DECODE(A.AR_ITEM_NO, 59, 1)) AS "tiaoXiu",
+	         COUNT(DECODE(A.AR_ITEM_NO, 56, 1)) AS "chanJiaHuLi",
+	         COUNT(DECODE(A.AR_ITEM_NO, 54, 1)) AS "jiHunDengJi",
+	         
+	         COUNT(DECODE(A.AR_ITEM_NO, 63, 1)) AS "chanQianJianCha",
+	         COUNT(DECODE(A.AR_ITEM_NO, 16, 1)) AS "xiuZhi",
+	         COUNT(DECODE(A.AR_ITEM_NO, 51, 1)) AS "jiShengJia",
+	         COUNT(DECODE(A.AR_ITEM_NO, 35, 1)) AS "xiuXi",
+	         COUNT(DECODE(A.SHIFT_NO, 75, 1)) AS "zhiBanXiuXi",
+	         
+	         SUM(CASE WHEN A.SHIFT_NO = 75 AND A.AR_ITEM_NO = 35 THEN  A.QUANTITY ELSE 0 END) AS "zhiBanXiuXi",
+	         
+	          COUNT(CASE
+	               WHEN B.ITEM_GROUP_CODE IN ('LeavelGroup', 'ProprietaryGroup', 'SpecialGroup') THEN
+	                A.EMPID
+	             END) AS "quQing",
+	         COUNT(DISTINCT CASE WHEN ITEM_GROUP_CODE = 'OverTimeGroup' THEN A.EMPID END ) AS "otRenShu",
+			 NVL(SUM( CASE WHEN ITEM_GROUP_CODE ='OverTimeGroup' THEN A.QUANTITY END ),0) AS "otShiJian"
+			       
+			  FROM AR_DETAIL A,
+			       AR_ITEM B,
+			      (SELECT T.PERSON_ID,T.EMPID,T.CHINESENAME,T.DEPTID,
+	]]>
+	<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	<![CDATA[
+						  AS POST_GROUP_CODE 
+		             FROM HR_EMPLOYEE T) C,
+	]]>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+	   			   <include refid="DICC_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+	   			   <include refid="DISC_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+	   			   <include refid="DISD_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+		
+	<![CDATA[
+			       HR_DEPARTMENT DEPT,
+			       HR_DEPARTMENT OFFICE,
+			       HR_DEPARTMENT TEAM
+			 WHERE A.AR_ITEM_NO = B.ITEM_NO
+			   AND A.EMPID = C.PERSON_ID
+			   AND C.DEPTID = D.DEPTID
+			   AND D.DEPT_ID = DEPT.DEPTID
+			   AND D.OFFICE_ID = OFFICE.DEPTID
+			   AND D.TEAM_ID = TEAM.DEPTID
+			   AND A.QUANTITY > 0
+	]]>
+	
+	<isNotEmpty prepend="AND" property="arDate">
+	<![CDATA[
+			   A.AR_DATE_STR = #arDate:VARCHAR# 
+	]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="arDateStarted">
+	<![CDATA[
+			   A.AR_DATE_STR BETWEEN #arDateStarted:VARCHAR# AND #arDateEnd:VARCHAR#  
+	]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="supervisorId">
+    	<![CDATA[
+            EXISTS ( SELECT *
+                       FROM AR_SUPERVISOR_INFO J
+                      WHERE AR_SUPERVISOR_ID = #supervisorId:VARCHAR#
+                        AND C.DEPTID = J.SUPERVISED_DEPTID
+              )
+        ]]>
+	</isNotEmpty>
+	<![CDATA[
+		GROUP BY ROLLUP(DEPT.DEPTID, TEAM.DEPTID)
+		ORDER BY DEPT.DEPTID,MAX(OFFICE.DEPT_LEVEL),MAX(OFFICE.DEPTID),MAX(D.DEPT_LEVEL), TEAM.DEPTID
+	]]>
+	</select>
+	
+	<select id="retrieveReport0104ContentData" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+				SELECT B.ITEM_NAME || ': ' ||
+				       LTRIM(MAX(SYS_CONNECT_BY_PATH(CHINESENAME, ','))
+				             KEEP(DENSE_RANK LAST ORDER BY CURR),
+				             ',') || '; ' AS "CONTENT"
+				  FROM (SELECT T.*,
+				        T.ITEM_NAME || RN AS CURR,
+				        T.ITEM_NAME || (RN - 1) AS PREV   
+				        FROM (
+				        SELECT AI.ITEM_NAME,
+				               AD.EMPID,
+				               HR.CHINESENAME,
+				               HR.DEPTID,
+				               ROW_NUMBER() OVER(PARTITION BY AD.AR_ITEM_NO ORDER BY AD.EMPID) RN
+				          FROM AR_DETAIL AD,
+				               (SELECT A.ITEM_NO, A.ITEM_NAME, A.ITEM_GROUP_CODE
+				                  FROM AR_ITEM A
+				                 WHERE A.ITEM_GROUP_CODE IN
+				                       ('LeavelGroup', 'ProprietaryGroup', 'SpecialGroup')) AI,
+				               HR_EMPLOYEE HR
+				         WHERE AD.AR_ITEM_NO = AI.ITEM_NO
+				           AND AD.EMPID = HR.PERSON_ID
+		]]>
+		<isNotEmpty prepend="AND" property="arDate">
+		<![CDATA[
+				   AD.AR_DATE_STR = #arDate:VARCHAR# 
+		]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="arDateStarted">
+		<![CDATA[
+				   AD.AR_DATE_STR BETWEEN #arDateStarted:VARCHAR# AND #arDateEnd:VARCHAR#  
+		]]>
+		</isNotEmpty>
+		<![CDATA[
+				           AND HR.ACTIVITY = 1
+				           AND HR.DEPTID = #deptID:VARCHAR#) T
+				       WHERE T.RN < 51) B
+		]]>
+		<isNotEmpty prepend="AND" property="supervisor">
+	    	<![CDATA[
+	            EXISTS ( SELECT *
+	                     FROM AR_SUPERVISOR_INFO J
+	                     WHERE AR_SUPERVISOR_ID = #supervisor:VARCHAR#
+	                     AND HR.DEPTID = J.SUPERVISED_DEPTID                   
+	              )
+	        ]]>
+		</isNotEmpty>
+		<![CDATA[
+				 GROUP BY B.ITEM_NAME
+				 START WITH CURR = B.ITEM_NAME || '1'
+				CONNECT BY PREV = PRIOR CURR
+		]]>
+	</select>
+	
+	<select id="retrieveReport0107Data" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+			SELECT COUNT(DEPT.DEPTNAME) OVER(PARTITION BY DEPT.DEPTNAME) AS DEPT_CNT, 
+			       DEPT.DEPTNAME,
+			       MAX(OFFICE.DEPTNAME) AS OFFICENAME,
+	              (CASE GROUPING_ID(DEPT.DEPTNAME,
+	                         C.EMPID) WHEN 1 THEN '小计' WHEN 3 THEN '合计' ELSE MAX(TEAM.DEPTNAME) END) AS TEAMNAME,
+	               C.EMPID,
+	               MAX(C.CHINESENAME) AS CHINESENAME,
+			       DECODE(MAX(C.POST_GROUP_CODE),
+	]]>
+	<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+	   			   <include refid="OTHER_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+	   			   <include refid="OTHER_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+	   			   <include refid="OTHER_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	<![CDATA[ 
+				   ) AS POST_GRADE,
+			       
+			       SUM(CASE
+			             WHEN A.AR_ITEM_NO IN (30, 41, 42, 64, 70) THEN
+			              A.QUANTITY
+			             ELSE
+			              0
+			           END) AS SUM_OT_A,
+			       SUM(CASE
+			             WHEN A.AR_ITEM_NO = 31 THEN
+			              A.QUANTITY
+			             ELSE
+			              0
+			           END) AS SUM_OT_B,
+			       SUM(CASE
+			             WHEN A.AR_ITEM_NO = 32 THEN
+			              A.QUANTITY
+			             ELSE
+			              0
+			           END) AS SUM_OT_C,
+			       SUM(NVL(A.QUANTITY,0)) AS SUM_ALL
+			  FROM (SELECT AR_DETAIL.*  FROM $tableName$ AR_DETAIL, AR_ITEM
+			         WHERE AR_DETAIL.AR_ITEM_NO = AR_ITEM.ITEM_NO
+	]]>
+	
+	<isNotEmpty prepend="AND" property="arMonth">
+		<![CDATA[
+				   AR_DETAIL.AR_MONTH_STR = #arMonth:VARCHAR#  
+		]]>
+	</isNotEmpty>
+		
+	<isNotEmpty prepend="AND" property="arDateStarted">
+		<![CDATA[
+				   AR_DETAIL.AR_DATE_STR BETWEEN #arDateStarted:VARCHAR# AND #arDateEnd:VARCHAR#  
+		]]>
+	</isNotEmpty>
+	
+	<![CDATA[
+			           AND AR_ITEM.ITEM_GROUP_CODE = 'OverTimeGroup') A,
+			      (SELECT T.PERSON_ID,T.EMPID,T.CHINESENAME,T.DEPTID,
+	]]>
+	<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	<![CDATA[
+					      AS POST_GROUP_CODE,
+					      T.STATUS_CODE,
+					      T.DATE_LEFT
+		             FROM HR_EMPLOYEE T) C,
+	]]>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+	   			   <include refid="DICC_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+	   			   <include refid="DISC_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+	   			   <include refid="DISD_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+		
+	<![CDATA[
+			       HR_DEPARTMENT DEPT,
+			       HR_DEPARTMENT OFFICE,
+			       HR_DEPARTMENT TEAM
+			 WHERE C.PERSON_ID = A.EMPID(+)
+			   AND C.DEPTID = D.DEPTID
+			   AND D.DEPT_ID = DEPT.DEPTID
+			   AND D.OFFICE_ID = OFFICE.DEPTID
+			   AND D.TEAM_ID = TEAM.DEPTID
+               AND C.POST_GROUP_CODE = 'WORKER'
+			   AND (C.DATE_LEFT IS NULL OR C.DATE_LEFT BETWEEN TO_DATE(#arDateStarted:VARCHAR# , 'YYYY-MM-DD') AND TO_DATE(#arDateEnd:VARCHAR# , 'YYYY-MM-DD') )
+	]]>
+	
+	<isNotEmpty prepend="AND" property="supervisorId">
+	    	<![CDATA[
+	            EXISTS (SELECT *
+	                     FROM AR_SUPERVISOR_INFO J
+	                    WHERE AR_SUPERVISOR_ID = #supervisorId:VARCHAR#
+	                      AND C.DEPTID = J.SUPERVISED_DEPTID                   
+	              )
+	        ]]>
+		</isNotEmpty>
+	<![CDATA[
+		 GROUP BY ROLLUP(DEPT.DEPTNAME,C.EMPID)
+       	 ORDER BY DEPT.DEPTNAME, MAX(OFFICE.DEPT_LEVEL),MAX(OFFICE.DEPTID),MAX(D.DEPT_LEVEL),  MAX(TEAM.DEPTID), C.EMPID
+	]]>
+	</select>
+	
+		<select id="retrieveReport0107Data1" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+	        select  xx.deptname,xx.teamname,
+                 round(sum(SUM_OT_A)/decode(count( xx.teamname), 0, 1, count( xx.teamname)), 2) SUM_OT_A,
+                 round(sum(SUM_OT_B)/decode(count( xx.teamname), 0, 1, count( xx.teamname)), 2) SUM_OT_B,
+                 round(sum(SUM_OT_C)/decode(count( xx.teamname), 0, 1, count( xx.teamname)), 2) SUM_OT_C,
+                 round(sum(SUM_ALL)/decode(count( xx.teamname), 0, 1, count( xx.teamname)), 2) SUM_ALL
+            from (
+			SELECT COUNT(DEPT.DEPTNAME) OVER(PARTITION BY DEPT.DEPTNAME) AS DEPT_CNT, 
+			       DEPT.DEPTNAME,
+			       MAX(OFFICE.DEPTNAME) AS OFFICENAME,
+	              (CASE GROUPING_ID(DEPT.DEPTNAME,
+	                         C.EMPID) WHEN 1 THEN '小计' WHEN 3 THEN '合计' ELSE MAX(TEAM.DEPTNAME) END) AS TEAMNAME,
+	               C.EMPID,
+	               MAX(C.CHINESENAME) AS CHINESENAME,
+			       DECODE(MAX(C.POST_GROUP_CODE),
+	]]>
+	<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+	   			   <include refid="OTHER_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+	   			   <include refid="OTHER_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+	   			   <include refid="OTHER_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	<![CDATA[ 
+				   ) AS POST_GRADE,
+			       
+			       SUM(CASE
+			             WHEN A.AR_ITEM_NO IN (30, 41, 42, 64, 70) THEN
+			              A.QUANTITY
+			             ELSE
+			              0
+			           END) AS SUM_OT_A,
+			       SUM(CASE
+			             WHEN A.AR_ITEM_NO = 31 THEN
+			              A.QUANTITY
+			             ELSE
+			              0
+			           END) AS SUM_OT_B,
+			       SUM(CASE
+			             WHEN A.AR_ITEM_NO = 32 THEN
+			              A.QUANTITY
+			             ELSE
+			              0
+			           END) AS SUM_OT_C,
+			       SUM(NVL(A.QUANTITY,0)) AS SUM_ALL
+			  FROM (SELECT AR_DETAIL.*  FROM $tableName$ AR_DETAIL, AR_ITEM
+			         WHERE AR_DETAIL.AR_ITEM_NO = AR_ITEM.ITEM_NO
+	]]>
+	
+	<isNotEmpty prepend="AND" property="arMonth">
+		<![CDATA[
+				   AR_DETAIL.AR_MONTH_STR = #arMonth:VARCHAR#  
+		]]>
+	</isNotEmpty>
+		
+	<isNotEmpty prepend="AND" property="arDateStarted">
+		<![CDATA[
+				   AR_DETAIL.AR_DATE_STR BETWEEN #arDateStarted:VARCHAR# AND #arDateEnd:VARCHAR#  
+		]]>
+	</isNotEmpty>
+	
+	<![CDATA[
+			           AND AR_ITEM.ITEM_GROUP_CODE = 'OverTimeGroup') A,
+			      (SELECT T.PERSON_ID,T.EMPID,T.CHINESENAME,T.DEPTID,
+	]]>
+	<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	<![CDATA[
+					      AS POST_GROUP_CODE,
+					      T.STATUS_CODE,
+					      T.DATE_LEFT
+		             FROM HR_EMPLOYEE T) C,
+	]]>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+	   			   <include refid="DICC_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+	   			   <include refid="DISC_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+	   			   <include refid="DISD_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+		
+	<![CDATA[
+			       HR_DEPARTMENT DEPT,
+			       HR_DEPARTMENT OFFICE,
+			       HR_DEPARTMENT TEAM
+			 WHERE C.PERSON_ID = A.EMPID(+)
+			   AND C.DEPTID = D.DEPTID
+			   AND D.DEPT_ID = DEPT.DEPTID
+			   AND D.OFFICE_ID = OFFICE.DEPTID
+			   AND D.TEAM_ID = TEAM.DEPTID
+               AND C.POST_GROUP_CODE = 'WORKER'
+			   AND (C.DATE_LEFT IS NULL OR C.DATE_LEFT BETWEEN TO_DATE(#arDateStarted:VARCHAR# , 'YYYY-MM-DD') AND TO_DATE(#arDateEnd:VARCHAR# , 'YYYY-MM-DD') )
+	]]>
+	
+	<isNotEmpty prepend="AND" property="supervisorId">
+	    	<![CDATA[
+	            EXISTS (SELECT *
+	                     FROM AR_SUPERVISOR_INFO J
+	                    WHERE AR_SUPERVISOR_ID = #supervisorId:VARCHAR#
+	                      AND C.DEPTID = J.SUPERVISED_DEPTID                   
+	              )
+	        ]]>
+		</isNotEmpty>
+	<![CDATA[
+		 GROUP BY ROLLUP(DEPT.DEPTNAME,C.EMPID)
+       	 ORDER BY DEPT.DEPTNAME, MAX(OFFICE.DEPT_LEVEL),MAX(OFFICE.DEPTID),MAX(D.DEPT_LEVEL),  MAX(TEAM.DEPTID), C.EMPID) xx 
+       	 where xx.teamname not in ('小计','合计') and xx.teamname like '%组'
+         group by xx.teamname, xx.deptname 
+         order by xx.deptname
+	]]>
+	</select>
+	
+		<select id="retrieveReport0107Data2" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+	     select  xx.deptname,
+            round(sum(SUM_OT_A)/decode(count( xx.deptname), 0, 1, count( xx.deptname)), 2) SUM_OT_A,
+            round(sum(SUM_OT_B)/decode(count( xx.deptname), 0, 1, count( xx.deptname)), 2) SUM_OT_B,
+            round(sum(SUM_OT_C)/decode(count( xx.deptname), 0, 1, count( xx.deptname)), 2) SUM_OT_C,
+            round(sum(SUM_ALL)/decode(count( xx.deptname), 0, 1, count( xx.deptname)), 2) SUM_ALL
+          from 
+          (SELECT COUNT(DEPT.DEPTNAME) OVER(PARTITION BY DEPT.DEPTNAME) AS DEPT_CNT, 
+			       DEPT.DEPTNAME,
+			       MAX(OFFICE.DEPTNAME) AS OFFICENAME,
+	              (CASE GROUPING_ID(DEPT.DEPTNAME,
+	                         C.EMPID) WHEN 1 THEN '小计' WHEN 3 THEN '合计' ELSE MAX(TEAM.DEPTNAME) END) AS TEAMNAME,
+	               C.EMPID,
+	               MAX(C.CHINESENAME) AS CHINESENAME,
+			       DECODE(MAX(C.POST_GROUP_CODE),
+	]]>
+	<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+	   			   <include refid="OTHER_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+	   			   <include refid="OTHER_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+	   			   <include refid="OTHER_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	<![CDATA[ 
+				   ) AS POST_GRADE,
+			       
+			       SUM(CASE
+			             WHEN A.AR_ITEM_NO IN (30, 41, 42, 64, 70) THEN
+			              A.QUANTITY
+			             ELSE
+			              0
+			           END) AS SUM_OT_A,
+			       SUM(CASE
+			             WHEN A.AR_ITEM_NO = 31 THEN
+			              A.QUANTITY
+			             ELSE
+			              0
+			           END) AS SUM_OT_B,
+			       SUM(CASE
+			             WHEN A.AR_ITEM_NO = 32 THEN
+			              A.QUANTITY
+			             ELSE
+			              0
+			           END) AS SUM_OT_C,
+			       SUM(NVL(A.QUANTITY,0)) AS SUM_ALL
+			  FROM (SELECT AR_DETAIL.*  FROM $tableName$ AR_DETAIL, AR_ITEM
+			         WHERE AR_DETAIL.AR_ITEM_NO = AR_ITEM.ITEM_NO
+	]]>
+	
+	<isNotEmpty prepend="AND" property="arMonth">
+		<![CDATA[
+				   AR_DETAIL.AR_MONTH_STR = #arMonth:VARCHAR#  
+		]]>
+	</isNotEmpty>
+		
+	<isNotEmpty prepend="AND" property="arDateStarted">
+		<![CDATA[
+				   AR_DETAIL.AR_DATE_STR BETWEEN #arDateStarted:VARCHAR# AND #arDateEnd:VARCHAR#  
+		]]>
+	</isNotEmpty>
+	
+	<![CDATA[
+			           AND AR_ITEM.ITEM_GROUP_CODE = 'OverTimeGroup') A,
+			      (SELECT T.PERSON_ID,T.EMPID,T.CHINESENAME,T.DEPTID,
+	]]>
+	<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	<![CDATA[
+					      AS POST_GROUP_CODE,
+					      T.STATUS_CODE,
+					      T.DATE_LEFT
+		             FROM HR_EMPLOYEE T) C,
+	]]>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+	   			   <include refid="DICC_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+	   			   <include refid="DISC_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+	   			   <include refid="DISD_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+		
+	<![CDATA[
+			       HR_DEPARTMENT DEPT,
+			       HR_DEPARTMENT OFFICE,
+			       HR_DEPARTMENT TEAM
+			 WHERE C.PERSON_ID = A.EMPID(+)
+			   AND C.DEPTID = D.DEPTID
+			   AND D.DEPT_ID = DEPT.DEPTID
+			   AND D.OFFICE_ID = OFFICE.DEPTID
+			   AND D.TEAM_ID = TEAM.DEPTID
+               AND C.POST_GROUP_CODE = 'WORKER'
+			   AND (C.DATE_LEFT IS NULL OR C.DATE_LEFT BETWEEN TO_DATE(#arDateStarted:VARCHAR# , 'YYYY-MM-DD') AND TO_DATE(#arDateEnd:VARCHAR# , 'YYYY-MM-DD') )
+	]]>
+	
+	<isNotEmpty prepend="AND" property="supervisorId">
+	    	<![CDATA[
+	            EXISTS (SELECT *
+	                     FROM AR_SUPERVISOR_INFO J
+	                    WHERE AR_SUPERVISOR_ID = #supervisorId:VARCHAR#
+	                      AND C.DEPTID = J.SUPERVISED_DEPTID                   
+	              )
+	        ]]>
+		</isNotEmpty>
+	<![CDATA[
+		 GROUP BY ROLLUP(DEPT.DEPTNAME,C.EMPID)
+       	 ORDER BY DEPT.DEPTNAME, MAX(OFFICE.DEPT_LEVEL),MAX(OFFICE.DEPTID),MAX(D.DEPT_LEVEL),  MAX(TEAM.DEPTID), C.EMPID) xx 
+       	 where xx.teamname not in ('小计','合计')
+         group by xx.deptname order by xx.deptname
+	]]>
+	</select>
+	
+	<select id="retrieveReport01287Data" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+	       select s.r_month  as Y_M,
+       get_empid(s.person_id) as EMPID,
+       h1.chinesename as CHINESENAME,
+       get_dept_name(d1.fourthdept) as DEPT,
+       sum(s.ot_hour) as HOUR
+  from (
+        
+        select a.empid as person_id,
+                h.empid,
+                h.chinesename,
+                a.r_month,
+                to_char(min(a.r_time), 'yyyy-mm-dd hh24:mi:ss') r_time1,
+                to_char(max(a.r_time), 'yyyy-mm-dd hh24:mi:ss') r_time2,
+                round((max(a.r_time) - min(a.r_time)) * 24, 2) ot_hour
+        
+          from (select t.r_time,
+                        t.empid,
+                        t.cpny_id,
+                        to_char(t.r_time, 'yyyy-mm') r_month
+                   from AR_MAC_RECORDS_HISTORY t
+                 union
+                 select s.r_time,
+                        s.empid,
+                        s.cpny_id,
+                        to_char(s.r_time, 'yyyy-mm') r_month
+                   from AR_MAC_RECORDS s) a,
+                hr_employee h,
+                hr_department d,
+                AR_CALENDER c
+         where a.empid = h.person_id
+           and h.deptid = d.deptid
+           and to_char(a.r_time, 'yyyy-mm-dd') >= #arDateStarted:VARCHAR#  
+           and to_char(a.r_time, 'yyyy-mm-dd') <= #arDateEnd:VARCHAR#
+           and a.cpny_id = '78000000'
+           and c.cpny_id = '78000000'
+           and h.emp_diff_code = 'C_12067_1330306'
+           and h.wages_type_code = 'C_20020_1'
+           and h.status_code not in ('EmpStatus3', 'C_12001_1330048')
+           and to_date(to_char(a.r_time, 'yyyy-mm-dd'), 'yyyy-mm-dd') =
+               c.ddate
+           and c.typeid = #workType:VARCHAR# 
+         group by a.empid,
+                   h.empid,
+                   h.chinesename,
+                   to_char(a.r_time, 'yyyy-mm-dd'),
+                   r_month
+        
+        ) s,
+       hr_employee h1,
+       hr_department d1
+ where s.person_id = h1.person_id
+   and h1.deptid = d1.deptid
+ group by s.person_id, h1.chinesename, d1.fourthdept, s.r_month
+ order by d1.fourthdept
+	]]>
+	</select>
+	
+	<select id="retrieveReport01287Data1" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+	        select s.r_month as Y_M,
+       get_empid(s.person_id) as EMPID,
+       h1.chinesename as CHINESENAME,
+       get_dept_name(d1.fourthdept) as DEPT,
+       sum(s.ot_hour) as HOUR
+  from (select a.empid as person_id,
+               h.empid,
+               h.chinesename,
+               to_char(max(a.r_time), 'yyyy-mm-dd hh24:mi:ss') r_time,
+               r_month,
+               round((to_date(to_char(max(a.r_time), 'hh24:mi:ss'),
+                              'hh24:mi:ss') -
+                     to_date('17:30:00', 'hh24:mi:ss')) * 24,
+                     2) ot_hour
+          from (select t.r_time,
+                       t.empid,
+                       t.cpny_id,
+                       to_char(t.r_time, 'yyyy-mm') r_month
+                  from AR_MAC_RECORDS_HISTORY t
+                union
+                select s.r_time,
+                       s.empid,
+                       s.cpny_id,
+                       to_char(s.r_time, 'yyyy-mm') r_month
+                  from AR_MAC_RECORDS s) a,
+               hr_employee h,
+               hr_department d,
+               AR_CALENDER c
+         where a.empid = h.person_id
+           and h.deptid = d.deptid
+           and to_char(a.r_time, 'hh24:mi:ss') > '17:30:00'
+           and to_char(a.r_time, 'yyyy-mm-dd') >= #arDateStarted:VARCHAR#  
+           and to_char(a.r_time, 'yyyy-mm-dd') <= #arDateEnd:VARCHAR#
+           and a.cpny_id = '78000000'
+           and c.cpny_id = '78000000'
+           and h.emp_diff_code = 'C_12067_1330306'
+           and h.wages_type_code = 'C_20020_1'
+           and h.status_code not in ('EmpStatus3', 'C_12001_1330048')
+           and to_date(to_char(a.r_time, 'yyyy-mm-dd'), 'yyyy-mm-dd') =
+               c.ddate
+           and c.typeid = '1'
+         group by a.empid,
+                  h.empid,
+                  h.chinesename,
+                  r_month,
+                  to_char(a.r_time, 'yyyy-mm-dd')) s,
+       hr_employee h1,
+       hr_department d1
+ where s.person_id = h1.person_id
+   and h1.deptid = d1.deptid
+ group by s.person_id, h1.chinesename, d1.fourthdept, s.r_month
+	]]>
+	</select>
+	
+	<select id="retrieveReport0106Data" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+			SELECT #arMonth:VARCHR# AS ARMONTH,
+				   COUNT(DEPT.DEPTNAME) OVER(PARTITION BY DEPT.DEPTNAME) AS DEPT_CNT, 
+			       DEPT.DEPTNAME,
+			       MAX(OFFICE.DEPTNAME) AS OFFICENAME,
+	              (CASE GROUPING_ID(DEPT.DEPTNAME,
+	                         A.EMPID) WHEN 1 THEN '小计' WHEN 3 THEN '合计' ELSE MAX(TEAM.DEPTNAME) END) AS TEAMNAME,
+	               A.EMPID,
+	               MAX(A.CHINESENAME) AS CHINESENAME,
+			       DECODE(MAX(
+	]]>
+	<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	<![CDATA[
+			       ), 
+	]]>
+	<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+	   			   <include refid="OTHER_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+	   			   <include refid="OTHER_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+	   			   <include refid="OTHER_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	<![CDATA[	
+			       ) AS POST_GRADE
+			  FROM HR_EMPLOYEE A,
+	]]>
+	
+		<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+		   			   <include refid="DICC_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+		   			   <include refid="DIY_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+		   			   <include refid="DISC_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+		   			   <include refid="DISD_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+			
+	<![CDATA[
+			       HR_DEPARTMENT DEPT,
+			       HR_DEPARTMENT OFFICE,
+			       HR_DEPARTMENT TEAM
+			 WHERE A.DEPTID = D.DEPTID
+			   AND D.DEPT_ID = DEPT.DEPTID
+			   AND D.OFFICE_ID = OFFICE.DEPTID
+			   AND D.TEAM_ID = TEAM.DEPTID
+	]]>
+	<isNotEmpty prepend="AND" property="supervisorId">
+	    	<![CDATA[
+	            EXISTS ( SELECT *
+	                       FROM AR_SUPERVISOR_INFO J
+	                      WHERE AR_SUPERVISOR_ID = #supervisorId:VARCHAR#
+	                        AND A.DEPTID = J.SUPERVISED_DEPTID
+	              )
+	        ]]>
+	</isNotEmpty>
+	<![CDATA[
+			   AND A.CALC_FLAG = 'Y'
+			   AND A.STATUS_CODE <> 'EmpStatus3'
+			 GROUP BY ROLLUP(DEPT.DEPTNAME,A.EMPID)
+			 ORDER BY DEPT.DEPTNAME, MAX(OFFICE.DEPT_LEVEL),MAX(OFFICE.DEPTID),MAX(D.DEPT_LEVEL),  MAX(TEAM.DEPTID), A.EMPID
+    ]]>
+	</select>
+	
+	<select id="retrieveReport0105Data" parameterClass="SimpleMap" resultClass="SimpleMap"  remapResults="true">
+	<![CDATA[
+			SELECT #arMonth:VARCHR# AS ARMONTH,
+				   COUNT(DEPT.DEPTNAME) OVER(PARTITION BY DEPT.DEPTNAME) AS DEPT_CNT, 
+			       DEPT.DEPTNAME,
+			       MAX(OFFICE.DEPTNAME) AS OFFICENAME,
+	              (CASE GROUPING_ID(DEPT.DEPTNAME,
+	                         C.EMPID) WHEN 1 THEN '小计' WHEN 3 THEN '合计' ELSE MAX(TEAM.DEPTNAME) END) AS TEAMNAME,
+	               C.EMPID,
+	               MAX(C.CHINESENAME) AS CHINESENAME,
+			       DECODE(MAX(C.POST_GROUP_CODE), 
+	]]>
+	<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+	   			   <include refid="OTHER_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+	   			   <include refid="OTHER_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+	   			   <include refid="OTHER_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	<![CDATA[	
+			       ) AS POST_GRADE
+			       
+			       $selectSql$
+			       
+			       $sumAllSql$
+			       
+			  FROM (SELECT T.EMPID,
+			       T.AR_DATE_STR
+			       $groupBySql$
+			  FROM AR_DETAIL T, AR_ITEM T2
+			 WHERE T.AR_ITEM_NO = T2.ITEM_NO
+			   AND T.AR_DATE_STR BETWEEN #dateStarted:VARCHAR# AND #dateEnd:VARCHAR#
+			   AND T2.ITEM_GROUP_CODE = 'OverTimeGroup') A,
+		       (SELECT T.PERSON_ID,T.EMPID,T.CHINESENAME,T.DEPTID,
+	]]>
+	<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	<![CDATA[
+				      AS POST_GROUP_CODE
+	             FROM HR_EMPLOYEE T) C,
+	]]>
+	
+		<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+		   			   <include refid="DICC_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+		   			   <include refid="DIY_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+		   			   <include refid="DISC_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+		   			   <include refid="DISD_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+			
+	<![CDATA[
+			       HR_DEPARTMENT DEPT,
+			       HR_DEPARTMENT OFFICE,
+			       HR_DEPARTMENT TEAM
+			 WHERE A.EMPID = C.PERSON_ID
+			   AND C.DEPTID = D.DEPTID
+			   AND D.DEPT_ID = DEPT.DEPTID
+			   AND D.OFFICE_ID = OFFICE.DEPTID
+			   AND D.TEAM_ID = TEAM.DEPTID
+		  
+	]]>
+	<isNotEmpty prepend="AND" property="supervisorId">
+	    	<![CDATA[
+	            EXISTS ( SELECT *
+	                     FROM AR_SUPERVISOR_INFO J
+	                     WHERE AR_SUPERVISOR_ID = #supervisorId:VARCHAR#
+	                     AND C.DEPTID = J.SUPERVISED_DEPTID                   
+	              )
+	        ]]>
+	</isNotEmpty>
+	<![CDATA[
+		GROUP BY ROLLUP(DEPT.DEPTNAME,C.EMPID)
+		ORDER BY DEPT.DEPTNAME, MAX(OFFICE.DEPT_LEVEL),MAX(OFFICE.DEPTID),MAX(D.DEPT_LEVEL),  MAX(TEAM.DEPTID), C.EMPID
+	]]>
+	</select>
+	
+	
+	<select id="retrieveReport0124Data" parameterClass="SimpleMap" resultClass="SimpleMap"  remapResults="true">
+	<![CDATA[
+			SELECT C.EMPID,
+			       C.CHINESENAME,
+			       C.POST_GROUP_CODE,
+			       TEAM.DEPTNAME,
+			       MAX(DEPT.DEPTNAME) AS OFFICENAME
+			       $selectSql$
+			  FROM (SELECT T.EMPID,
+			       T.AR_MONTH
+			       $groupBySql$
+			  FROM AR_HISTORY T
+			 WHERE T.AR_MONTH BETWEEN #yearMonthStart:VARCHAR# AND #yearMonthEnd:VARCHAR#
+			   ) A,
+		       (SELECT T.PERSON_ID,T.EMPID,T.CHINESENAME,T.DEPTID,
+	                  GET_SYS_CODE(T.POST_GRADE_CODE) AS POST_GROUP_CODE
+	             FROM HR_EMPLOYEE T) C,
+	]]>
+	
+		<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+		   			   <include refid="DICC_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+		   			   <include refid="DIY_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+		   			   <include refid="DISC_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+		   			   <include refid="DISD_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+			
+	<![CDATA[
+			       HR_DEPARTMENT DEPT,
+			       HR_DEPARTMENT OFFICE,
+			       HR_DEPARTMENT TEAM
+			 WHERE A.EMPID = C.EMPID
+			   AND C.DEPTID = D.DEPTID
+			   AND D.DEPT_ID = DEPT.DEPTID
+			   AND D.OFFICE_ID = OFFICE.DEPTID
+			   AND D.TEAM_ID = TEAM.DEPTID
+		  
+	]]>
+	<isNotEmpty prepend="AND" property="supervisorId">
+	    	<![CDATA[
+	            EXISTS ( SELECT *
+	                     FROM AR_SUPERVISOR_INFO J
+	                     WHERE AR_SUPERVISOR_ID = #supervisorId:VARCHAR#
+	                     AND C.DEPTID = J.SUPERVISED_DEPTID                   
+	              )
+	        ]]>
+	</isNotEmpty>
+	<![CDATA[
+		GROUP BY C.EMPID,
+           C.CHINESENAME,
+           C.POST_GROUP_CODE,
+           TEAM.DEPTID,
+           TEAM.DEPTNAME
+        ORDER BY TEAM.DEPTID, C.EMPID
+	]]>
+	</select>
+	
+	<select id="retrieveReport0111Data" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+		 SELECT GET_DEPT_NAME(DEPT.DEPTID) DEPTNAME,
+		        HR_GET_LEVEL_DEPTNAME(DEPT.DEPTID,4) FOURTHDEPTNAME,
+		 		COUNT(DEPT.DEPTID) OVER(PARTITION BY DEPT.DEPTID) AS DEPT_CNT, 
+		       (CASE GROUPING_ID(DEPT.DEPTID,C.POST_GROUP_CODE) 
+		             WHEN 1 THEN '小计' 
+		             WHEN 3 THEN '总计' 
+		        ELSE DECODE(C.POST_GROUP_CODE, 'WORKER' , '工人', '职员') END) AS POST_GROUP,
+		       SUM(A.QUANTITY) AS OT_SUM,
+		       COUNT(DISTINCT A.EMPID) AS OT_PERSON_CNT,
+		       TRUNC(SUM(A.QUANTITY)/COUNT(DISTINCT A.EMPID),1) AS  OT_AVG
+		  FROM AR_DETAIL A, 
+		       AR_ITEM B,
+		       (SELECT T.PERSON_ID,T.CHINESENAME,T.DEPTID,
+		       		     (CASE POST_CODE
+                  WHEN 'C_12004_1355928' THEN
+                   'WORKER'
+                  WHEN 'C_12004_1331763' THEN
+                   'WORKER'
+                  WHEN 'C_12004_1331764' THEN
+                   'WORKER'
+                  WHEN 'C_12004_1393412' THEN
+                   'WORKER'
+                  WHEN 'C_12005_1355928' THEN
+                   'WORKER'
+                  WHEN 'C_12005_1331763' THEN
+                   'WORKER'
+                  WHEN 'C_12005_1331764' THEN
+                   'WORKER'
+                  WHEN 'C_12005_1393412' THEN
+                   'WORKER'
+                  WHEN 'C_12004_1324167' THEN
+                   'WORKER'
+                  WHEN 'C_12005_1324167' THEN
+                   'WORKER'
+                  ELSE
+                   'OFFICER'
+                END)  POST_GROUP_CODE
+		          FROM HR_EMPLOYEE T) C,
+		       ]]>
+	
+		<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+		   			   <include refid="DICC_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+		   			   <include refid="DIY_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+		   			   <include refid="DISC_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+		   			   <include refid="DISD_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+			
+	<![CDATA[
+		       HR_DEPARTMENT DEPT,
+		       HR_DEPARTMENT OFFICE,
+		       HR_DEPARTMENT TEAM
+		 WHERE A.AR_ITEM_NO = B.ITEM_NO
+		   AND A.EMPID = C.PERSON_ID
+		   AND C.DEPTID = D.DEPTID
+		   AND D.DEPTID = DEPT.DEPTID
+		   AND D.OFFICE_ID = OFFICE.DEPTID
+		   AND D.TEAM_ID = TEAM.DEPTID
+	]]>
+  	<isNotEmpty prepend="AND" property="supervisorId"> 
+        <![CDATA[
+              EXISTS ( SELECT *
+                       FROM AR_SUPERVISOR_INFO J
+                       WHERE AR_SUPERVISOR_ID = #supervisorId:VARCHAR#
+                       AND C.DEPTID = J.SUPERVISED_DEPTID                   
+                )
+          ]]>
+  	</isNotEmpty>
+  	<![CDATA[
+		   AND A.QUANTITY > 0
+		   AND B.ITEM_GROUP_CODE = 'OverTimeGroup'
+		    AND to_date(A.AR_DATE_STR,'YYYY/MM/DD') >= to_date(#arDate:VARCHAR#,'YYYY-MM-DD')  
+			and    to_date(A.AR_DATE_STR,'YYYY/MM/DD') <= to_date(#dateEnd:varchar#,'YYYY-MM-DD') 
+		 GROUP BY ROLLUP(DEPT.DEPTID,C.POST_GROUP_CODE)
+		 ORDER BY DEPT.DEPTID
+	]]>
+	</select>
+	
+	<select id="retrieveReport0112Data" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+		 SELECT $sql$
+		  FROM AR_DETAIL, HR_EMPLOYEE C,
+	]]>
+	
+		<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+		   			   <include refid="DICC_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+					   <include refid="DICI_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+		   			   <include refid="DIY_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+		   			   <include refid="DISC_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="FN000000"><!-- DISC -->
+		   			   <include refid="DBCN_DI_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+		   			   <include refid="DISD_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+			
+	<![CDATA[
+		       HR_DEPARTMENT DEPT,
+		       HR_DEPARTMENT OFFICE,
+		       HR_DEPARTMENT TEAM
+		 WHERE AR_DETAIL.EMPID = C.PERSON_ID
+		   AND C.DEPTID = D.DEPTID
+		   AND D.DEPT_ID = DEPT.DEPTID
+		   AND D.OFFICE_ID = OFFICE.DEPTID
+		   AND D.TEAM_ID = TEAM.DEPTID
+	]]>
+	
+	<isNotEmpty prepend="AND" property="deptId">
+		<![CDATA[
+		EXISTS (SELECT T.DEPTID FROM HR_DEPARTMENT T
+             WHERE T.DEPTID = C.DEPTID 
+             START WITH T.DEPTID = #deptId:VARCHAR#
+             CONNECT BY PRIOR T.DEPTID = T.PARENT_DEPT_ID) 
+    ]]>
+    </isNotEmpty>
+	
+  	<isNotEmpty prepend="AND" property="supervisorId">
+        <![CDATA[
+              EXISTS ( SELECT *
+                       FROM AR_SUPERVISOR_INFO J
+                       WHERE AR_SUPERVISOR_ID = #supervisorId:VARCHAR#
+                       AND C.DEPTID = J.SUPERVISED_DEPTID                   
+                )
+          ]]>
+  	</isNotEmpty>
+  	
+  	<isNotEmpty prepend="AND" property="arDateStarted">
+		<![CDATA[
+				   AR_DETAIL.AR_DATE_STR BETWEEN #arDateStarted:VARCHAR# AND #arDateEnd:VARCHAR#  
+		]]>
+	</isNotEmpty>
+	
+	
+  	
+  	<![CDATA[
+		   AND AR_DETAIL.QUANTITY > 0
+		GROUP BY AR_DETAIL.EMPID
+	]]>
+	</select>
+	
+	<select id="dailyDetailOverall" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			SELECT 
+			       COUNT(DISTINCT AR.EMPID) AS "zongShu",
+			       COUNT(CASE
+			               WHEN AR.AR_ITEM_NO = 35 AND AR.QUANTITY = 8 THEN
+			                AR.EMPID
+			             END) AS "zhengChang",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 24, 1)) AS "peiXun",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 53, 1)) AS "yanXiu",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 20, 1)) AS "chuChai",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 52, 1)) AS "jiaoYu",
+			       COUNT(CASE
+			               WHEN AR.ITEM_GROUP_CODE IN ('LeavelGroup', 'ProprietaryGroup', 'SpecialGroup') AND AR.AR_ITEM_NO <> 1 THEN
+			                AR.EMPID
+			             END) AS "quQing",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 10,1)) AS "chanJia",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 6, 1,37,1)) AS "hunSong",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 12, 1)) AS "gongShang",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 25, 1)) AS "shiJia",
+			       
+			       COUNT(DECODE(AR.AR_ITEM_NO, 4, 1)) AS "pingJia",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 29, 1)) AS "kuangGong",
+			       COUNT(CASE
+			               WHEN AR.AR_ITEM_NO IN (43, 44, 45, 46, 47, 48,49) THEN
+			                AR.EMPID
+			             END) AS "bingXiu",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 58, 1)) AS "xiuJia",
+			       
+			       COUNT(DECODE(AR.AR_ITEM_NO, 1, 1)) AS "chiDao",
+			       
+			       COUNT(DISTINCT CASE WHEN OT.QUANTITY > 0 THEN OT.EMPID END ) AS "otRenShu",
+			       NVL(SUM(OT.QUANTITY),0) AS "otShiJian"      
+			  FROM 
+			      (SELECT HR.EMPID,
+			               HR.CHINESENAME,
+			               HR.DEPTID,
+			               HR.JOIN_TYPE_CODE,
+			               SY.CODE_NAME AS JOIN_TYPE
+			          FROM HR_EMPLOYEE HR,
+			               (SELECT CODE_ID,CODE_NAME FROM SY_CODE WHERE PARENT_CODE = 'EmpDivision') SY 
+			           WHERE HR.JOIN_TYPE_CODE = SY.CODE_ID(+)
+			             AND HR.EMP_DIFF_CODE = 'C_12067_1330306' 
+			             AND HR.ACTIVITY = 1
+			       ) EMP,
+			       (SELECT C.*,D.ITEM_NAME,D.ITEM_GROUP_CODE
+			          FROM AR_DETAIL C, AR_ITEM D
+			         WHERE C.AR_ITEM_NO = D.ITEM_NO 
+			           AND SHIFT_NO <> '65'
+			           AND AR_DATE_STR = #dateStarted:VARCHAR2#
+			           AND ITEM_GROUP_CODE <> 'OverTimeGroup') AR ,
+			        (SELECT A.*,B.ITEM_NAME,B.ITEM_GROUP_CODE
+			           FROM AR_DETAIL A, AR_ITEM B
+			          WHERE SHIFT_NO <> '65'
+			            AND A.AR_ITEM_NO = B.ITEM_NO
+			            AND AR_DATE_STR BETWEEN #otStart:VARCHAR2# AND #otEnd:VARCHAR2#
+			            AND ITEM_GROUP_CODE = 'OverTimeGroup') OT
+			 WHERE EMP.EMPID = AR.EMPID(+)
+			   AND EMP.EMPID = OT.EMPID(+)
+		]]>
+		<isEqual prepend="AND" property="empType" compareValue="office">
+	   			   EMP.JOIN_TYPE LIKE '%职员'
+	   	</isEqual>
+	   	<isEqual prepend="AND" property="empType" compareValue="work">
+	   			   EMP.JOIN_TYPE LIKE '%工人'
+	   	</isEqual>
+	   	<isNotEmpty prepend="AND" property="parentDeptID">
+		<![CDATA[
+		 		 EXISTS(
+					       SELECT HD.DEPTID FROM HR_DEPARTMENT HD WHERE HD.DEPTID = EMP.DEPTID 
+					              START WITH DEPTID = #parentDeptID:VARCHAR2# CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID 
+					   )
+	    ]]>
+		</isNotEmpty>
+	   	
+		
+	</select>
+	
+	<select id="dailyDetailOverallContent" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			SELECT HD.DEPTID,HD.DEPTNAME,
+			       COUNT(DISTINCT AR.EMPID) AS "zongShu",
+			       COUNT(CASE
+			               WHEN AR.AR_ITEM_NO = 35 AND AR.QUANTITY = 8 THEN
+			                AR.EMPID
+			             END) AS "zhengChang",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 24, 1)) AS "peiXun",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 53, 1)) AS "yanXiu",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 20, 1)) AS "chuChai",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 52, 1)) AS "jiaoYu",
+			       COUNT(CASE
+			               WHEN AR.ITEM_GROUP_CODE IN ('LeavelGroup', 'ProprietaryGroup', 'SpecialGroup') AND AR.AR_ITEM_NO <> 1 THEN
+			                AR.EMPID
+			             END) AS "quQing",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 10,1)) AS "chanJia",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 6, 1,37,1)) AS "hunSong",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 12, 1)) AS "gongShang",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 25, 1)) AS "shiJia",
+			       
+			       COUNT(DECODE(AR.AR_ITEM_NO, 4, 1)) AS "pingJia",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 29, 1)) AS "kuangGong",
+			       COUNT(CASE
+			               WHEN AR.AR_ITEM_NO IN (43, 44, 45, 46, 47, 48,49) THEN
+			                AR.EMPID
+			             END) AS "bingXiu",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 58, 1)) AS "xiuJia",
+			       
+			       COUNT(DECODE(AR.AR_ITEM_NO, 1, 1)) AS "chiDao",
+			       
+			       COUNT(DISTINCT CASE WHEN OT.QUANTITY > 0 THEN OT.EMPID END) AS "otRenShu",
+			       NVL(SUM(OT.QUANTITY),0) AS "otShiJian"   
+			  FROM 
+			      (SELECT HR.EMPID,
+			               HR.CHINESENAME,
+			               HR.DEPTID,
+			               HR.JOIN_TYPE_CODE,
+			               SY.CODE_NAME AS JOIN_TYPE,
+			               DEPT.DEPTNAME,
+			               DEPT.DEPT_LEVEL,
+			               NVL(SUBSTR(LTRIM(DEPT_ID_PATH, '?'),1,INSTR(LTRIM(DEPT_ID_PATH, '?'), '?') - 1),DEPT.DEPTID) AS DEPT2
+			          FROM (SELECT HD.DEPTID,
+			                       HD.DEPTNAME,
+			                       HD.DEPT_LEVEL,
+			                       SYS_CONNECT_BY_PATH(HD.DEPTID, '?') AS DEPT_ID_PATH
+			                  FROM HR_DEPARTMENT HD
+			                 WHERE HD.DEPTID <> '780T9000'
+			                 START WITH HD.DEPT_LEVEL = 3
+			                CONNECT BY PRIOR HD.DEPTID = HD.PARENT_DEPT_ID) DEPT,
+			               HR_EMPLOYEE HR,
+			               (SELECT CODE_ID,CODE_NAME FROM SY_CODE WHERE PARENT_CODE = 'EmpDivision') SY 
+			           WHERE HR.DEPTID = DEPT.DEPTID
+			             AND HR.JOIN_TYPE_CODE = SY.CODE_ID(+)
+			             AND HR.EMP_DIFF_CODE = 'C_12067_1330306' 
+			             AND HR.ACTIVITY = 1
+			       ) EMP,
+			       (SELECT DEPTID,DEPTNAME FROM HR_DEPARTMENT WHERE DEPT_LEVEL = 3) HD,
+			       (SELECT C.*,D.ITEM_NAME,D.ITEM_GROUP_CODE
+			          FROM AR_DETAIL C, AR_ITEM D
+			         WHERE C.AR_ITEM_NO = D.ITEM_NO 
+			           AND SHIFT_NO <> '65'
+			           AND AR_DATE_STR = #dateStarted:VARCHAR2#
+			           AND ITEM_GROUP_CODE <> 'OverTimeGroup') AR ,
+			        (SELECT A.*,B.ITEM_NAME,B.ITEM_GROUP_CODE
+			           FROM AR_DETAIL A, AR_ITEM B
+			          WHERE SHIFT_NO <> '65'
+			            AND A.AR_ITEM_NO = B.ITEM_NO
+			            AND AR_DATE_STR BETWEEN #otStart:VARCHAR2# AND #otEnd:VARCHAR2#
+			            AND ITEM_GROUP_CODE = 'OverTimeGroup') OT
+			 WHERE EMP.DEPT2 = HD.DEPTID
+			   AND EMP.EMPID = AR.EMPID(+)
+			   AND EMP.EMPID = OT.EMPID(+)
+	    ]]>
+	    <isEqual prepend="AND" property="empType" compareValue="office">
+	   			   EMP.JOIN_TYPE LIKE '%职员'
+	   	</isEqual>
+	   	<isEqual prepend="AND" property="empType" compareValue="work">
+	   			   EMP.JOIN_TYPE LIKE '%工人'
+	   	</isEqual>
+		<![CDATA[
+			 GROUP BY HD.DEPTID,HD.DEPTNAME
+			 ORDER BY HD.DEPTID
+		]]>
+	</select>
+	
+	<select id="dailyDetailStatistics" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			SELECT HD.DEPTID,HD.DEPTNAME,
+			       COUNT(DISTINCT AR.EMPID) AS "zongShu",
+			       COUNT(CASE
+			               WHEN AR.AR_ITEM_NO = 35 AND AR.QUANTITY = 8 THEN
+			                AR.EMPID
+			             END) AS "zhengChang",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 24, 1)) AS "peiXun",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 53, 1)) AS "yanXiu",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 20, 1)) AS "chuChai",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 52, 1)) AS "jiaoYu",
+			       COUNT(CASE
+			               WHEN AR.ITEM_GROUP_CODE IN ('LeavelGroup', 'ProprietaryGroup', 'SpecialGroup') AND AR.AR_ITEM_NO <> 1 THEN
+			                AR.EMPID
+			             END) AS "quQing",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 10,1)) AS "chanJia",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 6, 1,37,1)) AS "hunSong",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 12, 1)) AS "gongShang",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 25, 1)) AS "shiJia",
+			       
+			       COUNT(DECODE(AR.AR_ITEM_NO, 4, 1)) AS "pingJia",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 29, 1)) AS "kuangGong",
+			       COUNT(CASE
+			               WHEN AR.AR_ITEM_NO IN (43, 44, 45, 46, 47, 48,49) THEN
+			                AR.EMPID
+			             END) AS "bingXiu",
+			       COUNT(DECODE(AR.AR_ITEM_NO, 58, 1)) AS "xiuJia",
+			       
+			       COUNT(DECODE(AR.AR_ITEM_NO, 1, 1)) AS "chiDao",
+			       
+			       COUNT(DISTINCT CASE WHEN OT.QUANTITY > 0 THEN OT.EMPID END) AS "otRenShu",
+			       NVL(SUM(OT.QUANTITY),0) AS "otShiJian"   
+			  FROM 
+			      (SELECT  HR.EMPID,
+			               HR.CHINESENAME,
+			               HR.DEPTID,
+			               HR.JOIN_TYPE_CODE,
+			               SY.CODE_NAME AS JOIN_TYPE,
+			               DEPT.OFFICE,
+			               DEPT.PART
+			         FROM (SELECT E.DEPTID,NVL(DEPT3.DEPT3,E.DEPTID) AS OFFICE, NVL(DEPT2.DEPT2,E.DEPTID) AS PART
+			                 FROM HR_DEPARTMENT E,
+			                     (SELECT DEPT.DEPTID,NVL(SUBSTR(LTRIM(DEPT_ID_PATH,'?'),1,INSTR(LTRIM(DEPT_ID_PATH,'?'),'?') - 1),DEPT.DEPTID) AS DEPT2
+			                      FROM (
+			                            SELECT HD.DEPTID,
+			                                   HD.DEPTNAME,
+			                                   SYS_CONNECT_BY_PATH(HD.DEPTID, '?') AS DEPT_ID_PATH
+			                              FROM HR_DEPARTMENT HD
+			                             START WITH HD.DEPT_LEVEL = 3
+			                            CONNECT BY PRIOR HD.DEPTID = HD.PARENT_DEPT_ID) DEPT) DEPT2,
+			                     (SELECT DEPT.*,NVL(SUBSTR(LTRIM(DEPT_ID_PATH,'?'),1,INSTR(LTRIM(DEPT_ID_PATH,'?'),'?') - 1),DEPT.DEPTID) AS DEPT3
+			                          FROM (
+			                                SELECT HD.DEPTID,
+			                                       HD.DEPTNAME,
+			                                       SYS_CONNECT_BY_PATH(HD.DEPTID, '?') AS DEPT_ID_PATH
+			                                  FROM HR_DEPARTMENT HD
+			                                 START WITH HD.DEPT_LEVEL = 4
+			                                CONNECT BY PRIOR HD.DEPTID = HD.PARENT_DEPT_ID) DEPT ) DEPT3
+			                 WHERE E.DEPTID = DEPT2.DEPTID(+)
+			                   AND E.DEPTID = DEPT3.DEPTID(+)
+			                   AND DEPT2.DEPT2 = #parentDeptID:VARCHAR2#
+			             ) DEPT,
+			             HR_EMPLOYEE HR,
+			             (SELECT CODE_ID,CODE_NAME FROM SY_CODE WHERE PARENT_CODE = 'EmpDivision') SY 
+			         WHERE HR.DEPTID = DEPT.DEPTID
+			           AND HR.JOIN_TYPE_CODE = SY.CODE_ID(+)
+			           AND HR.EMP_DIFF_CODE = 'C_12067_1330306'
+			           AND HR.ACTIVITY = 1 ) EMP,
+			       (SELECT DEPTID,DEPTNAME FROM HR_DEPARTMENT WHERE DEPT_LEVEL = 4) HD,
+			       (SELECT C.*,D.ITEM_NAME,D.ITEM_GROUP_CODE
+			          FROM AR_DETAIL C, AR_ITEM D
+			         WHERE C.AR_ITEM_NO = D.ITEM_NO 
+			           AND SHIFT_NO <> '65'
+			           AND AR_DATE_STR = #dateStarted:VARCHAR2#
+			           AND ITEM_GROUP_CODE <> 'OverTimeGroup') AR ,
+			        (SELECT A.*,B.ITEM_NAME,B.ITEM_GROUP_CODE
+			           FROM AR_DETAIL A, AR_ITEM B
+			          WHERE SHIFT_NO <> '65'
+			            AND A.AR_ITEM_NO = B.ITEM_NO
+			            AND AR_DATE_STR BETWEEN #otStart:VARCHAR2# AND #otEnd:VARCHAR2#
+			            AND ITEM_GROUP_CODE = 'OverTimeGroup') OT
+			  WHERE EMP.OFFICE = HD.DEPTID
+				    AND EMP.EMPID = AR.EMPID(+)
+				    AND EMP.EMPID = OT.EMPID(+)
+	    ]]>
+	    <isEqual prepend="AND" property="empType" compareValue="office">
+	   			   EMP.JOIN_TYPE LIKE '%职员'
+	   	</isEqual>
+	   	<isEqual prepend="AND" property="empType" compareValue="work">
+	   			   EMP.JOIN_TYPE LIKE '%工人'
+	   	</isEqual>
+		<![CDATA[
+			 GROUP BY HD.DEPTID,HD.DEPTNAME
+			 ORDER BY HD.DEPTID
+		]]>
+	</select>
+	
+	<select id="retrieveDepartmentByLevel" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			SELECT HD.DEPTID,HD.DEPTNAME FROM HR_DEPARTMENT HD WHERE HD.DEPT_LEVEL = #level:NUMERIC# ORDER BY HD.DEPTID
+		]]>
+	</select>
+	
+	<select id="retrieveDailyDetailContent" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			SELECT B.ITEM_NAME || ': ' || LTRIM(MAX (SYS_CONNECT_BY_PATH (CHINESENAME, ',')) KEEP (DENSE_RANK LAST ORDER BY CURR),',') || '; ' AS "CONTENT"          
+			  FROM
+			  (
+			        SELECT AI.ITEM_NAME,AD.EMPID,HR.CHINESENAME,HR.DEPTID,
+			               AI.ITEM_NAME || ROW_NUMBER() OVER(PARTITION BY AD.AR_ITEM_NO ORDER BY AD.EMPID) AS CURR,
+               			   AI.ITEM_NAME || (ROW_NUMBER() OVER(PARTITION BY AD.AR_ITEM_NO ORDER BY AD.EMPID) - 1) AS PREV
+			          FROM AR_DETAIL AD ,
+			               (SELECT A.ITEM_NO,A.ITEM_NAME,A.ITEM_GROUP_CODE FROM AR_ITEM A WHERE A.ITEM_GROUP_CODE IN ('LeavelGroup','ProprietaryGroup','SpecialGroup')) AI,
+						   (SELECT EMPID,CHINESENAME,DEPTID FROM HR_EMPLOYEE WHERE EMP_DIFF_CODE = 'C_12067_1330306' AND ACTIVITY = 1
+		]]>
+		
+		<isEqual prepend="AND" property="empType" compareValue="office">
+		<![CDATA[
+	   			   			POST_GRADE_CODE <> 'C_12004_1330054' AND POST_GRADE_CODE <> 'C_12004_1324167'
+	   	]]>
+	   	</isEqual>
+	   	<isEqual prepend="AND" property="empType" compareValue="work">
+	   	<![CDATA[
+	   			   			(POST_GRADE_CODE = 'C_12004_1330054' OR POST_GRADE_CODE = 'C_12004_1324167')
+	   	]]>		   			
+	   	</isEqual>
+		
+		<![CDATA[	               
+			               ) HR
+			         WHERE AD.AR_ITEM_NO = AI.ITEM_NO
+			           AND AD.EMPID = HR.EMPID
+			           AND AD.AR_DATE_STR = #dateStarted:VARCHAR2#
+			           AND EXISTS (SELECT DEPTID FROM HR_DEPARTMENT HD WHERE HR.DEPTID = HD.DEPTID START WITH HD.DEPTID  = #deptID:VARCHAR2# CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID)
+			  ) B
+			  GROUP BY B.ITEM_NAME
+			  START WITH CURR = B.ITEM_NAME || '1' CONNECT BY PREV = PRIOR CURR
+		]]>
+	</select>
+	
+	<select id="retrieveArHistoryColumnsList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+				SELECT T.ITEM_NAME,T.STA_ITEM_ID
+				  FROM AR_STA_ITEM T
+		      ORDER BY T.CAL_ORDER
+		]]>
+	</select>
+	
+	<select id="retrieveArHistoryDataList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[	
+		SELECT AR_HISTORY.AR_MONTH,
+			   AR_HISTORY.EMPID, 
+			   AR_HISTORY.ATTENDANCE_PERIOD, 
+			   AR_HISTORY.CHINESENAME,
+			   AR_HISTORY.PINYINNAME,
+			   AR_HISTORY.DEPTID,
+			   AR_HISTORY.DEPARTMENT,
+			   SY_CODE.CODE_NAME JOIN_TYPE_NAME,
+			   HR_EMPLOYEE.POSITION_CODE
+			   $sqlStatement$
+		  FROM AR_HISTORY, 
+			   HR_EMPLOYEE,
+			   HR_DEPARTMENT,
+			   SY_CODE ,
+               SY_CODE B
+		 WHERE AR_HISTORY.EMPID = HR_EMPLOYEE.PERSON_ID
+		   AND AR_HISTORY.AR_MONTH = #arMonth:VARCHAR#
+		  AND HR_EMPLOYEE.DEPTID = HR_DEPARTMENT.DEPTID
+		  AND HR_EMPLOYEE.JOIN_TYPE_CODE = SY_CODE.CODE_ID(+)
+		  AND HR_EMPLOYEE.POSITION_CODE=B.CODE_ID(+)
+		 ]]>
+	  
+	  	<isNotEmpty prepend="AND" property="condition">
+			<![CDATA[
+			    (   HR_EMPLOYEE.EMPID LIKE '%' || #condition:VARCHAR# || '%'
+		         OR HR_EMPLOYEE.CHINESENAME LIKE '%' || #condition:VARCHAR# || '%'
+		         OR HR_DEPARTMENT.DEPTNAME LIKE '%' || #condition:VARCHAR# || '%'
+		         OR UPPER(AR_HISTORY.PINYINNAME) LIKE '%' || UPPER(#condition:VARCHAR#) || '%'
+		        )	
+		    ]]>
+		</isNotEmpty>
+		                
+		<isNotEmpty prepend="AND" property="empID">
+			<![CDATA[
+			      HR_EMPLOYEE.EMPID = #empID:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="chineseName">
+			<![CDATA[
+			      HR_EMPLOYEE.CHINESENAME = #chineseName:VARCHAR#
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="supervisor">
+			<![CDATA[
+					  (EXISTS ( SELECT *
+                                FROM AR_SUPERVISOR_INFO J
+                               WHERE AR_SUPERVISOR_ID = #supervisor:VARCHAR#
+                                 AND HR_EMPLOYEE.DEPTID = J.SUPERVISED_DEPTID 
+                               )
+					           OR HR_EMPLOYEE.EMPID = #supervisor:VARCHAR#
+					  )
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="empDiffType">
+			<![CDATA[
+					AR_HISTORY.ATTENDANCE_PERIOD_CODE = #empDiffType:VARCHAR2#
+			]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="deptID">
+			<![CDATA[
+			      	      EXISTS (
+						  SELECT     *
+	                     	FROM HR_DEPARTMENT B1
+	                     	WHERE B1.DEPTID=HR_EMPLOYEE.DEPTID
+	                 	START WITH B1.DEPTID = #deptID:VARCHAR#
+	                 	CONNECT BY PRIOR B1.DEPTID = B1.PARENT_DEPT_ID
+	                )
+		    ]]>
+		</isNotEmpty>
+		
+		<isNotEmpty prepend="AND" property="EmpDivision">
+			<![CDATA[
+			      	   HR_EMPLOYEE.JOIN_TYPE_CODE = #EmpDivision:VARCHAR#   
+		    ]]>
+		</isNotEmpty>
+	         
+	   <![CDATA[
+			ORDER BY   AR_HISTORY.DEPTID DESC,  HR_EMPLOYEE.POSITION_CODE,HR_EMPLOYEE.EMPID 
+		]]>          
+		
+	</select>
+	
+	<select id="retrieveArReportList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+				SELECT DISTINCT A.MENU_CODE,A.MENU_INTRO,A.MENU_URL,A.MENU_PARENT_CODE,A.MENU_EN_INTRO
+				  FROM SY_MENU A, SY_SCREEN_GRANT B
+				 WHERE A.MENU_PARENT_CODE = 'report0100'
+				   AND A.MENU_CODE = B.SCREEN_CODE
+				   AND B.SCREEN_GRANT_NO IN ($screenGrantNo$)
+		]]>
+	</select>
+	
+	<!--
+	comment : report0101,DIY部门汇总信息
+	-->
+	<sql id="DIY_REPORT0101_DEPT_SQL">
+	<![CDATA[
+		SELECT HD.DEPTID,
+		       HD.DEPTNAME,
+		       HD.CPNY_ID,
+		       HD.PARENT_DEPT_ID,
+		       HD.DATE_CREATED,
+		       HD.DATE_ENDED,
+		       HD.DEPT_LEVEL
+		  FROM HR_DEPARTMENT HD
+		 WHERE HD.CPNY_ID = '60000000'
+		   AND HD.ORG_TYPE = 'C_96021_1431220'
+	]]>	
+	</sql>
+	
+	<!--
+	comment : report0101,DISC部门汇总信息
+	-->
+	<sql id="DISC_REPORT0101_DEPT_SQL">
+	<![CDATA[
+		SELECT HD.DEPTID,
+		       HD.DEPTNAME,
+		       HD.CPNY_ID,
+		       HD.PARENT_DEPT_ID,
+		       HD.DATE_CREATED,
+		       HD.DATE_ENDED,
+		       HD.DEPT_LEVEL
+		  FROM HR_DEPARTMENT HD
+		 WHERE HD.CPNY_ID = '61000000'
+		   AND HD.ORG_TYPE = 'C_96021_1431220'
+	]]>	
+	</sql>
+	
+	<!--
+	comment : report0101,DISD部门汇总信息,总括
+	-->
+	<sql id="DISD_REPORT0101_DEPT_SQL">
+	<![CDATA[
+		SELECT HD.DEPTID,
+		       HD.DEPTNAME,
+		       HD.CPNY_ID,
+		       HD.PARENT_DEPT_ID,
+		       HD.DATE_CREATED,
+		       HD.DATE_ENDED,
+		       HD.DEPT_LEVEL
+		  FROM HR_DEPARTMENT HD
+		 WHERE HD.CPNY_ID = '63000000'
+		   AND HD.ORG_TYPE = 'C_96021_1431218'
+	]]>		
+	</sql>
+	
+	<!--
+	comment : report0101,DICC部门汇总信息,总括
+	-->
+	<sql id="DICC_REPORT0101_DEPT_SQL">
+	<![CDATA[
+			SELECT HD.DEPTID,
+			       HD.DEPTNAME,
+			       HD.CPNY_ID,
+			       HD.PARENT_DEPT_ID,
+			       HD.DATE_CREATED,
+			       HD.DATE_ENDED,
+			       HD.DEPT_LEVEL
+			  FROM HR_DEPARTMENT HD
+			 WHERE HD.CPNY_ID = '78000000'
+			   AND HD.ORG_TYPE = 'C_96021_1431218'
+	]]>
+	</sql>
+	
+	<select id="retrieveReport0101Dept" parameterClass="SimpleMap" resultClass="SimpleMap" remapResults="true">
+		<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+		   			   <include refid="DICC_REPORT0101_DEPT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+		   			   <include refid="DIY_REPORT0101_DEPT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+		   			   <include refid="DISC_REPORT0101_DEPT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+		   			   <include refid="DISD_REPORT0101_DEPT_SQL"/>
+		</isEqual>
+		
+	</select>
+	
+	<sql id="arItemSql">
+		<![CDATA[
+				   COUNT(DISTINCT AR.EMPID) AS "zongShu",
+       COUNT(DISTINCT CASE
+               WHEN EMP.POST_GROUP_CODE = 'OFFICER' THEN
+                AR.EMPID
+             END) AS "zongShuA",
+       COUNT(DISTINCT CASE
+               WHEN EMP.POST_GROUP_CODE = 'WORKER' THEN
+                AR.EMPID
+             END) AS "zongShuB",
+       COUNT(CASE
+               WHEN EMP.POST_GROUP_CODE = 'OFFICER' AND AR.AR_ITEM_NO = 35 AND
+                    AR.QUANTITY > 0 THEN
+                AR.EMPID
+             END) AS "zhengChangA",
+       COUNT(CASE
+               WHEN EMP.POST_GROUP_CODE = 'WORKER' AND AR.AR_ITEM_NO = 35 AND
+                    AR.QUANTITY > 0 THEN
+                AR.EMPID
+             END) AS "zhengChangB",
+       COUNT(DECODE(AR.AR_ITEM_NO, 24, 1)) AS "peiXun",
+       COUNT(DECODE(AR.AR_ITEM_NO, 53, 1)) AS "yanXiu",
+       COUNT(DECODE(AR.AR_ITEM_NO, 20, 1)) AS "chuChai",
+       COUNT(DECODE(AR.AR_ITEM_NO, 52, 1)) AS "jiaoYu",
+       COUNT(DISTINCT CASE
+               WHEN AR.ITEM_GROUP_CODE IN ('LeavelGroup', 'ProprietaryGroup') THEN
+                AR.EMPID
+             END) AS "queQing",
+       COUNT(DECODE(AR.AR_ITEM_NO, 10, 1, 65, 1)) AS "chanJia",
+       COUNT(DECODE(AR.AR_ITEM_NO, 6, 1, 37, 1)) AS "hunSongJia",
+       COUNT(DECODE(AR.AR_ITEM_NO, 12, 1, 68, 1)) AS "gongShangJia",
+       COUNT(DECODE(AR.AR_ITEM_NO, 25, 1)) AS "shiJia",
+       COUNT(DECODE(AR.AR_ITEM_NO, 4, 1)) AS "bingJia",
+       COUNT(DECODE(AR.AR_ITEM_NO, 29, 1)) AS "kuangGong",
+       COUNT(CASE
+               WHEN AR.AR_ITEM_NO IN (44, 45) THEN
+                AR.EMPID
+             END) AS "bingXiu",
+       COUNT(DECODE(AR.AR_ITEM_NO, 58, 1)) AS "xiuJia",
+       COUNT(DECODE(AR.AR_ITEM_NO, 1, 1)) AS "chiDao",
+       COUNT(DISTINCT CASE
+               WHEN ITEM_GROUP_CODE = 'OverTimeGroup' AND
+                    EMP.POST_GROUP_CODE = 'OFFICER' AND AR.QUANTITY > 0 THEN
+                AR.EMPID
+             END) AS "otRenShuA",
+       NVL(SUM(CASE
+                 WHEN AR.ITEM_GROUP_CODE = 'OverTimeGroup' AND
+                      EMP.POST_GROUP_CODE = 'OFFICER' THEN
+                  AR.QUANTITY
+               END),
+           0) AS "otShiJianA",
+       COUNT(DISTINCT CASE
+               WHEN ITEM_GROUP_CODE = 'OverTimeGroup' AND
+                    EMP.POST_GROUP_CODE = 'WORKER' AND AR.QUANTITY > 0 THEN
+                AR.EMPID
+             END) AS "otRenShuB",
+       NVL(SUM(CASE
+                 WHEN AR.ITEM_GROUP_CODE = 'OverTimeGroup' AND
+                      EMP.POST_GROUP_CODE = 'WORKER' THEN
+                  AR.QUANTITY
+               END),
+           0) AS "otShiJianB"
+		]]>
+	</sql>
+	
+	<select id="retrieveReport0101HeadData" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			SELECT 
+		]]>
+		
+			<include refid="arItemSql"/>
+			
+		<![CDATA[
+			  FROM 
+			      (SELECT HR.PERSON_ID,
+					      HR.EMPID,
+					      HR.CHINESENAME,
+					      HR.DEPTID,
+	]]>
+	<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	<![CDATA[
+					      AS POST_GROUP_CODE
+					 FROM HR_EMPLOYEE HR
+					WHERE HR.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="supervisorId">
+        <![CDATA[
+            EXISTS ( SELECT *
+                                  FROM AR_SUPERVISOR_INFO J
+                                 WHERE AR_SUPERVISOR_ID = #supervisorId:VARCHAR#
+                                   AND HR.DEPTID = J.SUPERVISED_DEPTID                   
+              )
+        ]]>
+        </isNotEmpty>
+		<![CDATA[
+			       ) EMP,
+			       (SELECT C.*,D.ITEM_NAME,D.ITEM_GROUP_CODE
+			          FROM AR_DETAIL C, AR_ITEM D
+			         WHERE C.AR_ITEM_NO = D.ITEM_NO 
+			           AND SHIFT_NO <> '65'
+			           AND AR_DATE_STR = #arDate:VARCHAR#) AR 
+			 WHERE EMP.PERSON_ID = AR.EMPID
+		]]>
+		
+	   	<isNotEmpty prepend="AND" property="parentDeptID">
+		<![CDATA[
+		 		 EXISTS(
+					       SELECT HD.DEPTID FROM HR_DEPARTMENT HD WHERE HD.DEPTID = EMP.DEPTID 
+					              START WITH DEPTID = #parentDeptID:VARCHAR# CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID 
+					   )
+	    ]]>
+		</isNotEmpty>
+	   	
+	</select>
+	
+	<select id="retrieveReport0101CenterData" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+			SELECT EMP.DEPTID, EMP.DEPTNAME,
+	]]>
+	
+		<include refid="arItemSql"/>
+		
+	<![CDATA[
+		  FROM 
+		      (SELECT  HR.PERSON_ID,
+		               HR.EMPID,
+		               HR.CHINESENAME,
+		               DEPT.DEPTNAME,
+		               DEPT.DEPTID,
+	]]>
+	<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	<![CDATA[
+               		   AS POST_GROUP_CODE
+		          FROM HR_EMPLOYEE HR , 
+	]]>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+		   			   <include refid="DICC_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+		   			   <include refid="DIY_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+		   			   <include refid="DISC_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+		   			   <include refid="DISD_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+			
+	<![CDATA[
+				         HR_DEPARTMENT DEPT 
+		            WHERE HR.DEPTID = D.DEPTID
+		           AND D.DEPT_ID = DEPT.DEPTID
+		           AND D.THIRDDEPT = #parentDeptID:VARCHAR#
+		           AND HR.ACTIVITY = 1) EMP,
+		       (SELECT C.*, D.ITEM_NAME, D.ITEM_GROUP_CODE
+		          FROM AR_DETAIL C, AR_ITEM D
+		         WHERE C.AR_ITEM_NO = D.ITEM_NO
+		           AND SHIFT_NO <> '65'
+		           AND AR_DATE_STR = #arDate:VARCHAR#) AR 
+				 WHERE EMP.PERSON_ID = AR.EMPID
+	]]>
+	<isNotEmpty prepend="AND" property="supervisorId">
+      <![CDATA[
+            EXISTS ( SELECT *
+                                  FROM AR_SUPERVISOR_INFO J
+                                 WHERE AR_SUPERVISOR_ID = #supervisorId:VARCHAR#
+                                   AND EMP.DEPTID = J.SUPERVISED_DEPTID                   
+              )
+        ]]>
+    </isNotEmpty>
+	<![CDATA[
+				 GROUP BY EMP.DEPTID, EMP.DEPTNAME
+		 		ORDER BY EMP.DEPTNAME
+	]]>
+	
+	</select>
+	
+	
+	<select id="retrieveReport0101ContentData" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+				SELECT B.ITEM_NAME || ': ' ||
+				       LTRIM(MAX(SYS_CONNECT_BY_PATH(CHINESENAME, ','))
+				             KEEP(DENSE_RANK LAST ORDER BY CURR),
+				             ',') || '; ' AS "CONTENT"
+				  FROM (SELECT T.*,
+				        T.ITEM_NAME || RN AS CURR,
+				        T.ITEM_NAME || (RN - 1) AS PREV   
+				        FROM (
+				        SELECT AI.ITEM_NAME,
+				               AD.EMPID,
+				               HR.CHINESENAME,
+				               HR.DEPTID,
+				               ROW_NUMBER() OVER(PARTITION BY AD.AR_ITEM_NO ORDER BY AD.EMPID) RN
+				          FROM AR_DETAIL AD,
+				               (SELECT A.ITEM_NO, A.ITEM_NAME, A.ITEM_GROUP_CODE
+				                  FROM AR_ITEM A
+				                 WHERE A.ITEM_GROUP_CODE IN
+				                       ('LeavelGroup', 'ProprietaryGroup', 'SpecialGroup')) AI,
+				               HR_EMPLOYEE HR
+				         WHERE AD.AR_ITEM_NO = AI.ITEM_NO
+				           AND AD.EMPID = HR.PERSON_ID
+				           AND AD.AR_DATE_STR = #arDate:VARCHAR#
+				           AND HR.ACTIVITY = 1
+		]]>
+		<isNotEmpty prepend="AND" property="supervisorId">
+		      <![CDATA[
+		            EXISTS ( SELECT *
+                              FROM AR_SUPERVISOR_INFO J
+                             WHERE AR_SUPERVISOR_ID = #supervisorId:VARCHAR#
+                               AND HR.DEPTID = J.SUPERVISED_DEPTID                   
+		              )
+		        ]]>
+		</isNotEmpty>
+		<![CDATA[
+				           AND EXISTS (SELECT DEPTID
+				                  FROM HR_DEPARTMENT HD
+				                 WHERE HR.DEPTID = HD.DEPTID
+				                 START WITH HD.DEPTID = #deptID:VARCHAR#
+				                CONNECT BY PRIOR DEPTID = PARENT_DEPT_ID)) T
+				       WHERE T.RN < 51) B
+				 GROUP BY B.ITEM_NAME
+				 START WITH CURR = B.ITEM_NAME || '1'
+				CONNECT BY PREV = PRIOR CURR
+		]]>
+	</select>
+	
+	<select id="retrieveReport0102CenterData" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+			SELECT EMP.DEPTID, EMP.DEPTNAME,
+	]]>
+	
+		<include refid="arItemSql"/>
+		
+	<![CDATA[
+		  FROM 
+		      (SELECT  HR.PERSON_ID,
+		               HR.EMPID,
+		               HR.CHINESENAME,
+		               DEPT.DEPTNAME,
+		               DEPT.DEPTID,
+		]]>
+		<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+		   			   <include refid="OTHER_POST_GRADE_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+		   			   <include refid="DIY_POST_GRADE_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+		   			   <include refid="OTHER_POST_GRADE_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+		   			   <include refid="OTHER_POST_GRADE_SQL"/>
+		</isEqual>
+	<![CDATA[
+		               AS POST_GROUP_CODE
+		          FROM HR_EMPLOYEE HR,
+	]]>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+		   			   <include refid="DICC_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+		   			   <include refid="DIY_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+		   			   <include refid="DISC_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+		   			   <include refid="DISD_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+			
+	<![CDATA[
+				         HR_DEPARTMENT DEPT 
+		           WHERE HR.DEPTID = D.DEPTID
+	]]>
+		<isEqual prepend="AND" property="cpnyId" compareValue="78000000"><!-- DICC -->
+		<![CDATA[
+				D.THIRDDEPT = DEPT.DEPTID
+		]]>
+		</isEqual>
+		
+		<isEqual prepend="AND" property="cpnyId" compareValue="59000000"><!-- DICI -->
+		</isEqual>
+		
+		<isEqual prepend="AND" property="cpnyId" compareValue="60000000"><!-- DIY -->
+				D.THIRDDEPT = DEPT.DEPTID
+		</isEqual>
+		
+		<isEqual prepend="AND" property="cpnyId" compareValue="61000000"><!-- DISC -->
+		<![CDATA[
+				D.THIRDDEPT = DEPT.DEPTID
+		]]>
+		</isEqual>
+		
+		<isEqual prepend="AND" property="cpnyId" compareValue="63000000"><!-- DISD -->
+				D.THIRDDEPT = DEPT.DEPTID
+		</isEqual>
+	
+	<![CDATA[
+		              
+		             AND HR.ACTIVITY = 1
+		       ) EMP,
+		       (SELECT C.*,D.ITEM_NAME,D.ITEM_GROUP_CODE
+		          FROM AR_DETAIL C, AR_ITEM D
+		         WHERE C.AR_ITEM_NO = D.ITEM_NO 
+		           AND SHIFT_NO <> '65'
+		           AND AR_DATE_STR = #arDate:VARCHAR#) AR 
+		 WHERE EMP.PERSON_ID = AR.EMPID
+	]]>
+	<isNotEmpty prepend="AND" property="supervisorId">
+	      <![CDATA[
+	            EXISTS ( SELECT *
+                             FROM AR_SUPERVISOR_INFO J
+                            WHERE AR_SUPERVISOR_ID = #supervisorId:VARCHAR#
+                              AND EMP.DEPTID = J.SUPERVISED_DEPTID                   
+	              )
+	        ]]>
+	</isNotEmpty>
+	
+	<![CDATA[
+			 GROUP BY EMP.DEPTID,EMP.DEPTNAME
+			 ORDER BY EMP.DEPTNAME
+	]]>
+	
+	</select>
+	
+	<select id="retrieveReport0108ArDate" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+		SELECT TO_CHAR(AR_GET_STARTDATE_EMPID(#arMonth:VARCHAR#, #personId:VARCHAR#),'YYYY/MM/DD') AS START_DATE,
+		       TO_CHAR(AR_GET_ENDDATE_EMPID(#arMonth:VARCHAR#, #personId:VARCHAR#),'YYYY/MM/DD') AS END_DATE
+		  FROM DUAL
+	]]>
+	
+	</select>
+	
+	<select id="retrieveReport0108Data" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			SELECT MAX(A.AR_MONTH_STR) AS AR_MONTH,
+				   DEPT.DEPTID AS DEPT_DEPTID,
+				   COUNT(DEPT.DEPTID) OVER(PARTITION BY DEPT.DEPTID) AS DEPT_CNT,
+			       MAX(DEPT.DEPTNAME) AS DEPTNAME,
+			       OFFICE.DEPTID AS OFFICE_DEPTID,
+			       COUNT(OFFICE.DEPTID) OVER(PARTITION BY OFFICE.DEPTID) AS OFFICE_CNT,
+			       MAX(OFFICE.DEPTNAME) AS OFFICENAME,
+		           MAX(TEAM.DEPTID) AS TEAM_DEPTID,
+		           (CASE GROUPING_ID(DEPT.DEPTID,OFFICE.DEPTID,A.EMPID) 
+	        		WHEN 1 THEN '小计' WHEN 3 THEN '合计' WHEN 7 THEN '总计' ELSE MAX(TEAM.DEPTNAME) END) AS TEAMNAME,
+			       A.EMPID AS PERSON_ID,
+			       MAX(C.EMPID) AS EMPID,
+			       MAX(C.CHINESENAME) AS CHINESENAME
+			        FROM AR_DETAIL A,
+			             AR_ITEM B,
+			            (SELECT T.PERSON_ID,T.EMPID,T.CHINESENAME,T.DEPTID,
+			                (CASE POST_CODE
+                                 WHEN 'C_12004_1355928' THEN
+                                      'WORKER'
+                                 WHEN 'C_12004_1331763' THEN
+                                      'WORKER'
+                                 WHEN 'C_12004_1331764' THEN
+                                      'WORKER'
+                                 WHEN 'C_12004_1393412' THEN
+                                      'WORKER'
+                                 WHEN 'C_12005_1355928' THEN
+                                      'WORKER'
+                                 WHEN 'C_12005_1331763' THEN
+                                      'WORKER'
+                                 WHEN 'C_12005_1331764' THEN
+                                      'WORKER'
+                                 WHEN 'C_12005_1393412' THEN
+                                      'WORKER'
+                                 WHEN 'C_12004_1324167' THEN
+                                      'WORKER'
+                                 WHEN 'C_12005_1324167' THEN
+                                      'WORKER'
+                                     ELSE
+                                      'OFFICER'
+                                   END)  AS POST_GROUP_CODE
+			                 FROM HR_EMPLOYEE T) C,
+		]]>
+			<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+			   			   <include refid="DICC_HR_DEPARTMENT_SQL"/>
+			</isEqual>
+			
+			<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+			</isEqual>
+			
+			<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+			   			   <include refid="DIY_HR_DEPARTMENT_SQL"/>
+			</isEqual>
+			
+			<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+			   			   <include refid="DISC_HR_DEPARTMENT_SQL"/>
+			</isEqual>
+			
+			<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+			   			   <include refid="DISD_HR_DEPARTMENT_SQL"/>
+			</isEqual>
+		
+		<![CDATA[
+			             HR_DEPARTMENT DEPT,
+			             HR_DEPARTMENT OFFICE,
+			             HR_DEPARTMENT TEAM
+			       WHERE A.AR_ITEM_NO = B.ITEM_NO
+			         AND A.EMPID = C.PERSON_ID
+			         AND C.DEPTID = D.DEPTID
+			         AND D.DEPT_ID = DEPT.DEPTID
+			         AND D.OFFICE_ID = OFFICE.DEPTID
+			         AND D.TEAM_ID = TEAM.DEPTID
+		]]>
+		<isNotEmpty prepend="AND" property="deptId">
+		<![CDATA[
+				 EXISTS (SELECT T.DEPTID FROM HR_DEPARTMENT T
+			       WHERE T.DEPTID = D.DEPTID 
+			       START WITH T.DEPTID = #deptId:VARCHAR#
+			       CONNECT BY PRIOR T.DEPTID = T.PARENT_DEPT_ID) 
+		]]>
+		</isNotEmpty>
+		
+		<isEqual prepend="" property="itemGroupCode" compareValue="ot">
+		<![CDATA[
+			         AND B.ITEM_GROUP_CODE = 'OverTimeGroup'
+		]]>
+		</isEqual>
+			
+		<isNotEqual prepend="" property="itemGroupCode" compareValue="ot">
+		<![CDATA[
+			         AND B.ITEM_GROUP_CODE IN ('LeavelGroup', 'ProprietaryGroup', 'SpecialGroup')
+			         AND B.ITEM_NO <> 1
+			         AND B.ITEM_NO <> 2
+		]]>
+		</isNotEqual>
+		<![CDATA[		
+			         AND A.QUANTITY > 0
+			         AND to_date(A.AR_DATE_STR,'YYYY/MM/DD') >= to_date(#dateStarted:varchar#,'YYYY-MM-DD') and 
+			         to_date(A.AR_DATE_STR,'YYYY/MM/DD') <= to_date(#dateEnd:varchar#,'YYYY-MM-DD') 
+		]]>
+		<isNotEmpty prepend="AND" property="supervisorId">
+	      <![CDATA[
+	            EXISTS ( SELECT *
+                             FROM AR_SUPERVISOR_INFO J
+                            WHERE AR_SUPERVISOR_ID = #supervisorId:VARCHAR#
+                              AND C.DEPTID = J.SUPERVISED_DEPTID
+	              )
+	        ]]>
+		</isNotEmpty>
+		<![CDATA[
+			     GROUP BY ROLLUP(DEPT.DEPTID,OFFICE.DEPTID,A.EMPID)
+			     ORDER BY DEPT.DEPTID, MAX(OFFICE.DEPT_LEVEL),MAX(OFFICE.DEPTID),MAX(D.DEPT_LEVEL),  MAX(TEAM.DEPTID), A.EMPID
+		]]>
+	
+	</select>
+	
+	<select id="retrieveReport0108Data2" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+			SELECT A.AR_DATE_STR,A.EMPID,C.CHINESENAME,B.ITEM_NAME, A.QUANTITY
+			  FROM AR_DETAIL A, AR_ITEM B, HR_EMPLOYEE C
+			 WHERE A.AR_ITEM_NO = B.ITEM_NO
+			   AND A.EMPID = C.PERSON_ID
+			   AND B.ITEM_GROUP_CODE IN ('LeavelGroup', 'ProprietaryGroup', 'SpecialGroup')
+			   AND B.ITEM_NO <> 1
+			   AND B.ITEM_NO <> 2
+			   AND A.AR_MONTH_STR = #AR_MONTH:VARCHAR#
+			   AND A.EMPID = #PERSON_ID:VARCHAR#
+	]]>
+	</select>
+	
+	<select id="retrieveReport0109Data2" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			SELECT A.AR_DATE_STR,A.EMPID,C.CHINESENAME,B.ITEM_NAME, A.QUANTITY,B.ITEM_NO
+			  FROM AR_DETAIL A, AR_ITEM B,
+		]]>
+			<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+			   			   <include refid="DICC_HR_DEPARTMENT_SQL"/>
+			</isEqual>
+			
+			<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+			</isEqual>
+			
+			<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+			   			   <include refid="DIY_HR_DEPARTMENT_SQL"/>
+			</isEqual>
+			
+			<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+						   <include refid="DISC_HR_DEPARTMENT_SQL"/>
+			</isEqual>
+			
+			<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+			   			   <include refid="DISD_HR_DEPARTMENT_SQL"/>
+			</isEqual>
+		<![CDATA[
+				HR_EMPLOYEE C
+			 WHERE A.AR_ITEM_NO = B.ITEM_NO
+			   AND A.EMPID = C.PERSON_ID
+			   AND C.DEPTID = D.DEPTID
+			   AND A.QUANTITY > 0
+			   AND B.ITEM_GROUP_CODE = 'OverTimeGroup'
+			   and to_date(A.AR_DATE_STR,'YYYY/MM/DD') >= to_date(#dateStarted:VARCHAR#,'YYYY-MM-DD')
+               and  to_date(A.AR_DATE_STR,'YYYY/MM/DD') <= to_date(#dateEnd:VARCHAR#,'YYYY-MM-DD')
+			   
+		]]>	
+		<isNotEmpty prepend="AND" property="PERSON_ID">
+		<![CDATA[
+			   A.EMPID = #PERSON_ID:VARCHAR#
+		]]>
+		</isNotEmpty>
+		
+		<isEqual prepend="" property="sumType" compareValue="sumA">
+			<![CDATA[
+				AND D.OFFICE_ID = #OFFICE_DEPTID:VARCHAR#
+			]]>
+		</isEqual>
+		
+		<isEqual prepend="" property="sumType" compareValue="sumB">
+			<![CDATA[
+				AND D.DEPT_ID = #DEPT_DEPTID:VARCHAR#
+			]]> 
+		</isEqual>
+		
+		<isEqual prepend="" property="sumType" compareValue="sumC">
+			<![CDATA[
+				AND EXISTS (SELECT T.DEPTID FROM HR_DEPARTMENT T
+				       WHERE T.DEPTID = C.DEPTID 
+				       START WITH T.DEPTID = #deptId:VARCHAR#
+				       CONNECT BY PRIOR T.DEPTID = T.PARENT_DEPT_ID)
+			]]> 
+		</isEqual>
+	
+	</select>
+	
+	<select id="retrieveReport0110Data" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			SELECT MAX(A.AR_MONTH_STR) AS AR_MONTH,
+			       DEPT.DEPTID AS DEPT_DEPTID,
+			       COUNT(DEPT.DEPTID) OVER(PARTITION BY DEPT.DEPTID) AS DEPT_CNT,
+			       MAX(DEPT.DEPTNAME) AS DEPTNAME,
+			       OFFICE.DEPTID AS OFFICE_DEPTID,
+			       COUNT(OFFICE.DEPTID) OVER(PARTITION BY OFFICE.DEPTID) AS OFFICE_CNT,
+			       MAX(OFFICE.DEPTNAME) AS OFFICENAME,
+			       TEAM.DEPTID AS TEAM_DEPTID,
+			       nvl(to_date(#dateEnd:varchar#,'YYYY-MM-DD') - to_date(#dateStarted:varchar#,'YYYY-MM-DD') + 1 ,1) as DAYS,
+	        	   (CASE GROUPING_ID(DEPT.DEPTID, OFFICE.DEPTID, TEAM.DEPTID)
+         			WHEN 1 THEN '总缺<br>勤率' WHEN 3 THEN '合计' WHEN 7 THEN '总计' ELSE
+          			MAX(TEAM.DEPTNAME) END) AS TEAMNAME,
+       				COUNT(DISTINCT A.EMPID) AS EMP_CNT
+			        FROM AR_DETAIL A,
+			             AR_ITEM B,
+			            (SELECT T.PERSON_ID,T.EMPID,T.CHINESENAME,T.DEPTID,
+			            	    (CASE POST_CODE
+                             	    WHEN 'C_12004_1355928' THEN
+                               	   'WORKER'
+                              	   WHEN 'C_12004_1331763' THEN
+                               	   'WORKER'
+                             	   WHEN 'C_12004_1331764' THEN
+                              	    'WORKER'
+                              	   WHEN 'C_12004_1324167' THEN
+                              	    'WORKER'
+                              	   WHEN 'C_12005_1355928' THEN
+                              	    'WORKER'
+                              	   WHEN 'C_12005_1331763' THEN
+                                	  'WORKER'
+                               	   WHEN 'C_12005_1331764' THEN
+                              	    'WORKER'
+                              	   WHEN 'C_12005_1324167' THEN
+                              	      'WORKER'
+                              	   ELSE
+                              	      'OFFICER'
+                                   END) AS POST_GROUP_CODE
+			                 FROM HR_EMPLOYEE T) C,
+		]]>
+			<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+			   			   <include refid="DICC_HR_DEPARTMENT_SQL"/>
+			</isEqual>
+			
+			<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+			</isEqual>
+			
+			<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+			   			   <include refid="DIY_HR_DEPARTMENT_SQL"/>
+			</isEqual>
+			
+			<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+						   <include refid="DISC_HR_DEPARTMENT_SQL"/>
+			</isEqual>
+			
+			<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+			   			   <include refid="DISD_HR_DEPARTMENT_SQL"/>
+			</isEqual>
+		
+		<![CDATA[
+			             HR_DEPARTMENT DEPT,
+			             HR_DEPARTMENT OFFICE,
+			             HR_DEPARTMENT TEAM
+			       WHERE A.AR_ITEM_NO = B.ITEM_NO
+			         AND A.EMPID = C.PERSON_ID
+			         AND C.DEPTID = D.DEPTID
+			         AND D.DEPT_ID = DEPT.DEPTID
+			         AND D.OFFICE_ID = OFFICE.DEPTID
+			         AND D.TEAM_ID = TEAM.DEPTID
+		]]>
+		<isNotEmpty prepend="AND" property="deptId">
+		<![CDATA[
+				 EXISTS (SELECT T.DEPTID FROM HR_DEPARTMENT T
+			       WHERE T.DEPTID = D.DEPTID 
+			       START WITH T.DEPTID = #deptId:VARCHAR#
+			       CONNECT BY PRIOR T.DEPTID = T.PARENT_DEPT_ID) 
+		]]>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="supervisorId">
+	      <![CDATA[
+	            EXISTS ( SELECT *
+                             FROM AR_SUPERVISOR_INFO J
+                            WHERE AR_SUPERVISOR_ID = #supervisorId:VARCHAR#
+                              AND C.DEPTID = J.SUPERVISED_DEPTID
+	              )
+	        ]]>
+		</isNotEmpty>
+		<![CDATA[		
+			        AND to_date(A.AR_DATE_STR,'YYYY/MM/DD') >= to_date(#dateStarted:varchar#,'YYYY-MM-DD') and 
+			         to_date(A.AR_DATE_STR,'YYYY/MM/DD') <= to_date(#dateEnd:varchar#,'YYYY-MM-DD') 
+		]]>
+		
+		<![CDATA[
+			      GROUP BY ROLLUP(DEPT.DEPTID, OFFICE.DEPTID, TEAM.DEPTID)
+				  ORDER BY DEPT.DEPTID, MAX(OFFICE.DEPT_LEVEL), MAX(OFFICE.DEPTID),MAX(D.DEPT_LEVEL), TEAM.DEPTID
+		]]>
+	
+	</select>
+	
+	<select id="retrieveReport0110Data2" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			SELECT A.AR_DATE_STR,COUNT(DISTINCT A.EMPID) AS PER_CNT
+			  FROM AR_DETAIL A, AR_ITEM B,
+		]]>
+			<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+			   			   <include refid="DICC_HR_DEPARTMENT_SQL"/>
+			</isEqual>
+			
+			<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+			</isEqual>
+			
+			<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+			   			   <include refid="DIY_HR_DEPARTMENT_SQL"/>
+			</isEqual>
+			
+			<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+							<include refid="DISC_HR_DEPARTMENT_SQL"/>
+			</isEqual>
+			
+			<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+			   			   <include refid="DISD_HR_DEPARTMENT_SQL"/>
+			</isEqual>
+		<![CDATA[
+				HR_EMPLOYEE C
+			 WHERE A.AR_ITEM_NO = B.ITEM_NO
+			   AND A.EMPID = C.PERSON_ID
+			   AND C.DEPTID = D.DEPTID
+			   AND A.QUANTITY > 0
+			   AND B.ITEM_GROUP_CODE IN ('LeavelGroup', 'ProprietaryGroup', 'SpecialGroup')
+			   AND B.ITEM_NO <> 1
+			   AND B.ITEM_NO <> 2
+			   AND A.AR_MONTH_STR = #AR_MONTH:VARCHAR#
+		]]>	
+		
+		<isEqual prepend="" property="sumType" compareValue="sum">
+			<![CDATA[
+				AND D.TEAM_ID = #TEAM_DEPTID:VARCHAR#
+			]]>
+		</isEqual>
+		
+		<isEqual prepend="" property="sumType" compareValue="sumA">
+			<![CDATA[
+				AND D.OFFICE_ID = #OFFICE_DEPTID:VARCHAR#
+			]]>
+		</isEqual>
+		
+		<isEqual prepend="" property="sumType" compareValue="sumB">
+			<![CDATA[
+				AND D.DEPT_ID = #DEPT_DEPTID:VARCHAR#
+			]]> 
+		</isEqual>
+		
+		<isEqual prepend="" property="sumType" compareValue="sumC">
+			<![CDATA[
+				AND EXISTS (SELECT T.DEPTID FROM HR_DEPARTMENT T
+				       WHERE T.DEPTID = C.DEPTID 
+				       START WITH T.DEPTID = #deptId:VARCHAR#
+				       CONNECT BY PRIOR T.DEPTID = T.PARENT_DEPT_ID)
+			]]> 
+		</isEqual>
+		<![CDATA[
+				GROUP BY A.AR_DATE_STR
+		]]> 
+	</select>
+
+	
+	<select id="retrieveReport0113Data" parameterClass="SimpleMap"
+		resultClass="SimpleMap">
+		<![CDATA[
+			SELECT ROWNUM SEQ_NO,
+			       GET_DEPT_NAME(D.DEPT_ID) DEPT_NAME,
+			       GET_DEPT_NAME(D.OFFICE_ID) OFFICE_NAME,
+			       GET_DEPT_NAME(D.TEAM_ID) TEAM_NAME,
+			       HH.EMPID EMPID,
+			       HH.CHINESENAME CHINESENAME,
+			       GET_CODE_NAME(HH.JOIN_TYPE_CODE) JOIN_TYPE_NAME,
+			       TO_CHAR(TO_DATE(AA.AR_DATE_STR,'YYYY-MM-DD'),'YYYY-MM-DD') AR_DATE,
+			       AA.LATE_QUANTITY LATE_QUANTITY,
+			       AA.LEAVE_QUANTITY LEAVE_QUANTITY,
+			       AA.CASUAL_LEAVE_QUANTITY CASUAL_LEAVE_QUANTITY,
+			       AA.ABSENTEEISM_QUANTITY ABSENTEEISM_QUANTITY,
+			       AA.INSUFFICIENT_QUANTITY INSUFFICIENT_QUANTITY,
+                   round(to_number(decode(replace(AA.ABSENTEEISM_QUANTITY,'小时','')*1,null,0,replace(AA.ABSENTEEISM_QUANTITY,'小时','')*1) + 
+                        decode(replace(AA.CASUAL_LEAVE_QUANTITY,'小时','')*0.1,null,0,replace(AA.CASUAL_LEAVE_QUANTITY,'小时','')*0.1) +
+                        decode(replace(AA.LATE_QUANTITY,'分钟','')/15,null,0,replace(AA.LATE_QUANTITY,'分钟','')/15) + 
+                        decode(replace(AA.LEAVE_QUANTITY,'分钟','')/15,null,0,replace(AA.LEAVE_QUANTITY,'分钟','')/15)),1) INTEGRAL,
+			       AA.ITEM_NAME ITEM_NAME,
+			       AA.OTHER_QUANTITY OTHER_QUANTITY
+			FROM HR_EMPLOYEE HH,
+		]]>
+		<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+			<include refid="DICC_HR_DEPARTMENT_SQL" />
+		</isEqual>
+
+		<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+		</isEqual>
+
+		<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+			<include refid="DIY_HR_DEPARTMENT_SQL" />
+		</isEqual>
+
+		<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+			<include refid="DISC_HR_DEPARTMENT_SQL" />
+		</isEqual>
+
+		<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+			<include refid="DISD_HR_DEPARTMENT_SQL" />
+		</isEqual>
+
+		<![CDATA[
+				(SELECT A.EMPID EMPID,
+				       MAX(DECODE(A.AR_ITEM_NO,
+				                  1,
+				                  CONCAT(A.QUANTITY, GET_CODE_NAME(A.UNIT)),
+				                  '')) LATE_QUANTITY,
+				       MAX(DECODE(A.AR_ITEM_NO,
+				                  2,
+				                  CONCAT(A.QUANTITY, GET_CODE_NAME(A.UNIT)),
+				                  '')) LEAVE_QUANTITY,
+				       MAX(DECODE(A.AR_ITEM_NO,
+	                              25,
+	                              CONCAT(A.QUANTITY, GET_CODE_NAME(A.UNIT)),
+	                              '')) CASUAL_LEAVE_QUANTITY,
+		               MAX(DECODE(A.AR_ITEM_NO,
+		                          29,
+		                          CONCAT(A.QUANTITY, GET_CODE_NAME(A.UNIT)),
+		                          '')) ABSENTEEISM_QUANTITY,
+	                   MAX(DECODE(A.AR_ITEM_NO,
+		                          57,
+		                          CONCAT(A.QUANTITY, GET_CODE_NAME(A.UNIT)),
+		                          '')) INSUFFICIENT_QUANTITY,
+				       MAX(DECODE(A.AR_ITEM_NO,
+				                   1,
+		                          '',
+		                          2,
+		                          '',
+		                          25,
+		                          '',
+		                          29,
+		                          '',
+		                          57,
+		                          '',
+				                  CONCAT(A.QUANTITY, GET_CODE_NAME(A.UNIT)))) OTHER_QUANTITY,
+				       MAX(DECODE(A.AR_ITEM_NO, 1, '', 2, '', 25, '', 29, '', 57, '', B.ITEM_NAME)) ITEM_NAME,
+				       MAX(A.AR_ITEM_NO) ITEM_NO,
+				       A.AR_DATE_STR AR_DATE_STR
+				  FROM AR_DETAIL A, AR_ITEM B, HR_EMPLOYEE C
+				 WHERE A.AR_ITEM_NO = B.ITEM_NO
+				   AND A.EMPID = C.PERSON_ID
+				   AND B.ITEM_GROUP_CODE IN ('LeavelGroup','ProprietaryGroup','SpecialGroup')
+				   AND TO_DATE(A.AR_DATE_STR, 'YYYY-MM-DD') BETWEEN
+				       TO_DATE(#arDateStarted:VARCHAR#, 'YYYY-MM-DD') AND
+				       TO_DATE(#arDateEnd:VARCHAR#, 'YYYY-MM-DD')
+		]]>
+		<isNotEmpty prepend="AND" property="deptId">
+		    <![CDATA[
+		         EXISTS (SELECT T.DEPTID FROM HR_DEPARTMENT T
+			             WHERE T.DEPTID = C.DEPTID 
+			             START WITH T.DEPTID = #deptId:VARCHAR#
+			             CONNECT BY PRIOR T.DEPTID = T.PARENT_DEPT_ID) 
+		    ]]>
+		</isNotEmpty>
+		<![CDATA[
+				   AND C.CPNY_ID = #cpnyId:VARCHAR#
+				 GROUP BY A.AR_DATE_STR, A.EMPID) AA
+			WHERE AA.EMPID = HH.PERSON_ID
+			AND   HH.DEPTID = D.DEPTID
+            AND  (AA.LATE_QUANTITY is not null
+                   or AA.LEAVE_QUANTITY is not null
+                   or  AA.CASUAL_LEAVE_QUANTITY is not null
+                   or AA.ABSENTEEISM_QUANTITY is not null
+                   or AA.INSUFFICIENT_QUANTITY is not null
+                   or AA.ITEM_NO in (25,4,44,45,50,62)
+                   or AA.ITEM_NO is null)
+		]]>
+		<isNotEmpty prepend="AND" property="supervisorId">
+			<![CDATA[
+	            EXISTS ( SELECT *
+                             FROM AR_SUPERVISOR_INFO J
+                            WHERE AR_SUPERVISOR_ID = #supervisorId:VARCHAR#
+                              AND D.DEPTID = J.SUPERVISED_DEPTID
+	              )
+	        ]]>
+		</isNotEmpty>
+		<![CDATA[
+			ORDER BY AA.ITEM_NAME,AA.OTHER_QUANTITY
+		]]>
+	</select>
+	
+	
+	<select id="retrieveReport0114Data1" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+			SELECT COUNT(DEPT.DEPTNAME) OVER(PARTITION BY DEPT.DEPTNAME) AS DEPT_CNT,
+			       DEPT.DEPTNAME,
+			       MAX(OFFICE.DEPTNAME) AS OFFICENAME,
+			       (CASE GROUPING_ID(DEPT.DEPTNAME, B.EMPID)
+			         WHEN 1 THEN '小计'
+			         WHEN 3 THEN '合计'
+			         ELSE MAX(TEAM.DEPTNAME)
+			        END) AS TEAMNAME,
+			       B.EMPID,
+			       MAX(B.CHINESENAME) AS CHINESENAME,
+			       DECODE(MAX(B.POST_GROUP_CODE),
+	]]>
+	<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+	   			   <include refid="OTHER_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+	   			   <include refid="OTHER_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+	   			   <include refid="OTHER_POST_GRADE_GROUP_SQL"/>
+	</isEqual>
+	<![CDATA[		       
+			       ) AS POST_GRADE,
+			             
+			       SUM(DECODE(A.APPLY_TYPE, 'WorkingOtType01',(A.TO_TIME - A.FROM_TIME) * 24, 0)) AS WORKDAY_OVERTIME,
+			       SUM(DECODE(A.APPLY_TYPE,'WorkingOtType02',A.OT_LENGTH, 0)) AS RESTDAY_OVERTIME,
+			       SUM(DECODE(A.APPLY_TYPE,'WorkingOtType03',(A.TO_TIME - A.FROM_TIME) * 24, 0)) AS HOLIDAY_OVERTIME,
+			       SUM(DECODE(A.APPLY_TYPE, 'B1', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS B1,
+			       SUM(DECODE(A.APPLY_TYPE, 'B2', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS B2,
+			       SUM(DECODE(A.APPLY_TYPE, 'B3', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS B3,
+			       SUM(DECODE(A.APPLY_TYPE, 'B4', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS B4,
+			       SUM(DECODE(A.APPLY_TYPE, 'H1', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS H1,
+			       SUM(DECODE(A.APPLY_TYPE, 'H2', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS H2,
+			       SUM(DECODE(A.APPLY_TYPE, 'H3', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS H3,
+			       SUM(DECODE(A.APPLY_TYPE, 'H4', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS H4,
+			       SUM(DECODE(A.APPLY_TYPE, 'H5', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS H5,
+			       SUM(DECODE(A.APPLY_TYPE, 'H6', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS H6,
+			       SUM(DECODE(A.APPLY_TYPE, 'H7', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS H7,
+			       SUM(DECODE(A.APPLY_TYPE, 'H8', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS H8,
+			       SUM(DECODE(A.APPLY_TYPE, 'H9', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS H9,
+			       SUM(DECODE(A.APPLY_TYPE, 'H10', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS H10,
+			       SUM(DECODE(A.APPLY_TYPE, 'H11', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS H11,
+			       SUM(DECODE(A.APPLY_TYPE, 'H12', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS H12,
+			       SUM(DECODE(A.APPLY_TYPE, 'H13', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS H13,
+			       SUM(DECODE(A.APPLY_TYPE, 'H14', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS H14,
+			       SUM(DECODE(A.APPLY_TYPE, 'H15', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS H15,
+			       SUM(DECODE(A.APPLY_TYPE, 'H16', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS H16,
+			       SUM(DECODE(A.APPLY_TYPE, 'H17', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS H17,
+			       SUM(DECODE(A.APPLY_TYPE, 'H18', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS H18,
+			       SUM(DECODE(A.APPLY_TYPE, 'H19', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS H19,
+			       SUM(DECODE(A.APPLY_TYPE, 'H21', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS H21,
+			       SUM(DECODE(A.APPLY_TYPE, 'H22', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS H22,
+			       SUM(DECODE(A.APPLY_TYPE, 'H23', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS H23,
+			       SUM(DECODE(A.APPLY_TYPE, 'H26', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS H26,
+			       SUM(DECODE(A.APPLY_TYPE, 'H27', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS H27,
+			       SUM(DECODE(A.APPLY_TYPE, 'H28', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS H28,
+			       SUM(DECODE(A.APPLY_TYPE, 'H29', (A.TO_TIME - A.FROM_TIME) * 24, 0)) AS H29
+			 
+			 FROM AR_APPLY_RESULT A,
+			      (SELECT T.PERSON_ID,T.EMPID,T.CHINESENAME,T.DEPTID,
+	]]>
+	<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	<![CDATA[
+			      		  AS POST_GROUP_CODE 
+		             FROM HR_EMPLOYEE T ) B,
+	]]>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+	   			   <include refid="DICC_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+	   			   <include refid="DISC_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+	   			   <include refid="DISD_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+		
+	<![CDATA[
+			       HR_DEPARTMENT DEPT,
+			       HR_DEPARTMENT OFFICE,
+			       HR_DEPARTMENT TEAM
+			 WHERE A.EMPID = B.PERSON_ID
+			   AND B.DEPTID = D.DEPTID
+			   AND D.DEPTID = DEPT.DEPTID
+			   AND D.OFFICE_ID = OFFICE.DEPTID
+			   AND D.TEAM_ID = TEAM.DEPTID
+	]]>
+	
+	<isNotEmpty prepend="AND" property="startDate">
+	<![CDATA[
+			   A.APPLY_DATE BETWEEN TO_DATE(#startDate:VARCHAR#,'YYYY-MM-DD') AND TO_DATE(#endDate:VARCHAR#,'YYYY-MM-DD')  
+	]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="supervisorId">
+    	<![CDATA[
+            EXISTS ( SELECT *
+                     FROM AR_SUPERVISOR_INFO J
+                    WHERE AR_SUPERVISOR_ID = #supervisorId:VARCHAR#
+                      AND B.DEPTID = J.SUPERVISED_DEPTID                   
+              )
+        ]]>
+	</isNotEmpty>
+	<![CDATA[
+		GROUP BY ROLLUP(DEPT.DEPTNAME, B.EMPID)
+		ORDER BY DEPT.DEPTNAME, MAX(OFFICE.DEPT_LEVEL),MAX(OFFICE.DEPTID),MAX(D.DEPT_LEVEL),  MAX(TEAM.DEPTID), B.EMPID
+	]]>
+	</select>
+	
+	
+	<select id="retrieveReport0115Data" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+			SELECT COUNT(DEPT.DEPTNAME) OVER(PARTITION BY DEPT.DEPTNAME) AS DEPT_CNT,
+			       DEPT.DEPTNAME,
+			       MAX(OFFICE.DEPTNAME) AS OFFICENAME,
+			       (CASE GROUPING_ID(DEPT.DEPTNAME, B.EMPID)
+			         WHEN 1 THEN '小计'
+			         WHEN 3 THEN '合计'
+			         ELSE MAX(TEAM.DEPTNAME)
+			        END) AS TEAMNAME,
+			       B.EMPID,
+			       MAX(B.CHINESENAME) AS CHINESENAME,
+			             
+			       COUNT(DECODE(A.APPLY_TYPE, 'WorkingOtType01',1)) AS WORKDAY_OVERTIME,
+			       COUNT(DECODE(A.APPLY_TYPE, 'WorkingOtType02',1)) AS RESTDAY_OVERTIME,
+			       COUNT(DECODE(A.APPLY_TYPE, 'WorkingOtType03',1)) AS HOLIDAY_OVERTIME,
+			       COUNT(DECODE(A.APPLY_TYPE, 'B1', 1)) AS B1,
+			       COUNT(DECODE(A.APPLY_TYPE, 'B2', 1)) AS B2,
+			       COUNT(DECODE(A.APPLY_TYPE, 'B3', 1)) AS B3,
+			       COUNT(DECODE(A.APPLY_TYPE, 'B4', 1)) AS B4,
+			       COUNT(DECODE(A.APPLY_TYPE, 'H1', 1)) AS H1,
+			       COUNT(DECODE(A.APPLY_TYPE, 'H2', 1)) AS H2,
+			       COUNT(DECODE(A.APPLY_TYPE, 'H3', 1)) AS H3,
+			       COUNT(DECODE(A.APPLY_TYPE, 'H4', 1)) AS H4,
+			       COUNT(DECODE(A.APPLY_TYPE, 'H5', 1)) AS H5,
+			       COUNT(DECODE(A.APPLY_TYPE, 'H6', 1)) AS H6,
+			       COUNT(DECODE(A.APPLY_TYPE, 'H7', 1)) AS H7,
+			       COUNT(DECODE(A.APPLY_TYPE, 'H8', 1)) AS H8,
+			       COUNT(DECODE(A.APPLY_TYPE, 'H9', 1)) AS H9,
+			       COUNT(DECODE(A.APPLY_TYPE, 'H10',1)) AS H10,
+			       COUNT(DECODE(A.APPLY_TYPE, 'H11',1)) AS H11,
+			       COUNT(DECODE(A.APPLY_TYPE, 'H12',1)) AS H12,
+			       COUNT(DECODE(A.APPLY_TYPE, 'H13',1)) AS H13,
+			       COUNT(DECODE(A.APPLY_TYPE, 'H14',1)) AS H14,
+			       COUNT(DECODE(A.APPLY_TYPE, 'H15',1)) AS H15,
+			       COUNT(DECODE(A.APPLY_TYPE, 'H16',1)) AS H16,
+			       COUNT(DECODE(A.APPLY_TYPE, 'H17',1)) AS H17,
+			       COUNT(DECODE(A.APPLY_TYPE, 'H18',1)) AS H18,
+			       COUNT(DECODE(A.APPLY_TYPE, 'H19',1)) AS H19,
+			       COUNT(DECODE(A.APPLY_TYPE, 'H21',1)) AS H21,
+			       COUNT(DECODE(A.APPLY_TYPE, 'H22',1)) AS H22,
+			       COUNT(DECODE(A.APPLY_TYPE, 'H23',1)) AS H23,
+			       COUNT(DECODE(A.APPLY_TYPE, 'H26',1)) AS H26,
+			       COUNT(DECODE(A.APPLY_TYPE, 'H27',1)) AS H27,
+			       COUNT(DECODE(A.APPLY_TYPE, 'H28',1)) AS H28,
+			       COUNT(DECODE(A.APPLY_TYPE, 'H29',1)) AS H29
+			 
+			 FROM AR_APPLY_RESULT A,
+			      (SELECT T.PERSON_ID,T.EMPID,T.CHINESENAME,T.DEPTID,
+	]]>
+	<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+	   			   <include refid="OTHER_POST_GRADE_SQL"/>
+	</isEqual>
+	<![CDATA[
+			      		  AS POST_GROUP_CODE 
+		             FROM HR_EMPLOYEE T ) B,
+	]]>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+	   			   <include refid="DICC_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+	   			   <include refid="DISC_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+	   			   <include refid="DISD_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+		
+	<![CDATA[
+			       HR_DEPARTMENT DEPT,
+			       HR_DEPARTMENT OFFICE,
+			       HR_DEPARTMENT TEAM
+			 WHERE A.EMPID = B.PERSON_ID
+			   AND B.DEPTID = D.DEPTID
+			   AND D.DEPTID = DEPT.DEPTID
+			   AND D.OFFICE_ID = OFFICE.DEPTID
+			   AND D.TEAM_ID = TEAM.DEPTID
+	]]>
+	
+	<isNotEmpty prepend="AND" property="startDate">
+	<![CDATA[
+			   A.APPLY_DATE BETWEEN TO_DATE(#startDate:VARCHAR#,'YYYY-MM-DD') AND TO_DATE(#endDate:VARCHAR#,'YYYY-MM-DD')
+	]]>
+	</isNotEmpty>
+	
+	<isNotEmpty prepend="AND" property="supervisorId">
+    	<![CDATA[
+            EXISTS ( SELECT *
+                     FROM AR_SUPERVISOR_INFO J
+                    WHERE AR_SUPERVISOR_ID = #supervisorId:VARCHAR#
+                      AND B.DEPTID = J.SUPERVISED_DEPTID                   
+              )
+        ]]>
+	</isNotEmpty>
+	<![CDATA[
+		GROUP BY ROLLUP(DEPT.DEPTNAME, B.EMPID)
+		ORDER BY DEPT.DEPTNAME, MAX(OFFICE.DEPT_LEVEL),MAX(OFFICE.DEPTID),MAX(D.DEPT_LEVEL),  MAX(TEAM.DEPTID), B.EMPID
+	]]>
+	</select>
+	
+	
+	
+	<select id="retrieveReport0117Data" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+			SELECT T.PA_MONTH,
+
+			       T.EMPID,
+			
+			       T.CHINESENAME,
+			
+			       T.STATUS,
+			
+			       T.DEPARTMENT,
+			
+			       T.DEPTFULLNAME,
+			
+			       T.TOTAL_WEEKDAY_OT,
+			
+			       T.TOTAL_WEEKEND_OT,
+			
+			       T.TOTAL_HOLIDAY_OT,
+			
+			       PEACETIME_OVERTIME,
+			
+			       OVERTIME_REST_DAY,
+			
+			       OVERTIME_HOLIDAYS
+			
+			  FROM PA_HISTORY T
+			
+			 WHERE T.EMPLOYEE_DISTINCTION = '工人'
+			
+			    AND T.ATTENDANCE_PERIOD = '工厂'
+			
+			   AND T.PA_MONTH = #yearMonth:VARCHAR#  
+			
+			   AND T.CPNY_ID = #cpnyId:VARCHAR#
+			
+			   ORDER BY t.department
+	]]>
+	
+	</select>
+	
+	<select id="retrieveReport0118Data" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+			select 
+				
+				a.department AS "DEPARTMENT",
+				
+				count(a.empid) as SUMEMPID,
+				
+				(sum(SCHEDULED_WORK_DAYS)-sum(INSUFFICIENT_ATTENDANCE+B_INSUFFICIENT_ATTENDANCE+A_INSUFFICIENT_ATTENDANCE))*8 AS "SCHEDULED_WORK_DAYS",
+				sum(TOTAL_WEEKDAY_OT+TOTAL_WEEKEND_OT+TOTAL_HOLIDAY_OT)  AS "TOTAL_OT",
+				sum(SCHEDULED_WORK_DAYS)*8 + sum(TOTAL_WEEKDAY_OT+TOTAL_WEEKEND_OT+TOTAL_HOLIDAY_OT)  AS "TOTAL_MH",
+				sum((TOTAL_TARDINESS*15)) AS "TOTAL_TARDINESS",
+				sum((TOTAL_TRUANCY*15)) AS "TOTAL_TRUANCY",
+				sum(CASUAL_LEAVE+B_CASUAL_LEAVE+A_CASUAL_LEAVE) as "CASUAL_LEAVE",
+				sum(SICK_LEAVE+B_SICK_LEAVE+A_SICK_LEAVE) as "SICK_LEAVE",
+				sum(ABSENTEEISM+B_ABSENTEEISM+A_ABSENTEEISM) AS "ABSENTEEISM",
+				
+				sum((TOTAL_TARDINESS*15/60))+
+				sum((TOTAL_TRUANCY*15/60))+
+				sum(CASUAL_LEAVE+B_CASUAL_LEAVE+A_CASUAL_LEAVE) +
+				sum(SICK_LEAVE+B_SICK_LEAVE+A_SICK_LEAVE) +
+				sum(ABSENTEEISM+B_ABSENTEEISM+A_ABSENTEEISM) AS "WUXINTOTAL",
+				
+				sum(SICK_LEAVE_THREE_MONTH+B_SICK_LEAVE_THREE_MONTH+A_SICK_LEAVE_THREE_MONTH) AS "SICK_LEAVE_THREE_MONTH",
+				sum(SICK_LEAVE_PAST_THREE_MONTH+B_SICK_LEAVE_PAST_THREE_MONTH+A_SICK_LEAVE_PAST_THREE_MONTH) as "SICK_LEAVE_PAST_THREE_MONTH",
+				sum(MARRIAGE_REGISTER) AS "MARRIAGE_REGISTER",
+				sum(MARRIAGE_LEAVE) AS "MARRIAGE_LEAVE",
+				sum(BEREFT_LEAVE) AS "BEREFT_LEAVE",
+				
+				sum(PATERNITY_LEAVE) AS "PATERNITY_LEAVE",
+				sum(ANNUAL_VACATION) AS "ANNUAL_VACATION",
+				sum(HOLIDAY) AS "HOLIDAY",
+				sum(TIAO_XIU) AS "TIAO_XIU",
+				
+				sum(SICK_LEAVE_THREE_MONTH+B_SICK_LEAVE_THREE_MONTH+A_SICK_LEAVE_THREE_MONTH)*8 +
+				sum(SICK_LEAVE_PAST_THREE_MONTH+B_SICK_LEAVE_PAST_THREE_MONTH+A_SICK_LEAVE_PAST_THREE_MONTH)*8+
+				sum(MARRIAGE_REGISTER)*8+
+				sum(MARRIAGE_LEAVE)*8+
+				sum(BEREFT_LEAVE)*8+
+				
+				sum(PATERNITY_LEAVE)*8+
+				sum(ANNUAL_VACATION)*8+
+				sum(HOLIDAY)*8+
+				sum(TIAO_XIU)*8 AS "YOUXINTOTAL",
+				sum(SCHEDULED_WORK_DAYS)*8 + sum(TOTAL_WEEKDAY_OT+TOTAL_WEEKEND_OT+TOTAL_HOLIDAY_OT)-
+				(sum((TOTAL_TARDINESS*15/60))+
+				sum((TOTAL_TRUANCY*15/60))+
+				sum(CASUAL_LEAVE+B_CASUAL_LEAVE+A_CASUAL_LEAVE) +
+				sum(SICK_LEAVE+B_SICK_LEAVE+A_SICK_LEAVE) +
+				sum(ABSENTEEISM+B_ABSENTEEISM+A_ABSENTEEISM)) AS SUMTOTALMH,
+				
+				(sum(SCHEDULED_WORK_DAYS)*8 + sum(TOTAL_WEEKDAY_OT+TOTAL_WEEKEND_OT+TOTAL_HOLIDAY_OT)- 
+				(sum((TOTAL_TARDINESS*15/60))+
+				sum((TOTAL_TRUANCY*15/60))+
+				sum(CASUAL_LEAVE+B_CASUAL_LEAVE+A_CASUAL_LEAVE) +
+				sum(SICK_LEAVE+B_SICK_LEAVE+A_SICK_LEAVE) +
+				sum(ABSENTEEISM+B_ABSENTEEISM+A_ABSENTEEISM)))/(sum(SCHEDULED_WORK_DAYS)*8 + sum(TOTAL_WEEKDAY_OT+TOTAL_WEEKEND_OT+TOTAL_HOLIDAY_OT))
+				AS CHUQINLV
+				
+				from ar_history a where a.ar_month = #yearMonth#
+				 and a.cpny_id = '78000000' 
+				 and( a.join_type_code = 'C_12009_1330061' or a.join_type_code = 'C_12009_1330066')
+				
+				  and a.deptid in
+				('780H1500','780G3310','780G1111','780G1112','780G1113','780G1114',
+				'780G1117','780G1121','780G1122','780G1123','780G1124','780G1127',
+				'780G1181','780G1182','780G1183','780G1184','780G1191','780G1192',
+				'780G1193','780G1194','780G1211','780G1212','780G1213','780G1221',
+				'780G1222','780G1223','780G1271','780G1272','780G1273','780G1274',
+				'780G1275','780G1281','780G1282','780G1283','780G1284','780G1285',
+				'780G1291','780G1292','780G1293','780E1523','780E1730','780E1740',
+				'780G6210','780E1421','780H1360','780H1370','780H1380','780E1522',
+				'780E1525')
+				 group by a.department,a.deptid
+
+	]]>
+	
+	</select>
+	
+	<select id="retrieveReport0118DataTest" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+			select ar.department AS "DEPARTMENT",
+			       count(ar.empid) as SUMEMPID,
+			       (sum(a.SCHEDULED_WORK_DAYS)-sum(a.INSUFFICIENT_ATTENDANCE+a.B_INSUFFICIENT_ATTENDANCE+a.A_INSUFFICIENT_ATTENDANCE))  * 8 AS "SCHEDULED_WORK_DAYS",
+			       sum(a.TOTAL_WEEKDAY_OT + a.TOTAL_WEEKEND_OT + a.TOTAL_HOLIDAY_OT) AS "TOTAL_OT",
+			       sum(a.SCHEDULED_WORK_DAYS) * 8 +
+			       sum(a.TOTAL_WEEKDAY_OT + a.TOTAL_WEEKEND_OT + a.TOTAL_HOLIDAY_OT) AS "TOTAL_MH",
+			       sum((a.TOTAL_TARDINESS * 15)) AS "TOTAL_TARDINESS",
+			       sum((a.TOTAL_TRUANCY * 15)) AS "TOTAL_TRUANCY",
+			       sum(a.CASUAL_LEAVE + a.B_CASUAL_LEAVE + a.A_CASUAL_LEAVE) as "CASUAL_LEAVE",
+			       sum(a.SICK_LEAVE + a.B_SICK_LEAVE + a.A_SICK_LEAVE) as "SICK_LEAVE",
+			       sum(a.ABSENTEEISM + a.B_ABSENTEEISM + a.A_ABSENTEEISM) AS "ABSENTEEISM",
+			       sum((a.TOTAL_TARDINESS * 15 / 60)) + sum((a.TOTAL_TRUANCY * 15 / 60)) +
+			       sum(a.CASUAL_LEAVE + a.B_CASUAL_LEAVE + a.A_CASUAL_LEAVE) +
+			       sum(a.SICK_LEAVE + a.B_SICK_LEAVE + a.A_SICK_LEAVE) +
+			       sum(a.ABSENTEEISM + a.B_ABSENTEEISM + a.A_ABSENTEEISM) AS "WUXINTOTAL",
+			       sum(a.SICK_LEAVE_THREE_MONTH + a.B_SICK_LEAVE_THREE_MONTH +
+			           a.A_SICK_LEAVE_THREE_MONTH) AS "SICK_LEAVE_THREE_MONTH",
+			       sum(a.SICK_LEAVE_PAST_THREE_MONTH + a.B_SICK_LEAVE_PAST_THREE_MONTH +
+			           a.A_SICK_LEAVE_PAST_THREE_MONTH) as "SICK_LEAVE_PAST_THREE_MONTH",
+			       sum(a.MARRIAGE_REGISTER) AS "MARRIAGE_REGISTER",
+			       sum(a.MARRIAGE_LEAVE) AS "MARRIAGE_LEAVE",
+			       sum(a.BEREFT_LEAVE) AS "BEREFT_LEAVE",
+			       sum(a.PATERNITY_LEAVE) AS "PATERNITY_LEAVE",
+			       sum(a.ANNUAL_VACATION) AS "ANNUAL_VACATION",
+			       sum(a.HOLIDAY) AS "HOLIDAY",
+			       sum(a.TIAO_XIU) AS "TIAO_XIU",
+			       sum(a.SICK_LEAVE_THREE_MONTH + a.B_SICK_LEAVE_THREE_MONTH +
+			           a.A_SICK_LEAVE_THREE_MONTH) * 8 +
+			       sum(a.SICK_LEAVE_PAST_THREE_MONTH + a.B_SICK_LEAVE_PAST_THREE_MONTH +
+			           a.A_SICK_LEAVE_PAST_THREE_MONTH) * 8 + sum(a.MARRIAGE_REGISTER) * 8 +
+			       sum(a.MARRIAGE_LEAVE) * 8 + sum(a.BEREFT_LEAVE) * 8 +
+			       sum(a.PATERNITY_LEAVE) * 8 + sum(a.ANNUAL_VACATION) * 8 +
+			       sum(a.HOLIDAY) * 8 + sum(a.TIAO_XIU) * 8 AS "YOUXINTOTAL",
+			       sum(a.SCHEDULED_WORK_DAYS) * 8 +
+			       sum(a.TOTAL_WEEKDAY_OT + a.TOTAL_WEEKEND_OT + a.TOTAL_HOLIDAY_OT) -
+			       (sum((a.TOTAL_TARDINESS * 15 / 60)) + sum((a.TOTAL_TRUANCY * 15 / 60)) +
+			        sum(a.CASUAL_LEAVE + a.B_CASUAL_LEAVE + a.A_CASUAL_LEAVE) +
+			        sum(a.SICK_LEAVE + a.B_SICK_LEAVE + a.A_SICK_LEAVE) +
+			        sum(a.ABSENTEEISM + a.B_ABSENTEEISM + a.A_ABSENTEEISM)) AS SUMTOTALMH,
+			       (sum(a.SCHEDULED_WORK_DAYS) * 8 +
+			       sum(a.TOTAL_WEEKDAY_OT + a.TOTAL_WEEKEND_OT + a.TOTAL_HOLIDAY_OT) -
+			       (sum((a.TOTAL_TARDINESS * 15 / 60)) + sum((a.TOTAL_TRUANCY * 15 / 60)) +
+			       sum(a.CASUAL_LEAVE + a.B_CASUAL_LEAVE + a.A_CASUAL_LEAVE) +
+			       sum(a.SICK_LEAVE + a.B_SICK_LEAVE + a.A_SICK_LEAVE) +
+			       sum(a.ABSENTEEISM + a.B_ABSENTEEISM + a.A_ABSENTEEISM))) /
+			       (sum(a.SCHEDULED_WORK_DAYS) * 8 +
+			       sum(a.TOTAL_WEEKDAY_OT + a.TOTAL_WEEKEND_OT + a.TOTAL_HOLIDAY_OT)) AS CHUQINLV
+			  from ar_history a ,ar_history_201010 ar
+			 where a.ar_month = '201012' and a.empid = ar.empid
+			   and a.cpny_id = '78000000'
+			   and (a.join_type_code = 'C_12009_1330061' or
+			       a.join_type_code = 'C_12009_1330066')
+			   and ar.deptid in
+			       ('780H1500', '780G3310', '780G1111', '780G1112', '780G1113',
+			        '780G1114', '780G1117', '780G1121', '780G1122', '780G1123',
+			        '780G1124', '780G1127', '780G1181', '780G1182', '780G1183',
+			        '780G1184', '780G1191', '780G1192', '780G1193', '780G1194',
+			        '780G1211', '780G1212', '780G1213', '780G1221', '780G1222',
+			        '780G1223', '780G1271', '780G1272', '780G1273', '780G1274',
+			        '780G1275', '780G1281', '780G1282', '780G1283', '780G1284',
+			        '780G1285', '780G1291', '780G1292', '780G1293', '780E1523',
+			        '780E1730', '780E1740', '780G6210', '780E1421', '780H1360',
+			        '780H1370', '780H1380', '780E1522', '780E1525')
+			 group by ar.department, ar.deptid
+
+
+
+	]]>
+	
+	</select>
+	
+	<select id="retrieveReport0119Dept" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+			   SELECT 
+			     DISTINCT(HD.DEPTID),
+	             HD.DEPTNAME,
+	             HD.CPNY_ID,
+	             HD.PARENT_DEPT_ID,
+	             HD.DATE_CREATED,
+	             HD.DATE_ENDED,
+	             HD.DEPT_LEVEL 
+		       FROM HR_DEPARTMENT HD,HR_EMPLOYEE E
+ 		      WHERE E.DEPTID = HD.DEPTID
+   		       AND E.EMP_DIFF_CODE = 'C_12067_1330306'
+   		       AND HD.CPNY_ID = '78000000'
+   		       AND HD.DEPT_LEVEL = '4'
+  		       AND HD.ACTIVITY = 1
+	]]>
+	</select>
+	
+	<select id="retrieveReport0119ArStaItem" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+			    select 'BEREFT_LEAVE >0' AS "AR_STA_ITEM" from dual union all
+				select 'LACTATION_LEAVE>0' from dual union all
+				select 'PATERNITY_LEAVE>0' from dual union all
+				select 'ANTE_PARTUM_EXAMINE>0' from dual union all
+				select 'EVECTION>0' from dual union all
+				select 'MARRIAGE_REGISTER>0' from dual union all
+				select 'MARRIAGE_LEAVE>0' from dual union all
+				select 'ANNUAL_VACATION>0' from dual union all
+				select 'TIAO_XIU>0' from dual union all
+				select 'TRAINING>0' from dual union all
+				select 'WORK_TRAINING>0' from dual union all
+				select 'INDUSTRY_INJURY_D>0' from dual union all
+				select 'CASUAL_LEAVE+B_CASUAL_LEAVE+A_CASUAL_LEAVE>0' from dual union all
+				select 'SICK_LEAVE+B_SICK_LEAVE+A_SICK_LEAVE>0' from dual union all
+				select 'SICK_LEAVE_THREE_MONTH+SICK_LEAVE_PAST_THREE_MONTH+B_SICK_LEAVE_THREE_MONTH+A_SICK_LEAVE_THREE_MONTH+B_SICK_LEAVE_PAST_THREE_MONTH+A_SICK_LEAVE_PAST_THREE_MONTH>0' from dual union all
+				select 'UNPAID_LEAVE+B_UNPAID_LEAVE+A_UNPAID_LEAVE>0' from dual union all
+				select 'BE_OUT_ON_DUTY>0' from dual union all
+				select 'TOTAL_TARDINESS>0' from dual union all
+				select 'TOTAL_TRUANCY>0' from dual union all
+				select 'A_ABSENTEEISM+ABSENTEEISM+B_ABSENTEEISM>0' from dual union all
+				select 'MATERNITY_LEAVE+B_MATERNITY_LEAVE+A_MATERNITY_LEAVE>0' from dual union all
+				select 'POST_RESERVATION>0' from dual 
+	]]>
+	</select>
+	
+	
+	<select id="retrieveReport0119ArEmpList" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+			    SELECT LTRIM(MAX(SYS_CONNECT_BY_PATH(CHINESENAME, ','))
+				             KEEP(DENSE_RANK LAST ORDER BY CURR),
+				             ',')  AS "CONTENT"
+				  FROM (
+				        
+				        select T.*, RN AS CURR, (T.RN - 1) AS PREV
+				          from (select a.*,
+				                        ROW_NUMBER() OVER(PARTITION BY A.Ar_Month ORDER BY A.EMPID) RN
+				                 
+				                   from ar_history a, hr_employee e, hr_department d
+				                  where a.person_id = e.person_id
+				                    and e.deptid = d.deptid
+				                    and d.fourthdept = #deptId:VARCHAR#
+				                    and e.cpny_id = '78000000'
+				                    AND ($arStaItem$) 
+				                    and a.ar_month = #yearMonth:VARCHAR#  
+				                 
+				                 ) t
+				        
+				        ) B
+				 GROUP BY B.Ar_Month
+				 START WITH CURR = '1'
+				CONNECT BY PREV = PRIOR CURR
+	]]>
+	</select>
+	
+	<select id="retrieveReport0120Data" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+			select hr_get_level_deptname(hr.deptid, 4) as deptname,
+			       get_dept_name(hr.deptid) as dept,
+			       hr.chinesename as chinesename,
+			       hr.empid as empid,
+			       to_char(hr.date_started,'yyyy-mm-dd') as date_started,
+                   to_char(hr.end_probation_date,'yyyy-mm-dd') as end_probation_date,
+			       hr.post_coef,
+			       s.code_name,
+			       case
+			         when hr.status_code = 'C_12001_1330047' then
+			          '临时工'
+			         else
+			          '工人'
+			       end as status_code,
+			       kq.*
+			  from (select t.person_id empidkq,
+			               sum(t.INSUFFICIENT_ATTENDANCE + t.A_INSUFFICIENT_ATTENDANCE + t.B_INSUFFICIENT_ATTENDANCE) as INSUFFICIENT_ATTENDANCE ,
+			               sum(t.Work + t.A_Work + t.B_WORK) as WORK_TIME ,
+			               sum(t.TOTAL_TARDINESS) as TOTAL_TARDINESS,
+			               sum(t.TOTAL_TRUANCY) as TOTAL_TRUANCY,
+			               sum(t.CASUAL_LEAVE + t.A_CASUAL_LEAVE + t.B_CASUAL_LEAVE) as CASUAL_LEAVE,
+			               sum(t.MATERNITY_LEAVE + t.A_MATERNITY_LEAVE + t.B_MATERNITY_LEAVE) as MATERNITY_LEAVE,
+			               sum(t.PATERNITY_LEAVE) as PATERNITY_LEAVE,
+			               sum(t.SICK_LEAVE + t.A_SICK_LEAVE + t.B_SICK_LEAVE) as SICK_LEAVE,
+			               sum(t.SICK_LEAVE_THREE_MONTH + t.A_SICK_LEAVE_THREE_MONTH + t.B_SICK_LEAVE_THREE_MONTH) as SICK_LEAVE_THREE_MONTH,
+			               (sum(t.MARRIAGE_LEAVE) + sum(t.BEREFT_LEAVE)) as MARRIAGE_BEREFT_LEAVE,
+			               sum(t.MARRIAGE_LEAVE) as MARRIAGE_LEAVE,
+			               sum(t.BEREFT_LEAVE) as BEREFT_LEAVE,
+			               sum(t.SICK_LEAVE_PAST_THREE_MONTH + t.A_SICK_LEAVE_PAST_THREE_MONTH + t.B_SICK_LEAVE_PAST_THREE_MONTH) as SICK_LEAVE_PAST_THREE_MONTH,
+			               sum(t.ABSENTEEISM + t.A_ABSENTEEISM + t.B_ABSENTEEISM ) as ABSENTEEISM,
+			               sum(t.holiday) AS HOLIDAY,
+			               sum(t.INDUSTRY_INJURY + t.A_INDUSTRY_INJURY +t.B_INDUSTRY_INJURY + t.INDUSTRY_INJURY_D) AS INDUSTRY_INJURY,
+			               sum(t.VACATION_SHORT + t.A_VACATION_SHORT +t.B_VACATION_SHORT) AS VACATION_SHORT,
+                     	   sum(t.VACATION_LONG + t.A_VACATION_LONG + t.B_VACATION_LONG) AS VACATION_LONG,
+                           sum(t.VACATION_LONG_A + t.A_VACATION_LONG_A + t.B_VACATION_LONG_A) AS VACATION_LONG_A,
+                           sum(t.VACATION_LONG_B + t.A_VACATION_LONG_B + t.B_VACATION_LONG_B) AS VACATION_LONG_B
+			          from ar_history t
+			         where t.cpny_id = #cpnyId:VARCHAR#
+			           and t.ar_month >= #yearMonthStart:VARCHAR#
+			           and t.ar_month <= #yearMonthEnd:VARCHAR#
+			         group by t.person_id) kq,
+			       hr_employee   hr,
+			       sy_code       s
+			 where kq.empidkq = hr.person_id(+)
+			   and hr.join_type_code = s.code_id(+)
+			   order by hr_get_level_deptname(hr.deptid, 4),get_dept_name(hr.deptid),hr.empid
+	]]>
+	
+	</select>
+	
+	
+	<select id="retrieveReport0121Data" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+		 SELECT 
+       COUNT(DEPT.DEPTID) OVER(PARTITION BY DEPT.DEPTID) AS DEPT_CNT,
+       MAX(DEPT.DEPTNAME) AS DEPTNAME,
+       MAX(OFFICE.DEPTNAME) AS OFFICENAME,
+       (CASE GROUPING_ID(DEPT.DEPTID)
+         WHEN 0 THEN
+          '小计'
+         WHEN 1 THEN
+          '合计'
+         ELSE
+          MAX(OFFICE.DEPTNAME)
+       END) AS HEJI,
+       count(B.EMPID) AS RENSHU,
+       SUM(anShiChuQin) AS anShiChuQin,
+       SUM(zhengChangChuQin) AS zhengChangChuQin,
+       
+       
+       SUM(nianXiuJia) AS nianXiuJia,
+       SUM(zhiBan) AS zhiBan,
+       SUM(chuChai) AS chuChai,
+       SUM(yanXiu) AS yanXiu,
+       SUM(peiXun) AS peiXun,
+       SUM(yinGongWaiChu) AS yinGongWaiChu,
+       SUM(tiaoXiu) AS tiaoXiu,
+       SUM(chanJia) AS chanJia,
+       SUM(chanQianJianCha) AS chanQianJianCha,
+       SUM(jiShengJia) AS jiShengJia,
+       SUM(chanJiaHuLi) AS chanJiaHuLi,
+       SUM(hunJia) AS hunJia,
+       SUM(sangJia) AS sangJia,
+       SUM(jiHunDengJi) AS jiHunDengJi,
+       SUM(puRuJia) AS puRuJia,
+       SUM(gangWeiBaoLiu) AS gangWeiBaoLiu,
+       SUM(fangJia) AS fangJia,
+       SUM(tuanJuJia) AS tuanJuJia,
+       SUM(nianXiuJiaBuBan) AS nianXiuJiaBuBan,
+       SUM(nianXiuJiaDuoXiu) AS nianXiuJiaDuoXiu,
+       
+       SUM(nianXiuJia+zhiBan+chuChai+yanXiu+peiXun+yinGongWaiChu+tiaoXiu+chanJia+chanQianJianCha+jiShengJia+chanJiaHuLi+hunJia+sangJia+
+       jiHunDengJi+puRuJia+gangWeiBaoLiu+fangJia+tuanJuJia+nianXiuJiaBuBan+nianXiuJiaDuoXiu) AS heJi1,
+       
+        DECODE(SUM(zongShi),0,0,SUM(zhengChangChuQin + nianXiuJia + zhiBan + chuChai + yanXiu + peiXun + yinGongWaiChu +
+           tiaoXiu + chanJia + chanQianJianCha + jiShengJia + chanJiaHuLi +
+           hunJia + sangJia + jiHunDengJi + puRuJia + gangWeiBaoLiu +
+           fangJia + tuanJuJia + nianXiuJiaBuBan + nianXiuJiaDuoXiu)/SUM(zongShi))  biLi1,
+       
+       SUM(chiDao) AS chiDao,
+       SUM(zaoTui) AS zaoTui,
+       SUM(kuangGong) AS kuangGong,
+       SUM(shiJia) AS shiJia,
+       SUM(bingJia) AS bingJia,
+       SUM(gongShangJia) AS gongShangJia,
+       SUM(bingXiu) AS bingXiu,
+       SUM(xiuJia) AS xiuJia,
+       SUM(weiQin) AS weiQin,
+       SUM(xiuZhi) AS xiuZhi,
+
+       SUM(chiDao+zaoTui+kuangGong+shiJia+bingJia+gongShangJia+bingXiu+xiuJia+weiQin+xiuZhi) AS heJi2,
+       DECODE(SUM(zongShi),0,0,SUM(chiDao + zaoTui + kuangGong + shiJia + bingJia + gongShangJia +
+           bingXiu + xiuJia + weiQin + xiuZhi)/SUM(zongShi)) biLi2, 
+       SUM(zhiBanXiuXi) AS zhiBanXiuXi
+       
+       
+       FROM 
+       (select 
+       A.EMPID,
+       SUM(A.QUANTITY) AS zongShi,
+       SUM(DECODE(A.AR_ITEM_NO, 14, A.QUANTITY, 0)) AS nianXiuJia,
+       SUM(DECODE(A.AR_ITEM_NO, 60, A.QUANTITY, 0)) AS zhiBan,
+       SUM(DECODE(A.AR_ITEM_NO, 20, A.QUANTITY, 0)) AS chuChai,
+       SUM(DECODE(A.AR_ITEM_NO, 53, A.QUANTITY, 0)) AS yanXiu,
+       SUM(DECODE(A.AR_ITEM_NO, 24, A.QUANTITY, 0)) AS peiXun,
+       SUM(DECODE(A.AR_ITEM_NO, 69, A.QUANTITY, 0)) AS yinGongWaiChu,
+       SUM(DECODE(A.AR_ITEM_NO, 59, A.QUANTITY, 0)) AS tiaoXiu,
+       SUM(DECODE(A.AR_ITEM_NO, 10, A.QUANTITY, 65, A.QUANTITY, 0)) AS chanJia,
+       SUM(DECODE(A.AR_ITEM_NO, 63, A.QUANTITY, 0)) AS chanQianJianCha,
+       SUM(DECODE(A.AR_ITEM_NO, 51, A.QUANTITY, 0)) AS jiShengJia,
+       SUM(DECODE(A.AR_ITEM_NO, 56, A.QUANTITY, 0)) AS chanJiaHuLi,
+       SUM(DECODE(A.AR_ITEM_NO, 6, A.QUANTITY, 0)) AS hunJia,
+       SUM(DECODE(A.AR_ITEM_NO, 37, A.QUANTITY, 0)) AS sangJia,
+       SUM(DECODE(A.AR_ITEM_NO, 54, A.QUANTITY, 0)) AS jiHunDengJi,
+       SUM(DECODE(A.AR_ITEM_NO, 55, A.QUANTITY, 0)) AS puRuJia,
+       SUM(DECODE(A.AR_ITEM_NO, 73, A.QUANTITY, 0)) AS gangWeiBaoLiu,
+       SUM(DECODE(A.AR_ITEM_NO, 62, A.QUANTITY, 50, A.QUANTITY, 0)) AS fangJia,
+       SUM(DECODE(A.AR_ITEM_NO, 76, A.QUANTITY, 0)) AS tuanJuJia,
+       SUM(DECODE(A.AR_ITEM_NO, 75, A.QUANTITY, 0)) AS nianXiuJiaBuBan,
+       SUM(DECODE(A.AR_ITEM_NO, 74, A.QUANTITY, 0)) AS nianXiuJiaDuoXiu,
+       
+       SUM(DECODE(A.AR_ITEM_NO, 1, A.QUANTITY, 0)) AS chiDao,
+       SUM(DECODE(A.AR_ITEM_NO, 2, A.QUANTITY, 0)) AS zaoTui,
+       SUM(DECODE(A.AR_ITEM_NO, 29, A.QUANTITY, 0)) AS kuangGong,
+       SUM(DECODE(A.AR_ITEM_NO, 25, A.QUANTITY, 0)) AS shiJia,
+       SUM(DECODE(A.AR_ITEM_NO, 4, A.QUANTITY, 0)) AS bingJia,
+       SUM(DECODE(A.AR_ITEM_NO, 12, A.QUANTITY, 68, A.QUANTITY, 0)) AS gongShangJia,
+       SUM(DECODE(A.AR_ITEM_NO, 44, A.QUANTITY, 45, A.QUANTITY, 0)) AS bingXiu,
+       SUM(DECODE(A.AR_ITEM_NO, 58, A.QUANTITY, 0)) AS xiuJia,
+       SUM(DECODE(A.AR_ITEM_NO, 57, A.QUANTITY, 0)) AS weiQin,
+       SUM(DECODE(A.AR_ITEM_NO, 16, A.QUANTITY, 0)) AS xiuZhi,
+
+       SUM(DECODE(A.AR_ITEM_NO, 52, A.QUANTITY, 0)) AS jiaoYu,
+
+       SUM(CASE
+             WHEN A.SHIFT_NO = 75 AND A.AR_ITEM_NO = 35 THEN
+              A.QUANTITY
+             ELSE
+              0
+           END) AS zhiBanXiuXi,
+       
+       SUM(CASE
+             WHEN A.AR_ITEM_NO = 35 AND A.QUANTITY >=8 THEN
+              1
+             ELSE
+              0
+           END) AS anShiChuQin,
+         SUM(DECODE(A.AR_ITEM_NO, 35, A.QUANTITY, 0)) AS zhengChangChuQin       
+           
+       from AR_DETAIL A,
+       HR_EMPLOYEE C
+       WHERE 
+        A.EMPID = C.PERSON_ID
+        AND C.EMP_DIFF_CODE in ( 'C_12067_1330306','C_12067_1330307') 
+    ]]>
+	    <isNotEmpty prepend="AND" property="arDateStarted">
+		<![CDATA[
+				   A.AR_DATE_STR BETWEEN #arDateStarted:VARCHAR# AND #arDateEnd:VARCHAR#  
+		]]>
+		</isNotEmpty>
+	   <isNotEmpty prepend="AND" property="supervisorId">
+	    	<![CDATA[
+	            EXISTS ( SELECT *
+	                       FROM AR_SUPERVISOR_INFO J
+	                      WHERE AR_SUPERVISOR_ID = #supervisorId:VARCHAR#
+	                        AND C.DEPTID = J.SUPERVISED_DEPTID
+	              )
+	        ]]>
+		</isNotEmpty>	     
+	    <![CDATA[    
+	        GROUP BY A.EMPID ) B,
+		]]>
+	
+		       
+
+	
+	<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+	   			   <include refid="DICC_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+	   			   <include refid="DIY_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+	   			   <include refid="DISC_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+	
+	<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+	   			   <include refid="DISD_HR_DEPARTMENT_SQL"/>
+	</isEqual>
+		
+	<![CDATA[
+			    HR_DEPARTMENT DEPT,
+               HR_DEPARTMENT OFFICE,
+               HR_EMPLOYEE H
+       WHERE 
+           B.EMPID = H.PERSON_ID
+       AND H.DEPTID = D.DEPTID
+       AND D.DEPT_ID = DEPT.DEPTID
+       AND D.OFFICE_ID = OFFICE.DEPTID
+
+	]]>
+	<![CDATA[
+		 GROUP BY ROLLUP(DEPT.DEPTID)
+         ORDER BY DEPT.DEPTID
+	]]>
+	</select>
+	
+	
+	<select id="retrieveReport0123Data" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+			 SELECT D1.DEPTNAME,WORKTYPE, SUM(AR.XIAOSHI) TOTALHOUR
+			   FROM (SELECT T.EMPID,
+			                T.AR_MONTH,
+			                (CASE
+			                  WHEN T.JOIN_TYPE LIKE '%职员' THEN
+			                   '职员'
+			                  WHEN T.JOIN_TYPE LIKE '%工人' THEN
+			                   '工人'
+			                END) WORKTYPE,
+			                (CASE
+			                  WHEN T.JOIN_TYPE LIKE '%职员' THEN
+			                   (T.A_WORK + T.B_WORK + WORK) * 8
+			                  WHEN T.JOIN_TYPE LIKE '%工人' THEN
+			                   ((T.A_WORK + T.B_WORK + WORK) * 8) +
+			                   (T.TOTAL_WEEKDAY_OT + T.TOTAL_WEEKEND_OT +
+			                   T.TOTAL_HOLIDAY_OT)
+			                END) XIAOSHI
+			           FROM AR_HISTORY T
+			          WHERE T.CPNY_ID = #cpnyId:VARCHAR#) AR,
+			        HR_EMPLOYEE H,
+			        HR_DEPARTMENT D,
+			        HR_DEPARTMENT D1
+			  WHERE AR.EMPID = H.EMPID
+			    AND H.DEPTID = D.DEPTID
+			    AND D.FOURTHDEPT = D1.DEPTID
+			    AND AR.AR_MONTH BETWEEN #yearMonthStart:VARCHAR# AND #yearMonthEnd:VARCHAR#
+			    AND AR.WORKTYPE IN ('工人','职员')
+			    AND H.CPNY_ID = #cpnyId:VARCHAR#
+			 GROUP BY D1.DEPTID,D1.DEPTNAME,AR.WORKTYPE
+
+	]]>
+	
+	</select>
+	
+	
+	<select id="retrieveReport0125Data" parameterClass="SimpleMap" resultClass="ArDetailBack"> 
+		<![CDATA[   
+			SELECT     A.PK_NO AS pkNo,
+				       H.EMPID,
+				       H.CHINESENAME,
+				       hr_get_level_deptname(h.deptid,4) enDept,
+				       D.deptname,
+				       NVL(TO_CHAR(A.FROM_TIME, 'YYYY-MM-DD HH24:MI:SS'), '') fromTime,
+       				   NVL(TO_CHAR(A.TO_TIME, 'YYYY-MM-DD HH24:MI:SS'), '') toTime,
+				       A.AR_DATE_STR,
+				       A.AR_MONTH_STR,
+				       A.QUANTITY,
+				       A.UNIT,
+				       A.LOCK_YN,
+				       A.REMARK,
+				       AR_SHIFT010.SHIFT_NAME AS SHIFTNAME,
+				       AR_ITEM.ITEM_NAME      AS ITEMNAME,
+				       SY_CODE.CODE_NAME      UNITNAME
+				  from AR_DETAIL A, HR_EMPLOYEE H, HR_DEPARTMENT D, AR_SHIFT010, AR_ITEM, SY_CODE
+				 WHERE A.EMPID = H.PERSON_ID
+				   AND H.DEPTID = D.DEPTID
+				   AND A.SHIFT_NO = AR_SHIFT010.SHIFT_NO(+)
+				   AND A.AR_ITEM_NO = AR_ITEM.ITEM_NO(+)
+				   AND A.UNIT = SY_CODE.CODE_ID(+)
+				   AND H.CPNY_ID = #cpnyId:VARCHAR#
+				   AND A.LOCK_YN = 'Y'
+				   AND (A.FLAG = 0 OR A.AR_ITEM_NO = '35')
+		]]>			   
+		<isNotEmpty prepend="AND" property="arDateStarted">
+		<![CDATA[
+				   A.AR_DATE_STR BETWEEN #arDateStarted:VARCHAR# AND #arDateEnd:VARCHAR#  
+		]]>
+		</isNotEmpty>
+	   <isNotEmpty prepend="AND" property="supervisorId">
+	    	<![CDATA[
+	            EXISTS ( SELECT *
+	                       FROM AR_SUPERVISOR_INFO J
+	                      WHERE AR_SUPERVISOR_ID = #supervisorId:VARCHAR#
+	                        AND D.DEPTID = J.SUPERVISED_DEPTID
+	              )
+	        ]]>
+		</isNotEmpty>	 
+      
+		
+		<![CDATA[					        
+					 ORDER BY D.DEPTID
+			]]>
+	</select>
+	
+	
+	<select id="retrieveReport0126Data" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			 SELECT MAX(A.AR_MONTH_STR) AS AR_MONTH,
+			        DEPT.DEPTID AS DEPT_DEPTID,
+			        MAX(DEPT.DEPTNAME) AS DEPTNAME,
+			        OFFICE.DEPTID AS OFFICE_DEPTID,
+			        MAX(OFFICE.DEPTNAME) AS OFFICENAME,
+			        MAX(TEAM.DEPTID) AS TEAM_DEPTID,
+			        A.EMPID AS PERSON_ID,
+			        MAX(C.EMPID) AS EMPID,
+			        MAX(C.CHINESENAME) AS CHINESENAME,
+			        SUM(DECODE(A.AR_ITEM_NO, 30, A.QUANTITY, 41, A.QUANTITY, 42, A.QUANTITY, 64, A.QUANTITY, 70, A.QUANTITY, 0)) AS jiaBan1,
+			        SUM(DECODE(A.AR_ITEM_NO, 31, A.QUANTITY, 32, A.QUANTITY, 0)) AS jiaBan2,
+			        SUM(DECODE(A.AR_ITEM_NO, 30, A.QUANTITY, 31, A.QUANTITY, 32, A.QUANTITY, 0)) AS jiaBanHeJi,
+			        SUM(CASE
+			             WHEN A.SHIFT_NO in (57,59,60,63,68,78,83,84) AND A.AR_ITEM_NO = 35 THEN
+			              1
+			             ELSE
+			              0
+			           END) AS yeBan,
+			        SUM(DECODE(A.AR_ITEM_NO, 25, A.QUANTITY, 0)) AS shiJia,
+			        SUM(DECODE(A.AR_ITEM_NO,
+			                  44,
+			                  A.QUANTITY,
+			                  45,
+			                  A.QUANTITY,
+			                  4,
+			                  A.QUANTITY,
+			                  0)) AS bingJiaBingxiu,
+			        SUM(DECODE(A.AR_ITEM_NO, 29, A.QUANTITY, 0)) AS kuangGong,
+			        SUM(DECODE(A.AR_ITEM_NO,
+			                  1,
+			                  CEIL(A.QUANTITY / 15),
+			                  2,
+			                  CEIL(A.QUANTITY / 15),
+			                  0)) AS chiDaoZaoTui,
+			       
+			        SUM(DECODE(A.AR_ITEM_NO, 62, A.QUANTITY, 50, A.QUANTITY, 0)) AS fangJia,
+			        SUM(DECODE(A.AR_ITEM_NO,
+			                  55,
+			                  A.QUANTITY,
+			                  10,
+			                  A.QUANTITY,
+			                  63,
+			                  A.QUANTITY,
+			                  14,
+			                  A.QUANTITY,
+			                  12,
+			                  A.QUANTITY,
+			                  68,
+			                  A.QUANTITY,
+			                  37,
+			                  A.QUANTITY,
+			                  6,
+			                  A.QUANTITY,
+			                  56,
+			                  A.QUANTITY,
+			                  54,
+			                  A.QUANTITY,
+			                  0)) AS qita
+			        
+			        FROM AR_DETAIL A,
+			             AR_ITEM B,
+			            (SELECT T.PERSON_ID,T.EMPID,T.CHINESENAME,T.DEPTID,
+			            		(CASE POST_GRADE_CODE
+				                 WHEN 'C_12004_1324167' THEN
+				                  'WORKER'
+				                 WHEN 'C_12004_1330054' THEN
+				                  'WORKER'
+				                 ELSE
+				                  'OFFICER'
+				               END) AS POST_GROUP_CODE
+			                 FROM HR_EMPLOYEE T) C,
+		]]>
+			<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+			   			   <include refid="DICC_HR_DEPARTMENT_SQL"/>
+			</isEqual>
+			
+			<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+			</isEqual>
+			
+			<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+			   			   <include refid="DIY_HR_DEPARTMENT_SQL"/>
+			</isEqual>
+			
+			<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+			   			   <include refid="DISC_HR_DEPARTMENT_SQL"/>
+			</isEqual>
+			
+			<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+			   			   <include refid="DISD_HR_DEPARTMENT_SQL"/>
+			</isEqual>
+		
+		<![CDATA[
+			             HR_DEPARTMENT DEPT,
+			             HR_DEPARTMENT OFFICE,
+			             HR_DEPARTMENT TEAM
+			       WHERE A.AR_ITEM_NO = B.ITEM_NO
+			         AND A.EMPID = C.PERSON_ID
+			         AND C.DEPTID = D.DEPTID
+			         AND D.DEPT_ID = DEPT.DEPTID
+			         AND D.OFFICE_ID = OFFICE.DEPTID
+			         AND D.TEAM_ID = TEAM.DEPTID
+		]]>
+		<isNotEmpty prepend="AND" property="deptId">
+		<![CDATA[
+				 EXISTS (SELECT T.DEPTID FROM HR_DEPARTMENT T
+			       WHERE T.DEPTID = D.DEPTID 
+			       START WITH T.DEPTID = #deptId:VARCHAR#
+			       CONNECT BY PRIOR T.DEPTID = T.PARENT_DEPT_ID) 
+		]]>
+		</isNotEmpty>
+		
+
+			
+		<isEqual prepend="" property="itemGroupCode" compareValue="12345">
+		<![CDATA[
+			         AND (
+			         (B.ITEM_GROUP_CODE IN ('LeavelGroup', 'ProprietaryGroup', 'SpecialGroup','OverTimeGroup')
+			          AND B.ITEM_NO NOT IN (16,20,53,24,51,57,59,65,69,72,76))
+			         OR  (A.SHIFT_NO in (57,59,60,63,68,78,83,84) AND A.AR_ITEM_NO = 35) )
+		]]>
+		</isEqual>
+		<![CDATA[		
+			         AND A.QUANTITY > 0
+			         AND to_date(A.AR_DATE_STR,'YYYY/MM/DD') >= to_date(#dateStarted:varchar#,'YYYY-MM-DD') and 
+			         to_date(A.AR_DATE_STR,'YYYY/MM/DD') <= to_date(#dateEnd:varchar#,'YYYY-MM-DD') 
+		]]>
+		<isNotEmpty prepend="AND" property="supervisorId">
+	      <![CDATA[
+	            EXISTS ( SELECT *
+                             FROM AR_SUPERVISOR_INFO J
+                            WHERE AR_SUPERVISOR_ID = #supervisorId:VARCHAR#
+                              AND C.DEPTID = J.SUPERVISED_DEPTID
+	              )
+	        ]]>
+		</isNotEmpty>
+		<![CDATA[
+			     GROUP BY DEPT.DEPTID, OFFICE.DEPTID, A.EMPID
+			     ORDER BY DEPT.DEPTID, MAX(OFFICE.DEPT_LEVEL),MAX(OFFICE.DEPTID),MAX(D.DEPT_LEVEL),  MAX(TEAM.DEPTID), A.EMPID
+		]]>
+	
+	</select>
+	
+	<select id="retrieveReport0126Data2" parameterClass="SimpleMap" resultClass="SimpleMap">
+	<![CDATA[
+			SELECT 
+			  A.AR_DATE_STR,
+			  A.EMPID,
+			  C.CHINESENAME,
+			  CASE
+				WHEN B.ITEM_NAME ='产前检查' THEN
+				'检'
+				WHEN B.ITEM_NAME ='有薪病假' THEN   
+				'带'
+				ELSE
+					  SUBSTR(B.ITEM_NAME,1,1)
+				END AS ITEM_NAME,
+			  CASE
+				WHEN B.ITEM_NAME ='迟到' OR B.ITEM_NAME ='早退' THEN
+					CEIL(A.QUANTITY / 15)
+				ELSE
+					A.QUANTITY
+				END AS QUANTITY
+			
+			  FROM AR_DETAIL A, AR_ITEM B, HR_EMPLOYEE C
+			 WHERE A.AR_ITEM_NO = B.ITEM_NO
+			   AND A.EMPID = C.PERSON_ID
+			   AND B.ITEM_GROUP_CODE IN ('LeavelGroup', 'ProprietaryGroup', 'SpecialGroup','OverTimeGroup')
+			   AND B.ITEM_NO NOT IN (16,20,53,24,51,57,59,65,69,72,76)
+			   AND A.AR_MONTH_STR = #AR_MONTH:VARCHAR#
+			   AND A.EMPID = #PERSON_ID:VARCHAR#
+	]]>
+	</select>
+	
+	<select id="retrieveReportArDateStartAndEnd" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+		
+			SELECT to_char(ar_get_startdate_stattype(#arMonth:VARCHAR#, 'C_12067_1330306', #cpnyId:VARCHAR#),'yyyy-mm-dd') AS S_DATE,
+			       to_char(ar_get_enddate_stattype(#arMonth:VARCHAR#, 'C_12067_1330306', #cpnyId:VARCHAR#),'yyyy-mm-dd') AS E_DATE
+			  FROM DUAL
+		
+		]]>
+	</select>
+	
+	<select id="retrieveReport0127Data" parameterClass="SimpleMap" resultClass="SimpleMap"> 
+		<![CDATA[   
+			SELECT  C.EMPID,
+					C.CHINESENAME,
+					S.CODE_NAME POST_GRADE_NAME,
+					D.DEPTNAME,
+					DEPT.DEPTNAME OFFICENAME,
+					TO_CHAR(AM.R_TIME,'YYYY-MM-DD HH24:MI:SS') R_TIME
+			  FROM
+				  (  	 SELECT   TO_CHAR(A.R_TIME, 'YYYY-MM-DD'), A.EMPID, MIN(A.R_TIME) AS R_TIME
+								  FROM AR_MAC_RECORDS A
+								 WHERE TO_CHAR(A.R_TIME, 'HH24:MI') > #arTime:VARCHAR#
+								   AND TO_CHAR(A.R_TIME, 'YYYY-MM-DD') BETWEEN #dateStarted:VARCHAR# AND #dateEnd:VARCHAR#
+								   AND A.DOOR_TYPE = 'IN'
+								   AND A.CPNY_ID = #cpnyId:VARCHAR#
+								   AND NOT EXISTS
+								 (SELECT *
+								          FROM (SELECT DISTINCT M.EMPID,
+								                                TO_CHAR(M.R_TIME, 'YYYY-MM-DD') AS R_TIME
+								                  FROM AR_MAC_RECORDS M
+								                 WHERE TO_CHAR(M.R_TIME, 'HH24:MI') <= #arTime:VARCHAR#
+								                   AND TO_CHAR(M.R_TIME, 'YYYY-MM-DD') BETWEEN #dateStarted:VARCHAR# AND #dateEnd:VARCHAR#
+								                   AND M.DOOR_TYPE = 'IN'
+								                   AND M.CPNY_ID = #cpnyId:VARCHAR#) DM
+								         WHERE A.EMPID = DM.EMPID
+								           AND TO_CHAR(A.R_TIME, 'YYYY-MM-DD') = DM.R_TIME
+								        )
+								 GROUP BY TO_CHAR(A.R_TIME, 'YYYY-MM-DD'), A.EMPID
+				   )AM, 
+		]]>		
+		<isEqual prepend="" property="cpnyId" compareValue="78000000"><!-- DICC -->
+		   			   <include refid="DICC_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="59000000"><!-- DICI -->
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="60000000"><!-- DIY -->
+		   			   <include refid="DIY_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="61000000"><!-- DISC -->
+		   			   <include refid="DISC_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+		
+		<isEqual prepend="" property="cpnyId" compareValue="63000000"><!-- DISD -->
+		   			   <include refid="DISD_HR_DEPARTMENT_SQL"/>
+		</isEqual>
+		<![CDATA[
+			      HR_EMPLOYEE C, 
+				  HR_DEPARTMENT DEPT,
+				  HR_DEPARTMENT OFFICE,
+				  HR_DEPARTMENT TEAM,
+				  SY_CODE S
+		]]>	
+		<![CDATA[  
+		 WHERE   AM.EMPID = C.PERSON_ID
+		         AND C.DEPTID = D.DEPTID
+		         AND D.DEPT_ID = DEPT.DEPTID
+		         AND D.OFFICE_ID = OFFICE.DEPTID
+		         AND D.TEAM_ID = TEAM.DEPTID 
+		         AND C.POST_GRADE_CODE = S.CODE_ID(+)   
+		         AND C.DATE_LEFT IS NULL
+		         AND C.STATUS_CODE <>'EmpStatus3' 
+		
+		]]>		    
+	   <isNotEmpty prepend="AND" property="deptId">
+		    <![CDATA[
+		         EXISTS (SELECT T.DEPTID FROM HR_DEPARTMENT T
+			             WHERE T.DEPTID = C.DEPTID 
+			             START WITH T.DEPTID = #deptId:VARCHAR#
+			             CONNECT BY PRIOR T.DEPTID = T.PARENT_DEPT_ID) 
+	   ]]>
+	   </isNotEmpty>		
+	   <isNotEmpty prepend="AND" property="supervisorId">
+	    	<![CDATA[
+	            EXISTS ( SELECT *
+	                       FROM AR_SUPERVISOR_INFO J
+	                      WHERE AR_SUPERVISOR_ID = #supervisorId:VARCHAR#
+	                        AND D.DEPTID = J.SUPERVISED_DEPTID
+	              )
+	        ]]>
+		</isNotEmpty>	 
+      
+		
+		<![CDATA[					        
+					 ORDER BY R_TIME,D.DEPTID
+			]]>
+	</select>
+	
+	
+</sqlMap>
+

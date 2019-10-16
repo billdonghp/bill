@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<navigation-mapper>
+
+	<operation name="pa_OpenProgress">
+		<command>com.ait.kpa.cmd.util.PaOpenProgressCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<operation name="pa_util">
+		<command>com.ait.kpa.cmd.util.RetrieveDataUtilCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="pa_bonus_util">
+		<command>com.ait.kpa.cmd.util.RetrieveBonusDataUtilCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="kpa_diff_util">
+		<command>com.ait.kpa.cmd.util.RetrieveDiffDataUtilCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="pa_bonus_param">
+		<command>com.ait.kpa.cmd.bonus.bonusparam.RetrievePaBonusParamListCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="pa_bonus_param_add">
+		<command>com.ait.kpa.cmd.bonus.bonusparam.InsertPaBonusParamCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="pa_bonus_param_update">
+		<command>com.ait.kpa.cmd.bonus.bonusparam.UpdatePaBonusParamCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="pa_bonus_param_forUpdate">
+		<command>com.ait.kpa.cmd.bonus.bonusparam.RetrievePaBonusParamForUpdateCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="pa_bonus_param_delete">
+		<command>com.ait.kpa.cmd.bonus.bonusparam.DeletePaBonusParamCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="pa_bonus_param_data">
+		<command>com.ait.kpa.cmd.bonus.bonusparamdata.RetrievePaBonusParamDataListCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="pa_bonus_param_data_forInsert">
+		<command>com.ait.kpa.cmd.bonus.bonusparamdata.RetrievePaBonusParamDataListForInsertCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="pa_bonus_param_data_do">
+		<command>com.ait.kpa.cmd.bonus.bonusparamdata.PaBonusParamDataActionCmd</command>
+		<return-url></return-url>
+	</operation>
+		
+	<operation name="pa_bonus_param_data_del">
+		<command>com.ait.kpa.cmd.bonus.bonusparamdata.PaBonusParamDataDeleteCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="importPaBonusParamDateReport">
+		<command>com.ait.kpa.cmd.bonus.bonusparamdata.ImportPaBonusParamDateReportCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="pa_bonus_item">
+		<command>com.ait.kpa.cmd.bonus.bonusitem.RetrievePaBonusItemListCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="pa_bonus_item_add">
+		<command>com.ait.kpa.cmd.bonus.bonusitem.InsertPaBonusItemCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="pa_bonus_item_update">
+		<command>com.ait.kpa.cmd.bonus.bonusitem.UpdatePaBonusItemCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="pa_bonus_item_forUpdate">
+		<command>com.ait.kpa.cmd.bonus.bonusitem.RetrievePaBonusItemForUpdateCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="pa_bonus_item_delete">
+		<command>com.ait.kpa.cmd.bonus.bonusitem.DeletePaBonusItemCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="pa_bonus_formular">
+		<command>com.ait.kpa.cmd.bonus.bonusformular.RetrievePaBonusItemListCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="pa_bonus_formular_data">
+		<command>com.ait.kpa.cmd.bonus.bonusformular.RetrievePaBonusFormularCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="pa_bonus_formular_data_add">
+		<command>com.ait.kpa.cmd.bonus.bonusformular.InsertPaBonusFormularCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="pa_bonus_formular_data_forUpdate">
+		<command>com.ait.kpa.cmd.bonus.bonusformular.RetrievePaBonusFormulaForUpdateCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="pa_bonus_formular_data_update">
+		<command>com.ait.kpa.cmd.bonus.bonusformular.UpdatePaBonusFormularCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="pa_bonus_formular_data_delete">
+		<command>com.ait.kpa.cmd.bonus.bonusformular.DeletePaBonusFormularCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="pa_bonus_item_calcuOrder_update">
+		<command>com.ait.kpa.cmd.bonus.bonusformular.UpdatePaBonusItemCalcuOrderCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="pa_bonus_result">
+		<command>com.ait.kpa.cmd.bonus.bonusresult.PaBonusBalanceCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="importParamDataReport">
+		<command>com.ait.kpa.cmd.paramdate.ImportParamDataReportCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="exportParamDataReport">
+		<command>com.ait.kpa.cmd.paramdate.ExportParamDataReportCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="downloadParamDateTemplate">
+		<command>com.ait.kpa.cmd.paramdate.DownloadParamDateTemplateCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="exportSAPreportData">
+		<command>com.ait.kpa.cmd.sapreport.ExportSapReportCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="exportInsreportData">
+		<command>com.ait.kpa.cmd.ExportInsreportDataCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="pa_post_excel">
+		<command>com.ait.kpa.cmd.report.EmpPostReport</command>
+		<return-url></return-url>
+	</operation>
+		
+	<operation name="deletepostgradecmd">
+		<command>com.ait.kpa.cmd.postgrade.DeletePostGradeCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<operation name="insertpostgradecmd">
+		<command>com.ait.kpa.cmd.postgrade.InsertPostGradeCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<operation name="retrievedataforupdatepostgradecmd">
+		<command>com.ait.kpa.cmd.postgrade.RetrievedataForUpdatePostGradeCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="retrievedataforinsertpostgradecmd">
+		<command>com.ait.kpa.cmd.postgrade.RetrievedataForInsertPostGradeCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+
+	<operation name="updatepostgradecmd">
+		<command>com.ait.kpa.cmd.postgrade.UpdatePostGradeCmd</command>
+		<return-url></return-url>
+	</operation>
+
+	<operation name="viewpostgradecmd">
+		<command>com.ait.kpa.cmd.postgrade.ViewPostGradeCmd</command>
+		<return-url></return-url>
+	</operation>
+		
+	<operation name="exportPaBonusParamDataReport">
+		<command>com.ait.kpa.cmd.bonus.bonusparamdata.ExportPaBonusParamDataReportCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="paInterface">
+		<command>com.ait.kpa.servlet.PaInterfaceCommand</command>
+		<return-url></return-url>
+	</operation>
+	<operation name="paPlan">
+		<command>com.ait.kpa.servlet.PayPlanCommand</command>
+		<return-url></return-url>
+	</operation>
+	<operation name="calculationFlag">
+		<command>com.ait.kpa.cmd.util.PayCalculationSigns</command>
+		<return-url></return-url>
+	</operation>
+	<operation name="PayBankCode">
+		<command>com.ait.kpa.cmd.util.PayBankCode</command>
+		<return-url></return-url>
+	</operation>
+		<operation name="exportPayBankCode">
+		<command>com.ait.kpa.cmd.util.ExportPayBankCodeCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="kpa_diff_param">
+		<command>com.ait.kpa.cmd.diff.diffparam.RetrievePaDiffParamListCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="kpa_diff_param_add">
+		<command>com.ait.kpa.cmd.diff.diffparam.InsertDiffParamCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="kpa_diff_param_data">
+		<command>com.ait.kpa.cmd.diff.diffparamdata.RetrieveDiffParamDataListCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="kpa_diff_param_forUpdate">
+		<command>com.ait.kpa.cmd.diff.diffparam.RetrieveDiffParamForUpdateCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="kpa_diff_param_update">
+		<command>com.ait.kpa.cmd.diff.diffparam.UpdateDiffParamCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="kpa_diff_param_delete">
+		<command>com.ait.kpa.cmd.diff.diffparam.DeleteDiffParamCmd</command>
+		<return-url></return-url>
+	</operation>
+		
+	<operation name="kpa_diff_item">
+		<command>com.ait.kpa.cmd.diff.diffitem.RetrieveDiffItemListCmd</command>
+		<return-url></return-url>
+	</operation>
+		
+	<operation name="kpa_diff_item_add">
+		<command>com.ait.kpa.cmd.diff.diffitem.InsertDiffItemCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="kpa_diff_item_delete">
+		<command>com.ait.kpa.cmd.diff.diffitem.DeleteDiffItemCmd</command>
+		<return-url></return-url>
+	</operation>
+		
+	<operation name="kpa_diff_item_forUpdate">
+		<command>com.ait.kpa.cmd.diff.diffitem.RetrieveDiffItemForUpdateCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+	<operation name="kpa_diff_item_update">
+		<command>com.ait.kpa.cmd.diff.diffitem.UpdateDiffItemCmd</command>
+		<return-url></return-url>
+	</operation>
+		
+	<operation name="kpa_diff_formular">
+		<command>com.ait.kpa.cmd.diff.diffformular.RetrieveDiffItemListCmd</command>
+		<return-url></return-url>
+	</operation>
+		
+	<operation name="kpa_diff_formular_data">
+		<command>com.ait.kpa.cmd.diff.diffformular.RetrieveDiffFormularCmd</command>
+		<return-url></return-url>
+	</operation>
+		
+	<operation name="kpa_diff_formular_data_add">
+		<command>com.ait.kpa.cmd.diff.diffformular.InsertDiffFormularCmd</command>
+		<return-url></return-url>
+	</operation>
+		
+	<operation name="kpa_diff_formular_data_forUpdate">
+		<command>com.ait.kpa.cmd.diff.diffformular.RetrieveDiffFormulaForUpdateCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+		
+	<operation name="kpa_diff_formular_data_update">
+		<command>com.ait.kpa.cmd.diff.diffformular.UpdateDiffFormularCmd</command>
+		<return-url></return-url>
+	</operation>
+	
+		
+	<operation name="kpa_diff_formular_data_delete">
+		<command>com.ait.kpa.cmd.diff.diffformular.DeleteDiffFormularCmd</command>
+		<return-url></return-url>
+	</operation>
+		
+	<operation name="kpa_diff_item_calcuOrder_update">
+		<command>com.ait.kpa.cmd.diff.diffformular.UpdateDiffItemCalcuOrderCmd</command>
+		<return-url></return-url>
+	</operation>
+</navigation-mapper>

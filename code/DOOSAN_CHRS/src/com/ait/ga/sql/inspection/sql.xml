@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="ga.inspection">
+	<select id="selectInspectionList" parameterClass="SimpleMap" resultClass="SimpleMap">
+		<![CDATA[
+			   SELECT    A.SEQ_NO,
+		                 A.ASSET_NO,
+		                 C.ASSET_NAME AS ASSET_NAME,
+		                 GET_CODE_NAME(C.ASSET_TYPE) AS ASSET_TYPE,
+		                 C.USE_DEPT_ID AS USE_DEPT_ID,
+		                 A.DATA_TYPE,
+		                 GET_CODE_NAME(A.DATA_TYPE) AS DATA_TYPE_NAME,
+		                 TO_CHAR(A.INSPECTION_DATE,'YYYY-MM-DD') AS INSPECTION_DATE,
+		                 A.PERIOD_NUM AS PERIOD_NUM,
+		                 A.PERIOD_UNIT,
+		                 CONCAT(TO_CHAR(PERIOD_NUM),GET_CODE_NAME(A.PERIOD_UNIT)) AS PERIOD,
+		                 A.INSPECTION_EMPID,
+		                 B.CHINESENAME AS INSPECTION_NAME,
+		                 A.STATUS,
+	                     GET_CODE_NAME(A.STATUS) AS STATUS_NAME,
+	                     A.MAINTAIN_VENDOR,
+	                     A.MAINTAIN_CONTENT,
+	                     A.WARRANTY_LENGTH,
+	                     A.MAINTAIN_COST,
+	                     A.REMARK,
+	                     TO_CHAR(A.UPDATE_DATE,'YYYY-MM-DD') UPDATE_DATE,
+	                     GET_EMP_NAME(A.UPDATED_BY) AS UPDATED_BY,
+	                     C.CPNY_ID AS CPNY_ID
+	              FROM   GA_ASSET_INSPECTION A,
+	                     HR_EMPLOYEE B,
+	                     GA_ASSET C
+	              WHERE  A.INSPECTION_EMPID = B.PERSON_ID(+)
+	              AND    A.ASSET_NO = C.ASSET_NO
+	              AND     A.ACTIVITY = 1
+
+	  	]]>
+	  	<isNotEmpty prepend="" property="startDate">
+			<isNotEmpty prepend="AND" property="endDate">
+				<![CDATA[		   
+				 	A.INSPECTION_DATE BETWEEN TO_DATE(#startDate:VARCHAR#,'YYYY-MM-DD') AND TO_DATE(#endDate:VARCHAR#,'YYYY-MM-DD')
+				]]>	
+			</isNotEmpty>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="assetNo">
+				<![CDATA[		   
+				 	A.ASSET_NO LIKE '%'||#assetNo:VARCHAR#||'%'
+				]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="seqNo">
+				<![CDATA[		   
+				 	A.SEQ_NO = #seqNo:VARCHAR#
+				]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="assetType">
+				<![CDATA[		   
+				 	ASSET_TYPE = #assetType:VARCHAR#
+				]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="cpnyId">
+				<![CDATA[		   
+				 	C.CPNY_ID = #cpnyId:VARCHAR#
+				]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="assetName">
+				<![CDATA[		   
+				 	ASSET_NAME = #assetName#
+				]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="checkStatus">
+				<![CDATA[		   
+				 	A.STATUS = #checkStatus#
+				]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="checkType">
+				<![CDATA[		   
+				 	A.DATA_TYPE = #checkType#
+				]]>	
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY A.INSPECTION_DATE DESC
+		]]>								
+	</select>
+	
+	<select id="selectInspectionCut" parameterClass="SimpleMap" resultClass="int">
+		<![CDATA[
+			   SELECT    COUNT(*) CUT
+	              FROM   GA_ASSET_INSPECTION A,
+	                     HR_EMPLOYEE B,
+	                     GA_ASSET C
+	              WHERE  A.INSPECTION_EMPID = B.PERSON_ID(+)
+	              AND    A.ASSET_NO = C.ASSET_NO
+	              AND     A.ACTIVITY = 1
+
+	  	]]>
+	  	<isNotEmpty prepend="" property="startDate">
+			<isNotEmpty prepend="AND" property="endDate">
+				<![CDATA[		   
+				 	A.INSPECTION_DATE BETWEEN TO_DATE(#startDate:VARCHAR#,'YYYY-MM-DD') AND TO_DATE(#endDate:VARCHAR#,'YYYY-MM-DD')
+				]]>	
+			</isNotEmpty>
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="assetNo">
+				<![CDATA[		   
+				 	A.ASSET_NO LIKE '%'||#assetNo:VARCHAR#||'%'
+				]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="seqNo">
+				<![CDATA[		   
+				 	A.SEQ_NO = #seqNo:VARCHAR#
+				]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="assetType">
+				<![CDATA[		   
+				 	ASSET_TYPE = #assetType:VARCHAR#
+				]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="cpnyId">
+				<![CDATA[		   
+				 	C.CPNY_ID = #cpnyId:VARCHAR#
+				]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="assetName">
+				<![CDATA[		   
+				 	ASSET_NAME = #assetName#
+				]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="checkStatus">
+				<![CDATA[		   
+				 	A.STATUS = #checkStatus#
+				]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="checkType">
+				<![CDATA[		   
+				 	A.DATA_TYPE = #checkType#
+				]]>	
+		</isNotEmpty>
+		<![CDATA[
+			 ORDER BY A.INSPECTION_DATE DESC
+		]]>								
+	</select>
+	
+	<typeAlias alias="AssetInfo" type="com.ait.ga.bean.AssetInfo"/>
+	<select id="searchAsset" parameterClass="SimpleMap" resultClass="AssetInfo">
+		<![CDATA[
+			SELECT A.SEQ_NO ASSET_SEQ_NO,
+				   A.ASSET_NO ASSET_NO,
+				   A.ASSET_NAME ASSET_NAME
+			FROM   GA_ASSET A
+			WHERE  A.CPNY_ID = #cpnyId#
+			
+			
+		]]>
+		<isNotEmpty prepend="AND" property="assetNo">
+				<![CDATA[		   
+				 	A.ASSET_NO LIKE '%'||#assetNo:VARCHAR#||'%'
+				]]>	
+		</isNotEmpty>
+		<isNotEmpty prepend="OR" property="assetNo">
+				<![CDATA[		   
+				 	 A.ASSET_NAME LIKE  #assetNo:VARCHAR# ||'%'
+				]]>	
+		</isNotEmpty>
+	</select>
+	
+	<insert id="insertInspection" parameterClass="SimpleMap">
+		<![CDATA[	
+				INSERT INTO GA_ASSET_INSPECTION A
+				       (A.SEQ_NO,
+				        A.ASSET_NO,
+				        A.INSPECTION_DATE,
+				        A.DATA_TYPE,
+				        A.PERIOD_NUM,
+				        A.PERIOD_UNIT,
+				        A.INSPECTION_EMPID,
+				        A.STATUS,
+				        A.MAINTAIN_VENDOR,
+				        A.MAINTAIN_CONTENT,
+				        A.WARRANTY_LENGTH,
+				        A.MAINTAIN_COST,
+				        A.REMARK,
+				        A.CREATE_DATE,
+				        A.CREATED_BY,
+				        A.ACTIVITY)
+				VALUES (SEQ_GA_ASSET_INSPECTION.NEXTVAL,
+						#assetNo:VARCAHR#,
+				        TO_DATE(#inspectionDate:VARCHAR#,'YYYY-MM-DD'),
+				        #dataType:VARCHAR#,
+				        TO_NUMBER(#periodNum:VARCHAR#),
+				        #periodUnit:VARCHAR#,
+				        #personId:VARCHAR#,
+				        #status:VARCHAR#,
+				        #maintainVendor:VARCHAR#,
+				        #maintainContent:VARCHAR#,
+				        #warrantyLength:VARCHAR#,
+				        #maintainCost:VARCHAR#,
+				        #remark:VARCHAR#,
+				        SYSDATE,
+				        #adminId:VARCHAR#,
+				        1)
+		]]>
+	</insert>
+	
+	<update id="updateInspection" parameterClass="SimpleMap">
+		<![CDATA[
+				UPDATE GA_ASSET_INSPECTION A
+				SET     A.INSPECTION_DATE	= TO_DATE(#inspectionDate:VARCHAR#,'YYYY-MM-DD'),
+				        A.PERIOD_NUM		= #periodNum:NUMERIC#,
+				        A.PERIOD_UNIT		= #periodUnit:VARCHAR#,
+				        A.INSPECTION_EMPID	= #personId:VARCHAR#,
+				        A.STATUS			= #status:VARCHAR#,
+				        A.MAINTAIN_VENDOR	= #maintainVendor:VARCHAR#,
+				        A.MAINTAIN_CONTENT	= #maintainContent:VARCHAR#,
+				        A.WARRANTY_LENGTH	= #warrantyLength:VARCHAR#,
+				        A.MAINTAIN_COST		= #maintainCost:VARCHAR#,
+				        A.REMARK			= #remark:VARCHAR#
+				WHERE 	A.SEQ_NO = #seqNo#
+		]]>
+	</update>
+	
+	<update id="confirmInspection" parameterClass="SimpleMap">
+		<![CDATA[
+				UPDATE GA_ASSET_INSPECTION A
+				SET     A.UPDATE_DATE		= SYSDATE,
+				        A.UPDATED_BY		= #adminId:VARCHAR#
+				WHERE 	A.SEQ_NO = #assetNo#
+		]]>
+	</update>
+	
+	<delete id="deleteInspection" parameterClass="SimpleMap">
+		<![CDATA[
+			UPDATE GA_ASSET_INSPECTION A 
+			SET	   A.ACTIVITY=0
+			WHERE A.SEQ_NO = #seqNo#
+		]]>
+	</delete>
+
+</sqlMap>
