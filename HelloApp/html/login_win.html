@@ -1,0 +1,133 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>Hello APP</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <style>
+        .login-third {
+            margin-top: 3rem;
+        }
+
+        .bg {
+            position: relative;
+            width: 100;
+            height: 285px;
+            background-color: #03a9f4;
+            font-size: 28px;
+            color: #fff;
+            line-height: 205px;
+            text-align: center;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+
+<body>
+
+    <section>
+        <div class="bg">多元海洋 Seafoods</div>
+        <div style="position:absolute; top:190px; width:100%;">
+            <div class="aui-content aui-content-padded aui-margin-b-5">
+                <ul class="aui-list">
+                    <!-- <li class="aui-list-header"></li> -->
+                    <li class="aui-list-item">
+                        <div class="aui-list-item-left"><i class=" aui-iconfont aui-icon-my"></i></div>
+                        <div class="aui-list-item-right">
+                            <input type="text" onfocus="this.placeholder='请输入您的账号'" placeholder="请输入您的账号" id="username" class="aui-text-right" />
+                        </div>
+
+                    </li>
+                    <li class="aui-list-item">
+
+                        <div class="aui-list-item-left"><i class="aui-iconfont aui-icon-lock"></i></div>
+                        <div class="aui-list-item-right">
+                            <input type="password" onfocus="this.placeholder='请输入您的密码'" placeholder="请输入您的密码" id="password" class="aui-text-right" />
+                        </div>
+
+                    </li>
+                    <li class="aui-list-item">
+                        <div class="aui-list-left "><input type="checkbox" class="aui-checkbox" id="check">&nbsp;&nbsp;保存账号</input>
+                        </div>
+                    </li>
+                    <li class="aui-list-header"></li>
+                </ul>
+            </div>
+            <div class="aui-content-padded">
+                <div class="aui-btn aui-btn-block aui-btn-info aui-btn-sm" tapmode onclick="login()">登录</div>
+            </div>
+        </div>
+    </section>
+
+
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/jquery-3.1.1.js" charset="utf-8"></script>
+<script type="text/javascript" src="../script/APICloud-rest.js"></script>
+<script type="text/javascript" src="../script/APICloud-rest-SHA1.js"></script>
+<script type="text/javascript" src="../script/cloud.js"></script>
+<script type="text/javascript">
+    apiready = function() {
+        api.parseTapmode();
+        addEventKeyback();
+        if ($api.getStorage("check") == 'true' && $api.getStorage("username") != 'undefined') {
+            $("#check").prop("checked", true);
+            $("#username").val($api.getStorage("username"));
+        }
+    };
+
+
+    function login() {
+
+        if ($api.trim($("#username").val()) == "") {
+            apiToast('请输入账号');
+            return;
+        }
+        if ($api.trim($("#password").val()) == "") {
+            apiToast('请输入密码');
+            return;
+        }
+
+        getClient("user").login({
+            username: $("#username").val(),
+            password: $("#password").val()
+        }, function(ret, err) {
+            //console.log("ret: " + JSON.stringify(ret) + "\nerr: " + JSON.stringify(err));
+            if (ret) {
+                //alert(ret.id != "" && ret.userId != "");
+                if (ret.id != "" && ret.userId != "") {
+                    apiToast('登陆成功');
+                    if ($("#check").prop("checked")) {
+                        $api.setStorage('username', $("#username").val());
+                        $api.setStorage('check', 'true');
+                    } else {
+                        $api.setStorage('check', 'false');
+                    }
+
+                    $api.setStorage('userId', ret.userId);
+                    $api.setStorage('token', ret.id);
+                    api.openWin({
+                        name: 'main',
+                        url: './main.html',
+                        slidBackEnabled: false,
+                        pageParam: {
+                            name: 'test'
+                        }
+                    });
+                }
+            } else {
+                if (err.statusCode == '0') {
+                    apiToast(err.msg);
+                }else if (err.statusCode == "401" || err.body.error.message == 'login failed') {
+                    apiToast('用户名或密码错误!');
+                }
+
+            }
+        });
+    }
+</script>
+
+</html>

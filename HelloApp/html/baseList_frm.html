@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="../css/api.css">
+    <link rel="stylesheet" href="../css/aui.css">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <section id="list">
+    </section>
+
+    <script id="template" type="text/template">
+        {{ for (var i = 0; i
+        < it.length; i++) { }} <div class="aui-card-list aui-margin-b-5">
+            <div class="aui-card-list-header aui-font-size-14">{{=it[i].name}}&nbsp;&gt;&gt;&nbsp;{{=it[i].objecttype ?  it[i].objecttype : ''}}</div>
+            <div class="aui-card-list-footer aui-padded-t-0 aui-border-t">
+                <div tapmode onclick="doUsed('{{=it[i].id}}','{{=it[i].status}}')">
+                    <span class="{{=it[i].status == 1 ? 'aui-radio aui-checked aui-margin-r-5' : 'aui-radio aui-margin-r-5'}}"></span>已使用
+                </div>
+                <div>
+                    <span tapmode onclick="editBase('{{=it[i].id}}','{{=it[i].status}}')"><i class="aui-iconfont aui-icon-edit aui-margin-r-5 aui-font-size-14"></i>编辑</span>
+                    <span tapmode onclick="delBase('{{=it[i].id}}','{{=it[i].objecttype}}','{{=it[i].status}}')"><i class="aui-iconfont aui-icon-trash aui-margin-r-5 aui-margin-l-15 aui-font-size-14"></i>删除
+              </div>
+            </div>
+          </div>
+            {{ }}}
+    </script>
+
+</body>
+<script type="text/javascript" src="../script/api.js" charset="utf-8"></script>
+<script type="text/javascript" src="../script/doT.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="../script/jquery-3.1.1.js" charset="utf-8"></script>
+<script type="text/javascript" src="../script/APICloud-rest.js"></script>
+<script type="text/javascript" src="../script/APICloud-rest-SHA1.js"></script>
+<script type="text/javascript" src="../script/cloud.js" charset="utf-8"></script>
+
+<script type="text/javascript">
+    var pageIndex = 1;
+    pageSize = 10;
+    apiready = function() {
+        pageInit();
+        getBaseList();
+
+        addEventListReload({'winName': 'base'})
+    }
+
+    function pageInit() {
+        upPull(function() {
+            pageIndex += 1;
+            getBaseList();
+        })
+        api.setCustomRefreshHeaderInfo({
+            bgColor: '#f0f0f0',
+        }, function(ret, err) {
+            pageIndex = 1;
+            getBaseList();
+
+        });
+
+    }
+
+    function getBaseList() {
+        getClient('base').query({
+            filter: {
+                limit: pageIndex * pageSize,
+                skip: (pageIndex - 1) * pageSize,
+                order: "createdAt DESC"
+            }
+        }, function(ret, err) {
+            //console.log(JSON.stringify(ret));
+            if (ret) {
+
+                api.refreshHeaderLoadDone();
+                chkdata(ret);
+            }
+
+
+        })
+
+    }
+
+    function chkdata(_data) {
+        var list = $api.byId('list');
+        var fn = doT.template($api.byId('template').innerHTML);
+
+        var resultHTML = fn(_data);
+
+        pageIndex == 1 ? $api.html(list, resultHTML) : $api.append(list, resultHTML);
+        api.parseTapmode();
+    }
+
+    function doUsed(id,status){
+      getClient('base').save({_id:id},{'status': (status == 1 ? 0 : 1)},function(ret,err){
+        if(ret){
+          apiToast('设置完毕!');
+          listReload();
+        }
+      })
+    }
+
+    function editBase(id,status){
+      if(status == 1){
+        apiToast('已使用，无法修改!');
+        return;
+      }
+      api.openWin({
+          name: 'base_win',
+          url: './base_win.html',
+          pageParam: {
+              id: id,
+              state: 'update'
+          }
+      });
+    }
+
+    function delBase(id,objecttype,status){
+      if(status == 1){
+        apiToast("已使用，无法删除!");
+        return;
+      }
+      api.confirm({
+          title: '提醒',
+          msg: '是否删除?',
+          buttons: ['确定', '取消']
+      }, function(ret, err){
+          if( ret ){
+               if(ret.buttonIndex ==1){
+                 getClient('base').delete({_id: id},function(ret,err){
+                   if(ret){
+                     apiToast('已删除!');
+                     listReload();
+                   }
+                 })
+               }
+          }else{
+               alert( JSON.stringify( err ) );
+          }
+      });
+
+
+    }
+
+</script>
+
+</html>

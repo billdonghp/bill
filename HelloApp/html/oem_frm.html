@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="../css/api.css">
+  <link rel="stylesheet" href="../css/aui.css">
+  <title>Document</title>
+  <style>
+      textarea {
+          width: 100%;
+          height: 100px;
+          border: none;
+          box-sizing: border-box;
+          padding: 10px;
+          background: #F3F3FB;
+      }
+  </style>
+</head>
+<body>
+  <section id="list">
+    <div class="aui-content aui-margin-b-5">
+      <ul class="aui-list">
+        <div class="aui-list-item">
+          <div class="aui-list-item-left">代工单号</div>
+          <div class="aui-list-item-center"><input type="text" class="aui-text-right" id="no" placeholder="" readonly="true"></div>
+          <input type="hidden" id="id">
+        </div>
+        <div class="aui-list-item">
+          <div class="aui-list-item-left">品号</div>
+          <div class="aui-list-item-center"><input type="text" class="aui-text-right" id="material" placeholder="" readonly="true" tapmode onclick="openSearch('oem_win','enumeration')"></div>
+          <div class="aui-list-item-right aui-text-info" tapmode onclick="openSearch('oem_win','enumeration')"><i class="aui-iconfont aui-icon-right"></i></div>
+        </div>
+        <div class="aui-list-item">
+          <div class="aui-list-item-left">规格(克)</div>
+          <div class="aui-list-item-center"><input type="number" class="aui-text-right" id="weight" placeholder="" readonly="true" value='1000'></div>
+        </div>
+        <div class="aui-list-item">
+          <div class="aui-list-item-left">原料数量</div>
+          <div class="aui-list-item-center"><input type="number" class="aui-text-right" id="qty" placeholder="请输入" onfocus="this.placeholder=''" onblur="this.placeholder='请输入'"></div>
+        </div>
+      </ul>
+    </div>
+
+    <div class="aui-content aui-margin-b-5">
+      <ul class="aui-list">
+        <div class="aui-list-item">
+          <div class="aui-list-item-left">成品规格(克)</div>
+          <div class="aui-list-item-center"><input type="number" class="aui-text-right" id="finweight" placeholder="请输入" onfocus="this.placeholder=''" onblur="this.placeholder='请输入'"></div>
+        </div>
+        <div class="aui-list-item">
+          <div class="aui-list-item-left">成品数量</div>
+          <div class="aui-list-item-center"><input type="number" class="aui-text-right" id="finqty" placeholder="请输入" onfocus="this.placeholder=''" onblur="this.placeholder='请输入'"></div>
+        </div>
+        <div class="aui-list-item">
+            <div class="aui-list-left "><input type="checkbox" class="aui-checkbox" id="check">&nbsp;&nbsp;已完成</input>
+            </div>
+        </div>
+      </ul>
+    </div>
+
+    <div class="aui-content aui-margin-b-5">
+      <ul class="aui-list">
+        <div class="aui-list-item">
+          <div class="aui-list-item-left">代工费用</div>
+          <div class="aui-list-item-center"><input type="number" class="aui-text-right" id="oemfee" placeholder="请输入" onfocus="this.placeholder=''" onblur="this.placeholder='请输入'"></div>
+        </div>
+        <div class="aui-list-item">
+          <div class="aui-list-item-left">余料数量</div>
+          <div class="aui-list-item-center"><input type="number" class="aui-text-right" id="resqty" placeholder="请输入" onfocus="this.placeholder=''" onblur="this.placeholder='请输入'"></div>
+        </div>
+      </ul>
+    </div>
+
+    <div class="aui-conent aui-margin-b-5">
+        <ul class="aui-list">
+            <div class="aui-list-item">
+                <div class="aui-list-item-left">备注</div>
+                <div class="aui-list-item-center">
+                    <textarea placeholder="请输入" onfocus="this.placeholder=''" onblur="this.placeholder='请输入'" id="remark" maxlength="150"></textarea>
+                </div>
+            </div>
+        </ul>
+    </div>
+
+    <div class="aui-footer-bar">
+      <div class="aui-footer-bar-item aui-padded-l-15 aui-padded-r-15">
+        <div class="aui-btn aui-btn-block aui-btn-sm aui-btn-info" tapmode onclick="saveOem()"><i class="aui-iconfont aui-icon-edit aui-font-size-16"></i>保存</div>
+      </div>
+    </div>
+  </section>
+
+</body>
+<script src="../script/api.js" charset="utf-8"></script>
+<script src="../script/jquery-3.1.1.js" charset="utf-8"></script>
+<script type="text/javascript" src="../script/APICloud-rest.js"></script>
+<script type="text/javascript" src="../script/APICloud-rest-SHA1.js"></script>
+<script src="../script/cloud.js" charset="utf-8"></script>
+<script>
+  apiready = function(){
+    pageInit();
+  }
+  function pageInit(){
+    pageParam = api.pageParam;
+
+    if(pageParam.state == "update" && pageParam.id != ""){
+      getClient('oem').get({_id: pageParam.id},function(ret, err) {
+          if (ret) {
+              setFileds(ret.id, ret.no, ret.material, ret.weight, ret.qty,ret.finweight, ret.finqty, ret.oemfee, ret.resqty, ret.remark,ret.status);
+          } else {
+              alert('err: ' + JSON.stringify(err));
+          }
+      })
+
+    }else{
+      $('#material').val(pageParam.param1);
+    }
+    api.parseTapmode();
+  }
+
+  function saveOem(){
+    if($api.trim($('#material').val()) == ""){
+      apiToast("品号不可为空");
+      return;
+    }
+    if($api.trim($('#qty').val()) == 0){
+      apiToast("原料数量不可为空");
+      return;
+    }
+    if($api.trim($('#oemfee').val()) == 0){
+      apiToast("代工费用不可为空");
+      return;
+    }
+    if($('#no').val() == ""){
+      $('#no').val(getNo('OEM'));
+    }
+    if ($("#id").val() == "" || $("#id").val() == undefined) {
+        getClient('oem').save(getValue(),function(ret,err){
+          if(ret){
+            apiToast('订单保存成功!');
+            sendEventReload({'winName':'oem','type':'multi'});
+            setTimeout(function(){
+              closeWin();
+            },500);
+          }
+        })
+      }else{
+        getClient('oem').save({_id: $("#id").val()},getValue(),function(ret,err){
+          if(ret){
+            apiToast('订单更新成功!')
+            sendEventReload({'winName':'oem','type':'multi'});
+            setTimeout(function(){
+              closeWin();
+            },500);
+          }
+        })
+      }
+
+  }
+
+  function getValue() {
+      return {
+          'no': $('#no').val(),
+          'material': $('#material').val(),
+          'weight': $('#weight').val(),
+          'qty': $('#qty').val(),
+          'finweight': $('#finweight').val(),
+          'finqty': $('#finqty').val(),
+          'finfee': $('#finfee').val(),
+          'oemfee': $('#oemfee').val(),
+          'resqty': $('#resqty').val(),
+          'remark': $('#remark').val(),
+          'status': $('#check').prop('checked')
+      }
+  }
+
+  function setFileds(id, no, material, weight, qty,finweight, finqty, oemfee, resqty, remark, status){
+    $('#id').val(id ? id : "");
+    $('#no').val(no ? no : "");
+    $('#material').val(material ? material : "");
+    $('#weight').val(weight ? weight : "");
+    $('#finqty').val(finqty ? finqty : "");
+    $('#qty').val(qty ? qty : "");
+    $('#finweight').val(finweight ? finweight : "");
+    $('#oemfee').val(oemfee ? oemfee : "");
+    $('#resqty').val(resqty ? resqty : "");
+    $('#remark').val(remark ? remark : "");
+    $('#check').prop('checked', status == 1 ? true : false);
+
+  }
+
+
+</script>
+
+</html>

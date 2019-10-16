@@ -1,0 +1,162 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0, minimum-scale=1.0, user-scalable=0, initial-scale=1.0, width=device-width" />
+    <meta name="format-detection" content="telephone=no, email=no, date=no, address=no">
+    <title>Hello APP</title>
+    <link rel="stylesheet" type="text/css" href="../css/api.css" />
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+
+    <style>
+
+    </style>
+</head>
+
+<body>
+      <section id="list">
+        <div class="aui-content aui-margin-b-5">
+            <ul class="aui-list">
+
+                    <div class="aui-list-item">
+                        <div class="aui-list-item-left  color-blue">客户姓名</div>
+                        <div class="aui-list-item-center">
+                            <input type="text" placeholder="请输入" id="name" class="aui-text-right">
+                        </div>
+                    </div>
+                    <div class="aui-list-item">
+                        <div class="aui-list-item-left  color-blue">手机号码</div>
+                        <div class="aui-list-item-center">
+                            <input type="text" placeholder="请输入" id="mobilephone" class="aui-text-right">
+                        </div>
+                    </div>
+
+                    <div class="aui-list-item">
+                        <div class="aui-list-item-left color-blue">收货地址</div>
+                        <div class="aui-list-item-center">
+                            <input type="text" placeholder="请输入" id="address" class="aui-text-right">
+                        </div>
+                    </div>
+                    <input type="hidden" id="id" name="id">
+
+            </ul>
+        </div>
+
+    </section>
+    <footer class="aui-footer-bar" id="footer">
+        <div class="aui-footer-bar-item aui-padded-l-15 aui-padded-r-15">
+            <div class="aui-btn aui-btn-block aui-btn-sm aui-btn-info" tabmode onclick="saveCustomer()"><i class="aui-iconfont aui-icon-edit aui-font-size-16"></i>保存</div>
+        </div>
+    </footer>
+    <script type="text/template" id="template">
+
+    </script>
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/doT.min.js" charset="utf-8"></script>
+<script type="text/javascript" src="../script/jquery-3.1.1.js"></script>
+<script type="text/javascript" src="../script/APICloud-rest.js"></script>
+<script type="text/javascript" src="../script/APICloud-rest-SHA1.js"></script>
+<script type="text/javascript" src="../script/cloud.js">
+</script>
+
+</script>
+<script type="text/javascript">
+    apiready = function() {
+
+        pageinit();
+    };
+
+    <!-- 页面初始化 -->
+    function pageinit() {
+        var header = $api.byId('header');
+        $api.fixStatusBar(header);
+
+        var pageParam = api.pageParam;
+
+        //alert(JSON.stringify(pageParam));
+        if (pageParam.name == "update" && pageParam.value != "") {
+            getClient('customer').get({_id: pageParam.value}, function(ret, err) {
+                if (ret) {
+                    setFileds(ret.id,ret.name,ret.mobilephone,ret.address);
+                } else {
+                    alert('err: ' + JSON.stringify(err));
+                }
+            })
+        }
+    }
+
+    function saveCustomer() {
+        if ($api.trim($("#name").val()) == "") {
+            apiToast('客户姓名不可为空!');
+            return;
+        }
+        if ($api.trim($("#mobilephone").val()) == "") {
+            apiToast('手机号码不可为空!');
+            return;
+        }
+        if ($api.trim($("#address").val()) == "") {
+
+            apiToast('收货地址不可为空!');
+            return;
+        }
+        //alert($("#id").val());
+        if ($("#id").val() == "" || $("#id").val() == undefined) {
+            getClient('customer').save(getValue(), function(ret, err) {
+                if (ret) {
+
+                    apiToast('客户新增成功');
+
+                    setFileds();
+                    sendEventReload({'winName': 'customer'});
+                    setTimeout(function(){
+                      closeWin();
+                    },500);
+                }
+            });
+        } else {
+              getClient('customer').save({_id: $("#id").val()},getValue(), function(ret, err) {
+                if (ret) {
+                    apiToast('客户修改成功');
+
+                    setFileds();
+                    sendEventReload({'winName': 'customer'});
+                    setTimeout(function(){
+                      closeWin();
+                    },500);
+
+                } else {
+                    alert(JSON.stringify(err));
+                }
+            });
+        }
+
+    }
+
+    function setFileds(id,name,mobilephone,address) {
+        $('#id').val(id ? id : "");
+        $('#name').val(name ? name : "");
+        $('#mobilephone').val(mobilephone ? mobilephone : "");
+        $('#address').val(address ? address : "");
+    }
+
+    // function sendEventReload() {
+    //     api.sendEvent({
+    //         name: 'listReload',
+    //         extra: {
+    //             insert: 'yes'
+    //         }
+    //     });
+    // }
+
+    function getValue(){
+      return {
+          name: $('#name').val(),
+          mobilephone: $('#mobilephone').val(),
+          address: $('#address').val()
+      }
+    }
+</script>
+
+</html>

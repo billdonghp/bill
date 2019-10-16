@@ -1,0 +1,173 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>Hello APP</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <style>
+        .text-light {
+            color: #999 !important;
+        }
+
+        .aui-radio {
+            width: 1rem;
+            height: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <section class="aui-content" id="list"></section>
+
+    <script type="text/template" id="template">
+        {{ for(var i = 0; i
+        < it.length;i++) { }} <div class="aui-card-list aui-margin-b-5">
+            <div class="aui-card-list-header aui-font-size-14">
+                {{=it[i].no}}&nbsp;&nbsp;{{=it[i].material}}({{=it[i].weight}}克)
+            </div>
+            <div class="aui-card-list-content-padded aui-padded-t-0 text-light">
+                <div class="aui-row aui-row-padded  aui-text-center">
+                    <div class="aui-col-span-4">单价</div>
+                    <div class="aui-col-span-4">数量</div>
+                    <div class="aui-col-span-6">销售金额</div>
+                    <div class="aui-col-span-4">运费</div>
+                    <div class="aui-col-span-6">总金额</div>
+                    <div class="aui-col-span-4">{{=formatMoney(it[i].price, 2, "￥")}}</div>
+                    <div class="aui-col-span-4">{{=it[i].qty}}</div>
+                    <div class="aui-col-span-6">{{=formatMoney(it[i].amount, 2, "￥")}}</div>
+                    <div class="aui-col-span-4">{{=formatMoney(it[i].carryfee ? it[i].carryfee : 0, 2, "￥")}}</div>
+                    <div class="aui-col-span-6">{{=formatMoney(it[i].total, 2, "￥")}}</div>
+                </div>
+            </div>
+            <div class="aui-card-list-content-padded aui-padded-t-0 text-light">
+                <div class="aui-row aui-row-padded">
+                    <div class="aui-col-span-4 aui-text-center">备注</div>
+                    <div class="aui-col-span-10">{{=it[i].remark ? it[i].remark : ''}}</div>
+                </div>
+            </div>
+            <div class="aui-card-list-footer aui-border-t">
+                <div  tapmode onclick="stockout('{{=it[i].id}}')">
+                    <span class="{{=it[i].status == 1 ? 'aui-radio aui-checked aui-margin-r-5' : 'aui-radio aui-margin-r-5'}}"></span>已出库
+                </div>
+                <div>
+                    <span tapmode onclick="editSales('{{=it[i].id}}')"><i class="aui-iconfont aui-icon-edit aui-margin-r-5 aui-font-size-14"></i>编辑</span>
+                    <span tapmode onclick="delSales('{{=it[i].id}}','{{=it[i].no}}','{{=it[i].status}}')"><i class="aui-iconfont aui-icon-trash aui-margin-r-5 aui-margin-l-15 aui-font-size-14"></i>删除
+              </div>
+          </div>
+      </div>
+      {{ } }}
+    </script>
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/doT.min.js"></script>
+<script type="text/javascript" src="../script/jquery-3.1.1.js"></script>
+<script type="text/javascript" src="../script/APICloud-rest.js"></script>
+<script type="text/javascript" src="../script/APICloud-rest-SHA1.js"></script>
+<script type="text/javascript" src="../script/cloud.js"></script>
+<script type="text/javascript">
+    var pageIndex = 1;
+    var pageSize = 10;
+    apiready = function(){
+
+      pageInit();
+      getSalList();
+
+      addEventListReload({'winName':'sales'});
+    };
+
+    function pageInit(){
+      upPull(function(ret, err){
+          pageIndex += 1;
+          getSalList();
+      });
+      api.setCustomRefreshHeaderInfo({
+          bgColor: '#f0f0f0',
+      }, function(ret, err){
+        pageIndex = 1;
+        getSalList();
+      });
+    }
+
+    function getSalList(){
+      getClient('sales_order').query({
+        filter:{
+          limit: pageIndex * pageSize,
+          skip: (pageIndex -1 ) * pageSize,
+          order: "createdAt DESC"
+        }
+      },function(ret,err){
+        if(ret){
+          // alert(JSON.stringify(ret))
+          api.refreshHeaderLoadDone();
+          if(ret != null){
+            chkdata(ret);
+          }else{
+            apiToast('无数据!')
+          }
+
+        }
+      })
+    }
+
+    function chkdata(_data){
+      var list = $api.byId('list');
+      var tempFn = doT.template($api.byId('template').innerHTML);
+      var resultHTML = tempFn(_data);
+      pageIndex == 1 ? $api.html(list, resultHTML) : $api.append(list,resultHTML);
+      api.parseTapmode();
+    }
+
+    function delSales(id,name,status){
+        if(status == '1'){
+          apiToast('订单已入库，无法删除!');
+          return;
+        }
+        api.confirm({
+            title: '提醒',
+            msg: '请确认是否删除?\n' + name ,
+            buttons: ['确定', '取消']
+        }, function(ret, err){
+            if(ret){
+                 //alert( JSON.stringify( ret ) );
+                 if(ret.buttonIndex == 1){
+                   getClient('sales_order').delete({_id: id}, function(ret, err){
+                      if( ret ){
+                           listReload();
+                      }else{
+                           alert( JSON.stringify( err ) );
+                      }
+                  });
+                 }
+            }else{
+                 alert( JSON.stringify( err ) );
+            }
+        });
+    }
+    function editSales(id){
+      api.openWin({
+          name: 'sales_win',
+          url: './sales_win.html',
+          slidBackEnabled: false,
+          pageParam: {
+              state: 'update',
+              id: id
+          }
+      });
+    }
+
+    function stockout(id){
+      api.openWin({
+          name: 'stockout_win',
+          url: './stockout_win.html',
+          slidBackEnabled: false,
+          pageParam: {
+              id: id
+          }
+      });
+
+    }
+</script>
+</html>

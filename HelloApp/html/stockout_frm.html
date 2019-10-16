@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="../css/api.css">
+  <link rel="stylesheet" href="../css/aui.css">
+  <title>Document</title>
+</head>
+<body>
+  <sction id="list">
+    <div class="aui-content aui-margin-b-5">
+        <ul class="aui-list">
+            <div class="aui-list-item">
+                <div class="aui-list-item-left">收件人</div>
+                <div class="aui-list-item-center" tapmode onclick="openSearch('stockout_win','customer')"><input type="text" id="custname" class="aui-text-right"></div>
+                <div class="aui-list-item-right" tapmode onclick="openSearch('stockout_win','customer')"><i class="aui-iconfont aui-icon-right aui-text-info"></i></div>
+            </div>
+            <div class="aui-list-item">
+                <div class="aui-list-item-left">联系方式</div>
+                <div class="aui-list-item-center"><input type="text" id="mobilephone" class="aui-text-right"></div>
+            </div>
+            <div class="aui-list-item">
+                <div class="aui-list-item-left">收货地址</div>
+                <div class="aui-list-item-center"><input type="text" id="address" class="aui-text-right"></div>
+            </div>
+            <div class="aui-list-item">
+                <div class="aui-list-left "><input type="checkbox" class="aui-checkbox" id="check">&nbsp;&nbsp;已出库</input>
+                </div>
+            </div>
+
+        </ul>
+    </div>
+  </sction>
+
+  <footer class="aui-footer-bar" id="footer">
+      <div class="aui-footer-bar-item aui-padded-l-15 aui-padded-r-15">
+          <div class="aui-btn aui-btn-block aui-btn-sm aui-btn-info" tabmode onclick="saveStockout()"><i class="aui-iconfont aui-icon-edit aui-font-size-16"></i>保存</div>
+      </div>
+  </footer>
+
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/doT.min.js"></script>
+<script type="text/javascript" src="../script/jquery-3.1.1.js"></script>
+<script type="text/javascript" src="../script/APICloud-rest.js"></script>
+<script type="text/javascript" src="../script/APICloud-rest-SHA1.js"></script>
+<script type="text/javascript" src="../script/cloud.js"></script>
+<script>
+  apiready = function(){
+    pageInit();
+  }
+  function pageInit(){
+    var pageParam = api.pageParam;
+    if(pageParam.id){
+      $api.setStorage('salesid', pageParam.id);
+      getClient('sales_order').get({_id: pageParam.id
+      },function(ret,err){
+        if(ret){
+          setFileds(ret.custname,ret.mobilephone,ret.address,ret.status);
+        }
+      })
+    }else{
+      $('#custname').val(pageParam.param1),
+      $('#mobilephone').val(pageParam.param2),
+      $('#address').val(pageParam.param3)
+    }
+
+
+
+  }
+  function saveStockout(){
+    getClient('sales_order').save({
+      _id: $api.getStorage('salesid')
+    },{
+      'custname':$('#custname').val(),
+      'mobilephone':$('#mobilephone').val(),
+      'address':$('#address').val(),
+      'status': $('#check').prop('checked') ? 1 : 0
+    },function(ret, err){
+      if(ret){
+        apiToast("出库信息保存成功!");
+        setFileds();
+        sendEventReload({'winName':'sales'});
+        setTimeout(function(){
+          closeWin();
+        },500);
+
+      }
+
+    })
+  }
+
+  function setFileds(custname, mobilephone, address, status) {
+      $('#custname').val(custname ? custname : "");
+      $('#mobilephone').val(mobilephone ? mobilephone : "");
+      $('#address').val(address ? address : '');
+      $('#check').prop('checked', status == 1 ? true : false);
+  }
+</script>
+</html>

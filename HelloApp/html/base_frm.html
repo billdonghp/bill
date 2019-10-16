@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="../css/api.css">
+  <link rel="stylesheet" href="../css/aui.css">
+  <title>Document</title>
+</head>
+<body>
+  <section id="list">
+    <div class="aui-content">
+      <ul class="aui-list">
+        <div class="aui-list-item">
+          <div class="aui-list-item-left">类型</div>
+          <div class="aui-list-item-center"><input type="text" id="name" placeholder="请输入" onfocus="this.placeholder=''" onblur="this.placeholder='请输入'" class="aui-text-right"></div>
+        </div>
+        <div class="aui-list-item">
+          <div class="aui-list-item-left">分类</div>
+          <div class="aui-list-item-center"><input type="text" id="objecttype" placeholder="请输入" onfocus="this.placeholder=''" onblur="this.placeholder='请输入'" class="aui-text-right"></div>
+        </div>
+        <input type="hidden" id="id">
+      </ul>
+    </div>
+  </section>
+
+  <footer class="aui-footer-bar">
+    <div class="aui-footer-bar-item aui-padded-l-15 aui-padded-r-15">
+      <div class="aui-btn aui-btn-block aui-btn-sm aui-btn-info" tapmode onclick="saveBase()"><i class="aui-iconfont aui-icon-edit aui-font-size-14"></i>保存</div>
+    </div>
+  </footer>
+
+</body>
+<script type="text/javascript" src="../script/api.js"> </script>
+<script type="text/javascript" src="../script/jquery-3.1.1.js"> </script>
+<script type="text/javascript" src="../script/APICloud-rest.js"></script>
+<script type="text/javascript" src="../script/APICloud-rest-SHA1.js"></script>
+<script type="text/javascript" src="../script/cloud.js"> </script>
+<script type="text/javascript">
+  apiready = function(){
+    api.parseTapmode();
+    pageInit();
+
+  }
+
+  function pageInit(){
+      var pageParam = api.pageParam
+      if(pageParam.state == 'update' && pageParam.id != ""){
+        getClient('base').get({_id:pageParam.id},function(ret,err){
+          if(ret){
+            $('#name').val(ret.name ? ret.name : '');
+            $('#objecttype').val(ret.objecttype ? ret.objecttype : '');
+            $('#id').val(ret.id ? ret.id : '');
+          }
+        })
+      }
+  }
+  function saveBase(){
+    if($api.trim($('#name').val()) == ""){
+      apiToast("请输入类型!");
+      return;
+    }
+    //alert($('#id').val());
+    if($('#id').val() == "" || $('#id').val() == null ){
+      getClient('base').save({
+        'name': $('#name').val(),
+        'objecttype': $('#objecttype').val(),
+        'type': 2
+      },function(ret,err){
+          apiToast("保存成功!");
+          sendEventReload({'winName': 'base'});
+          setTimeout(function(){closeWin()},500);
+      })
+    }else{
+      getClient('base').save({_id:$('#id').val()},{
+        'name': $('#name').val(),
+        'objecttype': $('#objecttype').val(),
+        'type':2
+      },function(ret,err){
+        apiToast("修改成功!");
+        sendEventReload({'winName': 'base'});
+
+        setTimeout(function(){closeWin()},500);
+
+      })
+    }
+
+  }
+</script>
+</html>

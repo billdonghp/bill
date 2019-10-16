@@ -1,0 +1,166 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>Hello APP</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <style>
+        .text-light {
+            color: #999 !important;
+        }
+
+        .aui-radio {
+            width: 1rem;
+            height: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <section class="aui-content" id="list"></section>
+
+    <script type="text/template" id="template">
+        {{ for(var i = 0; i
+        < it.length;i++) { }} <div class="aui-card-list aui-margin-b-5">
+            <div class="aui-card-list-header aui-font-size-14" >
+                {{=it[i].name}}&nbsp;&nbsp;{{=it[i].mobilephone}}
+            </div>
+            <div class="aui-card-list-content-padded aui-padded-t-0 text-light">
+                {{=it[i].address}}
+            </div>
+            <div class="aui-card-list-footer aui-border-t">
+                <div tapmode onclick="isUsed('{{=it[i].id}}','{{=it[i].status}}')">
+                    <span class="{{=it[i].status == '1' ? 'aui-radio aui-checked aui-margin-r-5' : 'aui-radio aui-margin-r-5'}}"></span>已使用
+                </div>
+                <div>
+                    <span tapmode onclick="editCustomer('{{=it[i].id}}')"><i class="aui-iconfont aui-icon-edit aui-margin-r-5 aui-font-size-14"></i>编辑</span>
+                    <span tapmode onclick="delCustomer('{{=it[i].id}}','{{=it[i].name}}')"><i class="aui-iconfont aui-icon-trash aui-margin-r-5 aui-margin-l-15 aui-font-size-14"></i>删除
+              </div>
+          </div>
+      </div>
+      {{ } }}
+    </script>
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/doT.min.js"></script>
+<script type="text/javascript" src="../script/jquery-3.1.1.js"></script>
+<script type="text/javascript" src="../script/APICloud-rest.js"></script>
+<script type="text/javascript" src="../script/APICloud-rest-SHA1.js"></script>
+<script type="text/javascript" src="../script/cloud.js"></script>
+<script type="text/javascript">
+    var pageIndex = 1;
+    var pageSize = 10;
+    apiready = function(){
+
+      pageInit();
+      getCusList();
+
+      addEventListReload({'winName': 'customer'});
+
+    };
+
+    function pageInit(){
+      upPull(function(ret, err){
+        pageIndex += 1;
+        getCusList();
+      });
+      api.setCustomRefreshHeaderInfo({
+          bgColor: '#f0f0f0',
+      }, function(ret, err){
+        pageIndex = 1;
+        getCusList();
+      });
+
+    }
+
+    function getCusList(){
+      getClient('customer').query({
+        filter:{
+          limit: pageIndex * pageSize,
+          skip: (pageIndex - 1) * pageSize,
+          order: 'createdAt DESC'
+        }
+      },function(ret,err){
+        if(ret){
+          api.refreshHeaderLoadDone();
+          chkdata(ret);
+        }
+      })
+    }
+
+    function chkdata(_data){
+      var list = $api.byId('list');
+      var tempFn = doT.template($api.byId('template').innerHTML);
+      var resultHTML = tempFn(_data);
+      pageIndex == 1 ? $api.html(list, resultHTML) : $api.append(list, resultHTML);
+      api.parseTapmode();
+    }
+
+    function delCustomer(id,name){
+        api.confirm({
+            title: '提醒',
+            msg: '请确认是否删除: ' + name + '?',
+            buttons: ['确定', '取消']
+        }, function(ret, err){
+            if(ret ){
+                 //alert( JSON.stringify( ret ) );
+                 if(ret.buttonIndex == 1){
+                   getClient('customer').delete({
+                      _id: id
+                  }, function(ret, err){
+                      if( ret ){
+                           //alert( JSON.stringify( ret ) );
+                           listReload();
+                      }else{
+                           alert( JSON.stringify( err ) );
+                      }
+                  });
+                 }
+            }else{
+                 alert( JSON.stringify( err ) );
+            }
+        });
+    }
+    function editCustomer(id){
+      api.openWin({
+          name: 'customer',
+          url: './customer_win.html',
+          slidBackEnabled: false,
+          pageParam: {
+              name: 'update',
+              value: id
+          }
+      });
+    }
+    /*待确认流程*/
+    function newSales(custid,name,mobilephone,address){
+      api.openWin({
+          name: 'sales_win',
+          url: './sales_win.html',
+          slidBackEnabled: false,
+          pageParam: {
+              custid: custid,
+              custname: name,
+              mobilephone: mobilephone,
+              address: address,
+              state: 'forward'
+          }
+      });
+
+    }
+    function isUsed(id,status){
+      getClient('customer').save({_id: id},{'status' : status == 1 ? 0 : 1},function(ret,err){
+        if(ret){
+          listReload();
+          apiToast("更新完毕!");
+        }
+        if(err){
+          apiToast("客户信息更新失败!")
+        }
+      })
+    }
+</script>
+</html>

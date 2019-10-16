@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="stylesheet" href="../css/api.css">
+  <link rel="stylesheet" href="../css/aui.css">
+</head>
+<body>
+  <header class="aui-header-bar" id="aui-header">
+    <div class="aui-header-left aui-text-white" tapmode onclick="closeWin()"><i class="aui-iconfont aui-icon-left"></i></div>
+    <div class="aui-text-white aui-title">费用管理</div>
+  </header>
+
+  <section>
+
+  </section>
+
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/cloud.js"></script>
+<script>
+  apiready = function(){
+    api.parseTapmode();
+    fnHeader();
+    fnOpenFrame({isReload:true});
+
+  }
+
+
+</script>
+</html>
