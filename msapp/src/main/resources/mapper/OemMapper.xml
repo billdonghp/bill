@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.multiseafoods.msapp.mapper.OemMapper" >
+  <resultMap id="BaseResultMap" type="com.multiseafoods.msapp.entity.Oem" >
+    <result column="id" property="id" jdbcType="BIGINT" />
+    <result column="no" property="no" jdbcType="VARCHAR" />
+    <result column="material" property="material" jdbcType="VARCHAR" />
+    <result column="weight" property="weight" jdbcType="INTEGER" />
+    <result column="qty" property="qty" jdbcType="INTEGER" />
+    <result column="finweight" property="finweight" jdbcType="INTEGER" />
+    <result column="finqty" property="finqty" jdbcType="INTEGER" />
+    <result column="status" property="status" jdbcType="INTEGER" />
+    <result column="oemfee" property="oemfee" jdbcType="REAL" />
+    <result column="resqty" property="resqty" jdbcType="INTEGER" />
+    <result column="createdAt" property="createdat" jdbcType="TIMESTAMP" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+  </resultMap>
+  <insert id="insert" parameterType="com.multiseafoods.msapp.entity.Oem" >
+    insert into oem (id, no, material, 
+      weight, qty, finweight, 
+      finqty, status, oemfee, 
+      resqty, createdAt, remark
+      )
+    values (#{id,jdbcType=BIGINT}, #{no,jdbcType=VARCHAR}, #{material,jdbcType=VARCHAR}, 
+      #{weight,jdbcType=INTEGER}, #{qty,jdbcType=INTEGER}, #{finweight,jdbcType=INTEGER}, 
+      #{finqty,jdbcType=INTEGER}, #{status,jdbcType=INTEGER}, #{oemfee,jdbcType=REAL}, 
+      #{resqty,jdbcType=INTEGER}, #{createdat,jdbcType=TIMESTAMP}, #{remark,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.multiseafoods.msapp.entity.Oem" >
+    insert into oem
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="no != null" >
+        no,
+      </if>
+      <if test="material != null" >
+        material,
+      </if>
+      <if test="weight != null" >
+        weight,
+      </if>
+      <if test="qty != null" >
+        qty,
+      </if>
+      <if test="finweight != null" >
+        finweight,
+      </if>
+      <if test="finqty != null" >
+        finqty,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+      <if test="oemfee != null" >
+        oemfee,
+      </if>
+      <if test="resqty != null" >
+        resqty,
+      </if>
+      <if test="createdat != null" >
+        createdAt,
+      </if>
+      <if test="remark != null" >
+        remark,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="no != null" >
+        #{no,jdbcType=VARCHAR},
+      </if>
+      <if test="material != null" >
+        #{material,jdbcType=VARCHAR},
+      </if>
+      <if test="weight != null" >
+        #{weight,jdbcType=INTEGER},
+      </if>
+      <if test="qty != null" >
+        #{qty,jdbcType=INTEGER},
+      </if>
+      <if test="finweight != null" >
+        #{finweight,jdbcType=INTEGER},
+      </if>
+      <if test="finqty != null" >
+        #{finqty,jdbcType=INTEGER},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=INTEGER},
+      </if>
+      <if test="oemfee != null" >
+        #{oemfee,jdbcType=REAL},
+      </if>
+      <if test="resqty != null" >
+        #{resqty,jdbcType=INTEGER},
+      </if>
+      <if test="createdat != null" >
+        #{createdat,jdbcType=TIMESTAMP},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+</mapper>

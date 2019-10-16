@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.multiseafoods.msapp.mapper.PurchaseMapper" >
+  <resultMap id="BaseResultMap" type="com.multiseafoods.msapp.entity.Purchase" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="no" property="no" jdbcType="VARCHAR" />
+    <result column="material" property="material" jdbcType="VARCHAR" />
+    <result column="weight" property="weight" jdbcType="INTEGER" />
+    <result column="totalweight" property="totalweight" jdbcType="INTEGER" />
+    <result column="qty" property="qty" jdbcType="INTEGER" />
+    <result column="price" property="price" jdbcType="REAL" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, no, material, weight, totalweight, qty, price, remark
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select 
+    <include refid="Base_Column_List" />
+    from purchase
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from purchase
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.multiseafoods.msapp.entity.Purchase" >
+    insert into purchase (id, no, material, 
+      weight, totalweight, qty, 
+      price, remark)
+    values (#{id,jdbcType=BIGINT}, #{no,jdbcType=VARCHAR}, #{material,jdbcType=VARCHAR}, 
+      #{weight,jdbcType=INTEGER}, #{totalweight,jdbcType=INTEGER}, #{qty,jdbcType=INTEGER}, 
+      #{price,jdbcType=REAL}, #{remark,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.multiseafoods.msapp.entity.Purchase" >
+    insert into purchase
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="no != null" >
+        no,
+      </if>
+      <if test="material != null" >
+        material,
+      </if>
+      <if test="weight != null" >
+        weight,
+      </if>
+      <if test="totalweight != null" >
+        totalweight,
+      </if>
+      <if test="qty != null" >
+        qty,
+      </if>
+      <if test="price != null" >
+        price,
+      </if>
+      <if test="remark != null" >
+        remark,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="no != null" >
+        #{no,jdbcType=VARCHAR},
+      </if>
+      <if test="material != null" >
+        #{material,jdbcType=VARCHAR},
+      </if>
+      <if test="weight != null" >
+        #{weight,jdbcType=INTEGER},
+      </if>
+      <if test="totalweight != null" >
+        #{totalweight,jdbcType=INTEGER},
+      </if>
+      <if test="qty != null" >
+        #{qty,jdbcType=INTEGER},
+      </if>
+      <if test="price != null" >
+        #{price,jdbcType=REAL},
+      </if>
+      <if test="remark != null" >
+        #{remark,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.multiseafoods.msapp.entity.Purchase" >
+    update purchase
+    <set >
+      <if test="no != null" >
+        no = #{no,jdbcType=VARCHAR},
+      </if>
+      <if test="material != null" >
+        material = #{material,jdbcType=VARCHAR},
+      </if>
+      <if test="weight != null" >
+        weight = #{weight,jdbcType=INTEGER},
+      </if>
+      <if test="totalweight != null" >
+        totalweight = #{totalweight,jdbcType=INTEGER},
+      </if>
+      <if test="qty != null" >
+        qty = #{qty,jdbcType=INTEGER},
+      </if>
+      <if test="price != null" >
+        price = #{price,jdbcType=REAL},
+      </if>
+      <if test="remark != null" >
+        remark = #{remark,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.multiseafoods.msapp.entity.Purchase" >
+    update purchase
+    set no = #{no,jdbcType=VARCHAR},
+      material = #{material,jdbcType=VARCHAR},
+      weight = #{weight,jdbcType=INTEGER},
+      totalweight = #{totalweight,jdbcType=INTEGER},
+      qty = #{qty,jdbcType=INTEGER},
+      price = #{price,jdbcType=REAL},
+      remark = #{remark,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>
