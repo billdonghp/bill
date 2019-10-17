@@ -1,4 +1,6 @@
-#bill
+# bill
+https://blog.csdn.net/u013374164/article/details/78831480
+
 那么首先打开git bash
 输入git init
 然后git add dns4test.c
