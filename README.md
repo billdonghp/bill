@@ -15,3 +15,18 @@ hint: See the 'Note about fast-forwards' in 'git push --help' for details.
 继续输入命令: git pull origin master--allow-unrelated-histories
 这里是允许合并了远程的分支，会跳入vim编辑器，只要按住esc键，同时按两下大写的z就可以退出
 继续输入git push -u origin master就成功了。
+
+git init 初始化一个 git 仓库
+1.1 进入需要使用git 管理的文件初始化一个仓库 git init
+git add   提交代码到暂存区
+1.1 使用add 提交代码到暂存区 git add[<file>]
+
+git commit 
+ 提交代码到版本库
+1.1 将编辑好的代码提交到版本库 git commit  [<file>] -m "备注信息"
+1.2 更改最近一次提交的备注信息 git commit --amend [<file>] -m "新的备注信息"
+1.3 查看提交的详细修改内容 git commit --verbose 
+
+git status 查看当前工作目录中文件状态
+1.1 查看工作目录中文件状态 git status [<file>]
+
